@@ -1,0 +1,11 @@
+*.egg-info
+*.pyc
+*.swp
+.coverage
+.eggs
+.tox
+build
+coverage.xml
+dist
+doc/build
+reports

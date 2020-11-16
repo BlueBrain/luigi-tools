@@ -1,0 +1,284 @@
+"""Tests for luigi tools."""
+import os
+import warnings
+
+import luigi
+import pytest
+
+import luigi_tools.parameters
+import luigi_tools.tasks
+import luigi_tools.targets
+import luigi_tools.utils
+
+from .tools import create_empty_file
+from .tools import set_luigi_config
+
+
+def test_ext_parameter(luigi_tools_working_directory):
+    class TaskExtParameter(luigi.Task):
+        """"""
+
+        a = luigi_tools.parameters.ExtParameter(default="ext_from_default")
+        test_type = luigi.Parameter(default="default")
+
+        def run(self):
+            if self.test_type == "default":
+                assert self.a == "ext_from_default"
+            else:
+                assert self.a == "ext_from_cfg"
+            create_empty_file(self.output().path)
+
+        def output(self):
+            return luigi.LocalTarget(
+                luigi_tools_working_directory / f"test_ext_parameter_{self.a}_{self.test_type}.test"
+            )
+
+    assert luigi.build([TaskExtParameter(test_type="default")], local_scheduler=True)
+
+    set_luigi_config({"TaskExtParameter": {"a": "ext_from_cfg"}})
+    assert luigi.build([TaskExtParameter(test_type="cfg")], local_scheduler=True)
+
+    set_luigi_config({"TaskExtParameter": {"a": ".ext_from_cfg"}})
+    assert luigi.build([TaskExtParameter(test_type="cfg_with_dot")], local_scheduler=True)
+
+
+def test_ratio_parameter(tmpdir):
+    class TaskRatioParameter(luigi.Task):
+        """"""
+
+        a = luigi_tools.parameters.RatioParameter(default=0.5)
+        b = luigi.FloatParameter(default=0.5)
+
+        def run(self):
+            assert self.a == self.b
+            create_empty_file(self.output().path)
+
+        def output(self):
+            return luigi.LocalTarget(tmpdir / f"test_ratio_parameter_{self.a}_{self.b}.test")
+
+    assert luigi.build([TaskRatioParameter()], local_scheduler=True)
+    assert luigi.build([TaskRatioParameter(a=0.25, b=0.25)], local_scheduler=True)
+    assert luigi.build([TaskRatioParameter(a=0, b=0)], local_scheduler=True)
+    assert luigi.build([TaskRatioParameter(a=1, b=1)], local_scheduler=True)
+    with pytest.raises(ValueError):
+        assert luigi.build([TaskRatioParameter(a=-1, b=-1)], local_scheduler=True)
+    with pytest.raises(ValueError):
+        assert luigi.build([TaskRatioParameter(a=2, b=2)], local_scheduler=True)
+    with pytest.raises(ValueError):
+        assert luigi.build([TaskRatioParameter(a="a", b="a")], local_scheduler=True)
+
+
+def test_optional_parameter(luigi_tools_working_directory):
+    class TaskFactory:
+        def __call__(self):
+            class TaskOptionalParameter(luigi.Task):
+                """"""
+
+                a = luigi_tools.parameters.OptionalIntParameter(default=1)
+                b = luigi_tools.parameters.OptionalFloatParameter(default=1.5)
+                c = luigi_tools.parameters.OptionalNumericalParameter(
+                    default=0.75, min_value=0, max_value=1, var_type=float
+                )
+                d = luigi_tools.parameters.OptionalRatioParameter(default=0.5)
+                expected_a = luigi.IntParameter(default=1)
+                expected_b = luigi.FloatParameter(default=1.5)
+                expected_c = luigi.NumericalParameter(
+                    default=0.75, min_value=0, max_value=1, var_type=float
+                )
+                expected_d = luigi_tools.parameters.RatioParameter(default=0.5)
+
+                def run(self):
+                    print(
+                        "self.a =",
+                        self.a,
+                        "self.b =",
+                        self.b,
+                        "self.c =",
+                        self.c,
+                        "self.d =",
+                        self.d,
+                    )
+                    assert self.a == self.expected_a
+                    assert self.b == self.expected_b
+                    assert self.c == self.expected_c
+                    assert self.d == self.expected_d
+                    create_empty_file(self.output().path)
+
+                def output(self):
+                    return luigi.LocalTarget(
+                        luigi_tools_working_directory
+                        / f"test_optional_parameter_{self.a}_{self.b}_{self.c}_{self.d}.test"
+                    )
+
+            return TaskOptionalParameter
+
+    factory = TaskFactory()
+
+    task = factory()
+    assert luigi.build([task()], local_scheduler=True)
+
+    set_luigi_config(
+        {
+            "TaskOptionalParameter": {
+                "a": "null",
+                "b": "null",
+                "c": "null",
+                "d": "null",
+            }
+        }
+    )
+    task = factory()
+    assert luigi.build(
+        [
+            task(
+                expected_a=None,
+                expected_b=None,
+                expected_c=None,
+                expected_d=None,
+            )
+        ],
+        local_scheduler=True,
+    )
+
+    set_luigi_config(
+        {
+            "TaskOptionalParameter": {
+                "a": "0",
+                "expected_a": "0",
+                "b": "0.7",
+                "expected_b": "0.7",
+                "c": "0.8",
+                "expected_c": "0.8",
+                "d": "0.9",
+                "expected_d": "0.9",
+            }
+        }
+    )
+    task = factory()
+    assert luigi.build(
+        [
+            task(
+                expected_a=0,
+                expected_b=0.7,
+                expected_c=0.8,
+                expected_d=0.9,
+            )
+        ],
+        local_scheduler=True,
+    )
+
+    set_luigi_config(
+        {
+            "TaskOptionalParameter": {
+                "a": "not numerical",
+            }
+        }
+    )
+    task = factory()
+    with pytest.raises(ValueError):
+        assert luigi.build([task(expected_a="not numerical")], local_scheduler=True)
+
+    set_luigi_config(
+        {
+            "TaskOptionalParameter": {
+                "b": "not numerical",
+            }
+        }
+    )
+    task = factory()
+    with pytest.raises(ValueError):
+        assert luigi.build([task(expected_b="not numerical")], local_scheduler=True)
+
+    set_luigi_config(
+        {
+            "TaskOptionalParameter": {
+                "c": "not numerical",
+            }
+        }
+    )
+    task = factory()
+    with pytest.raises(ValueError):
+        assert luigi.build([task(expected_c="not numerical")], local_scheduler=True)
+
+    set_luigi_config(
+        {
+            "TaskOptionalParameter": {
+                "d": "not numerical",
+            }
+        }
+    )
+    task = factory()
+    with pytest.raises(ValueError):
+        assert luigi.build([task(expected_d="not numerical")], local_scheduler=True)
+
+    set_luigi_config()
+
+    with pytest.raises(TypeError):
+
+        class TaskOptionalParameterFail(luigi.Task):
+            a = luigi_tools.parameters.OptionalParameter()
+
+    class TaskOptionalParameterWarning(luigi.Task):
+        """"""
+
+        a = luigi_tools.parameters.OptionalIntParameter(default=1)
+        expected_a = luigi.IntParameter(default=1)
+
+        def run(self):
+            print("self.a =", self.a)
+            assert self.a == self.expected_a
+            create_empty_file(self.output().path)
+
+        def output(self):
+            return luigi.LocalTarget(
+                luigi_tools_working_directory / f"test_optional_parameter_warning_{self.a}.test"
+            )
+
+    with warnings.catch_warnings(record=True) as w:
+        warnings.filterwarnings(
+            action="ignore",
+            category=Warning,
+        )
+        warnings.simplefilter(
+            action="always",
+            category=luigi_tools.parameters.OptionalParameterTypeWarning,
+        )
+        assert luigi.build(
+            [TaskOptionalParameterWarning(a="zz", expected_a="zz")],
+            local_scheduler=True,
+        )
+
+        assert len(w) == 1
+        assert issubclass(w[0].category, luigi_tools.parameters.OptionalParameterTypeWarning)
+        assert str(w[0].message) == (
+            'OptionalIntParameter "a" with value "zz" is not of type int or None.'
+        )
+
+
+def test_bool_parameter(luigi_tools_working_directory):
+    class TaskBoolParameter(luigi.Task):
+        """"""
+
+        a = luigi_tools.parameters.BoolParameter(default=True)
+        b = luigi_tools.parameters.BoolParameter(default=False)
+        c = luigi_tools.parameters.BoolParameter(default=False, parsing="explicit")
+
+        def run(self):
+            create_empty_file(self.output().path)
+
+        def output(self):
+            return luigi.LocalTarget(
+                luigi_tools_working_directory
+                / f"test_bool_parameter_{self.a}_{self.b}_{self.c}.test"
+            )
+
+    assert TaskBoolParameter.a.parsing == "explicit"
+    assert TaskBoolParameter.b.parsing == "implicit"
+    assert TaskBoolParameter.c.parsing == "explicit"
+
+    with pytest.raises(ValueError):
+
+        class TaskBoolParameterFail(luigi.Task):
+            """"""
+
+            a = luigi_tools.parameters.BoolParameter(default=True, parsing="implicit")

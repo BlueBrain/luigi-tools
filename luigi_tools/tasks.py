@@ -1,0 +1,249 @@
+"""This module provides some specific luigi tasks and associated tools."""
+import logging
+import types
+from copy import deepcopy
+
+import luigi
+
+from luigi_tools.utils import apply_over_outputs
+from luigi_tools.utils import recursive_check
+from luigi_tools.utils import target_remove
+
+
+L = logging.getLogger(__name__)
+
+_no_default_value = object()
+
+
+class DuplicatedParameterError(Exception):
+    """Exception raised when a parameter is duplicated in a task."""
+
+
+class GlobalParameterNoValueError(Exception):
+    """Exception raised when the value of a global parameter can not be found."""
+
+
+class RerunnableTask(luigi.Task):
+    """A luigi task that can be forced running again by setting the 'rerun' parameter to True."""
+
+    rerun = luigi.BoolParameter(
+        significant=False,
+        default=False,
+        description="Trigger to force the task to rerun.",
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if recursive_check(self):
+            apply_over_outputs(self, target_remove)
+
+
+class LogTargetMixin:
+    """Mixin used to log output paths of this task.
+
+    .. note::
+        To have an effect, this mixin must be placed to the left of the first class
+        inheriting from ``luigi.Task`` in the base class list.
+    """
+
+    def __init__(self, *args, **kwargs):
+        event_handler = super().event_handler
+
+        # pylint: disable=unused-variable
+        @event_handler(luigi.Event.SUCCESS)
+        def log_targets(task):
+            """Hook to log output targets of a task."""
+
+            def log_func(target, key=None):
+                if not hasattr(target, "path"):
+                    return
+                class_name = task.__class__.__name__
+                if key is None:
+                    L.debug("Output of %s task: %s", class_name, target.path)
+                else:
+                    L.debug("Output %s of %s task: %s", key, class_name, target.path)
+
+            apply_over_outputs(task, log_func)
+
+        super().__init__(*args, **kwargs)
+
+
+class GlobalParamMixin:
+    """Mixin used to add customisable global parameters.
+
+    For the tasks that inherit from this GlobalParamMixin, when a parameter is linked to
+    another one and it value is None, its value is automatically replaced by the value
+    of the linked parameter.
+    See :class:`copy_params` for details about parameter linking.
+    """
+
+    def __init__(self, *args, **kwargs):
+        event_handler = super().event_handler
+
+        # pylint: disable=unused-variable
+        @event_handler(luigi.Event.START)
+        def log_parameters(self):
+            """Hook to log actual parameter values considering their global processing."""
+            class_name = self.__class__.__name__
+            L.debug("Attributes of %s task after global processing:", class_name)
+            for name in self.get_param_names():
+                try:
+                    L.debug("Atribute: %s == %s", name, getattr(self, name))
+                except Exception:  # pylint: disable=broad-except; # pragma: no cover
+                    L.debug("Can't print '%s' attribute for unknown reason", name)
+
+        super().__init__(*args, **kwargs)
+
+    def __getattribute__(self, name):
+        """Get the attribute value and get it from the linked parameter is the value is None."""
+        tmp = super().__getattribute__(name)
+        if tmp != _no_default_value:
+            return tmp
+        if hasattr(self, "_global_params"):
+            global_param = self._global_params.get(name)
+            if global_param is not None:
+                return getattr(global_param.cls(), global_param.name)
+        raise GlobalParameterNoValueError(
+            f"The value of the '{name}' parameter can not be retrieved from the linked parameter."
+        )
+
+    def __setattr__(self, name, value):
+        """Send a warning logger entry when a global parameter is set to None."""
+        try:
+            global_params = self._global_params
+        except AttributeError:
+            global_params = {}
+        if value == _no_default_value and name in global_params:
+            L.warning(
+                "The Parameter '%s' of the task '%s' is set to None, thus the global "
+                "value will be taken frow now on",
+                name,
+                self.__class__.__name__,
+            )
+        return super().__setattr__(name, value)
+
+
+class ParamLink:
+    """Class to store parameter linking informations."""
+
+    def __init__(self, cls, name=None, default=_no_default_value):
+        self.cls = cls
+        self.name = name
+        self.default = default
+
+
+class copy_params:
+    """Copy a parameter from another Task.
+
+    If no value is given to this parameter, the value from the other task is taken.
+
+    Differences with ``luigi.util.inherits``:
+
+        * ``luigi.util.inherits`` set all other class' parameters that the current one is missing.
+          It is not possible to select a subset of parameters.
+        * ``luigi.util.inherits`` set the same value to the other class' parameter than the
+          current one's parameter. This class do not set the same value, except for global
+          parameters with no given value.
+
+    **Usage**:
+
+    .. code-block:: python
+
+        class AnotherTask(luigi.Task):
+            m = luigi.IntParameter(default=1)
+
+        @copy_params(m=ParamLink(AnotherTask))
+        class MyFirstTask(luigi.Task):
+            def run(self):
+               print(self.m) # this will be defined and print 1
+               # ...
+
+        @copy_params(another_m=ParamLink(AnotherTask, "m"))
+        class MySecondTask(luigi.Task):
+            def run(self):
+               print(self.another_m) # this will be defined and print 1
+               # ...
+
+        @copy_params(another_m=ParamLink(AnotherTask, "m", 5))
+        class MyFirstTask(luigi.Task):
+            def run(self):
+               print(self.another_m) # this will be defined and print 5
+               # ...
+
+        @copy_params(another_m=ParamLink(AnotherTask, "m"))
+        class MyFirstTask(GlobalParamMixin, luigi.Task):
+            def run(self):
+               # this will be defined and print 1 if self.another_m is not explicitely set
+               # (this means that self.another_m == luigi_tools.tasks._no_default_value)
+               print(self.another_m)
+               # ...
+    """
+
+    def __init__(self, **params_to_copy):
+        """Initialize the decorator."""
+        super().__init__()
+        if not params_to_copy:
+            raise ValueError("params_to_copy cannot be empty")
+
+        self.params_to_copy = params_to_copy
+
+    def __call__(self, task_that_inherits):
+        """Set and configure the attributes."""
+        # Get all parameters
+        for param_name, attr in self.params_to_copy.items():
+            # Check if the parameter exists in the inheriting task
+            if not hasattr(task_that_inherits, param_name):
+                if attr.name is None:
+                    attr.name = param_name
+
+                # Copy param
+                param = getattr(attr.cls, attr.name)
+                new_param = deepcopy(param)
+
+                # Set default value if required
+                if attr.default != _no_default_value:
+                    new_param._default = attr.default
+                elif issubclass(task_that_inherits, GlobalParamMixin):
+                    new_param._default = _no_default_value
+
+                # Add it to the inheriting task with new default values
+                setattr(task_that_inherits, param_name, new_param)
+
+                # Do not emit warning because of wrong type
+                def _warn_on_wrong_global_param_type(_self, global_param_name, global_param_value):
+                    if global_param_value != _no_default_value:
+                        # pylint: disable=protected-access
+                        _self._actual_warn_on_wrong_param_type(
+                            global_param_name, global_param_value
+                        )
+
+                new_param._actual_warn_on_wrong_param_type = new_param._warn_on_wrong_param_type
+                new_param._warn_on_wrong_param_type = types.MethodType(
+                    _warn_on_wrong_global_param_type, new_param
+                )
+
+                # Add link to global parameter
+                if issubclass(task_that_inherits, GlobalParamMixin):
+                    if not hasattr(task_that_inherits, "_global_params"):
+                        task_that_inherits._global_params = {}
+                    task_that_inherits._global_params[param_name] = attr
+            else:
+                raise DuplicatedParameterError(
+                    f"The parameter '{param_name}' already exists in the task "
+                    f"'{task_that_inherits.__class__.__name__}'."
+                )
+
+        return task_that_inherits
+
+
+class WorkflowTask(GlobalParamMixin, RerunnableTask):
+    """Default task used in workflows.
+
+    This task can be forced running again by setting the 'rerun' parameter to True.
+    It can also use copy and link parameters from other tasks.
+    """
+
+
+class WorkflowWrapperTask(WorkflowTask, luigi.WrapperTask):
+    """Base wrapper class with global parameters."""
