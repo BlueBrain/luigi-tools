@@ -2,6 +2,7 @@
 import logging
 
 import luigi
+from luigi.parameter import _no_value as PARAM_NO_VALUE
 
 
 L = logging.getLogger(__name__)
@@ -80,3 +81,14 @@ def get_dependency_graph(task):
         childs.append((task, t))
         childs.extend(get_dependency_graph(t))
     return childs
+
+
+def _param_repr(description, default):
+    """Produce parameter help string representation for sphinx-doc."""
+    if description:
+        help_str = description
+    else:
+        help_str = ""
+    if default is not PARAM_NO_VALUE:
+        help_str += f"({default})"
+    return help_str

@@ -13,10 +13,10 @@
 # import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
-import re
-
 from pkg_resources import get_distribution
 
+from luigi import Parameter
+from luigi_tools.utils import _param_repr
 
 # -- Project information -----------------------------------------------------
 
@@ -35,27 +35,11 @@ release = version
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
     "sphinx.ext.graphviz",
     "sphinx.ext.napoleon",
-    "autoapi.extension",
-]
-
-autoapi_dirs = [
-    "../../luigi_tools",
-]
-autoapi_ignore = [
-    "*version.py",
-]
-autoapi_python_use_implicit_namespaces = True
-autoapi_keep_files = False
-autoapi_options = [
-    "imported-members",
-    "members",
-    "private-members",
-    "show-inheritance",
-    "show-module-summary",
-    "special-members",
-    "undoc-members",
+    "sphinx.ext.intersphinx",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -93,25 +77,10 @@ autosummary_generate = True
 
 # autodoc settings
 autodoc_typehints = "signature"
-autodoc_default_options = {"members": True}
-autoclass_content = "both"
+autodoc_default_options = {"members": True,
+                           "show-inheritance": True}
 
-SKIP = [
-    r".*\.L$",
-    r"luigi_tools\..*\.requires$",
-    r"luigi_tools\..*\.run$",
-    r"luigi_tools\..*\.output$",
-]
+intersphinx_mapping = {"python": ("https://docs.python.org/3", None),
+                       "luigi": ("https://luigi.readthedocs.io/en/stable", None)}
 
-
-def maybe_skip_member(app, what, name, obj, skip, options):
-    skip = None
-    for pattern in SKIP:
-        if re.match(pattern, name) is not None:
-            skip = True
-            break
-    return skip
-
-
-def setup(app):
-    app.connect("autoapi-skip-member", maybe_skip_member)
+Parameter.__repr__ = lambda self: _param_repr(self.description, self._default)

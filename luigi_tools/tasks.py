@@ -30,7 +30,7 @@ class RerunnableTask(luigi.Task):
         significant=False,
         default=False,
         description="Trigger to force the task to rerun.",
-    )
+    )  #:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -6,5 +6,5 @@
    :maxdepth: 2
 
    Home <self>
+   api
    changelog
-   autoapi/index

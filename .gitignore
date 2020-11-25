@@ -8,4 +8,5 @@ build
 coverage.xml
 dist
 doc/build
+doc/source/generated
 reports

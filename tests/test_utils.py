@@ -2,6 +2,7 @@
 import os
 
 import luigi
+from luigi.parameter import _no_value as PARAM_NO_VALUE
 import pytest
 
 import luigi_tools.tasks
@@ -98,3 +99,10 @@ def test_dependency_graph(tmpdir, TasksFixture):
         (all_tasks.TaskD(), all_tasks.TaskC()),
         (all_tasks.TaskC(), all_tasks.TaskA()),
     ]
+
+
+def test_param_repr():
+    assert luigi_tools.utils._param_repr(None, PARAM_NO_VALUE) == ""
+    assert luigi_tools.utils._param_repr(None, None) == "(None)"
+    assert luigi_tools.utils._param_repr("description", None) == "description(None)"
+    assert luigi_tools.utils._param_repr("description", "default") == "description(default)"
