@@ -48,7 +48,7 @@ class RatioParameter(luigi.NumericalParameter):
         """Ensure that the value is contained in the given interval.
 
         The ``parse()`` method is not called when the parameters are given to the constructor,
-        but the value check is only done there. This ``normalize()`` method ansures that the
+        but the value check is only done there. This ``normalize()`` method ensures that the
         interval check is made even when for arguments given to the constructor.
         """
         if x is not None:

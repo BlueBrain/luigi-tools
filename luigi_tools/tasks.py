@@ -45,7 +45,7 @@ class LogTargetMixin:
 
     .. note::
         To have an effect, this mixin must be placed to the left of the first class
-        inheriting from ``luigi.Task`` in the base class list.
+        inheriting from :class:`luigi.Task` in the base class list.
     """
 
     def __init__(self, *args, **kwargs):
@@ -126,7 +126,7 @@ class GlobalParamMixin:
 
 
 class ParamRef:
-    """Class to store parameter linking informations."""
+    """Class to store parameter reference informations."""
 
     def __init__(self, cls, name=None, default=_no_default_value):
         self.cls = cls
@@ -137,14 +137,23 @@ class ParamRef:
 class copy_params:
     """Copy a parameter from another Task.
 
-    If no value is given to this parameter, the value from the other task is taken.
+    This decorator take kwargs where keys are the parameter names and the values are
+    :class:`ParamRef` instances.
 
-    Differences with ``luigi.util.inherits``:
+    If no default value is given to the :class:`ParamRef`, two behaviours are possible:
 
-        * ``luigi.util.inherits`` set all other class' parameters that the current one is missing.
-          It is not possible to select a subset of parameters.
-        * ``luigi.util.inherits`` set the same value to the other class' parameter than the
-          current one's parameter. This class do not set the same value, except for global
+        * If the task inherits from the :class:`GlobalParamMixin`, the parameter is linked to the
+          one of the base class. The default parameter value is then the actual value of the
+          linked parameter.
+        * If the task does not inherit from the :class:`GlobalParamMixin`, the default value is
+          copied from the linked parameter.
+
+    Differences with :class:`luigi.util.inherits`:
+
+        * :class:`luigi.util.inherits` set all other class' parameters that the current one is
+          missing. It is not possible to select a subset of parameters.
+        * :class:`luigi.util.inherits` set the same value to the other class' parameter than the
+          current one's parameter. This class does not set the same value, except for global
           parameters with no given value.
 
     **Usage**:
