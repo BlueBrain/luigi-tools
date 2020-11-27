@@ -73,9 +73,16 @@ class OptionalParameter(luigi.OptionalParameter):
         super().__init__(*args, **kwargs)
 
     def parse(self, x):
-        """Parse the given value if it is not ``None`` or ``'null'``."""
+        """Parse the given value if it is not an empty string, ``None`` or ``'null'``."""
         if x and x.lower() != "null":
             return self._base_cls.parse(self, x)
+        else:
+            return None
+
+    def normalize(self, x):
+        """Normalize the given value if it is not ``None``."""
+        if x is not None:
+            return self._base_cls.normalize(self, x)
         else:
             return None
 

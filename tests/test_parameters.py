@@ -80,12 +80,14 @@ def test_optional_parameter(luigi_tools_working_directory):
                     default=0.75, min_value=0, max_value=1, var_type=float
                 )
                 d = luigi_tools.parameters.OptionalRatioParameter(default=0.5)
+                e = luigi_tools.parameters.OptionalIntParameter(default=None)
                 expected_a = luigi.IntParameter(default=1)
                 expected_b = luigi.FloatParameter(default=1.5)
                 expected_c = luigi.NumericalParameter(
                     default=0.75, min_value=0, max_value=1, var_type=float
                 )
                 expected_d = luigi_tools.parameters.RatioParameter(default=0.5)
+                expected_e = luigi.Parameter(default=None)
 
                 def run(self):
                     print(
@@ -97,17 +99,20 @@ def test_optional_parameter(luigi_tools_working_directory):
                         self.c,
                         "self.d =",
                         self.d,
+                        "self.e =",
+                        self.e,
                     )
                     assert self.a == self.expected_a
                     assert self.b == self.expected_b
                     assert self.c == self.expected_c
                     assert self.d == self.expected_d
+                    assert self.e == self.expected_e
                     create_empty_file(self.output().path)
 
                 def output(self):
                     return luigi.LocalTarget(
                         luigi_tools_working_directory
-                        / f"test_optional_parameter_{self.a}_{self.b}_{self.c}_{self.d}.test"
+                        / f"test_optional_parameter_{self.a}_{self.b}_{self.c}_{self.d}_{self.e}.test"
                     )
 
             return TaskOptionalParameter
@@ -124,6 +129,7 @@ def test_optional_parameter(luigi_tools_working_directory):
                 "b": "null",
                 "c": "null",
                 "d": "null",
+                "e": "null",
             }
         }
     )
@@ -135,6 +141,7 @@ def test_optional_parameter(luigi_tools_working_directory):
                 expected_b=None,
                 expected_c=None,
                 expected_d=None,
+                expected_e=None,
             )
         ],
         local_scheduler=True,
@@ -151,6 +158,8 @@ def test_optional_parameter(luigi_tools_working_directory):
                 "expected_c": "0.8",
                 "d": "0.9",
                 "expected_d": "0.9",
+                "e": "1",
+                "expected_e": "1",
             }
         }
     )
@@ -162,6 +171,7 @@ def test_optional_parameter(luigi_tools_working_directory):
                 expected_b=0.7,
                 expected_c=0.8,
                 expected_d=0.9,
+                expected_e=1,
             )
         ],
         local_scheduler=True,
