@@ -1,6 +1,6 @@
 """Tests for luigi tools."""
+import json
 import logging
-import os
 
 import luigi
 import pytest
@@ -91,6 +91,55 @@ def test_copy_params(tmpdir):
             """"""
 
             a = luigi.Parameter(default="a")
+
+    # Test with parameters that are serialized to generate the task ID
+    class TaskWithListDictParams(luigi.Task):
+        """"""
+
+        a = luigi.ListParameter(description="a in TaskWithListDictParams")
+        b = luigi.DictParameter(description="b in TaskWithListDictParams")
+
+        def run(self):
+            assert self.a == (1, 2)
+            assert self.b == {"attr1": 1, "attr2": 2}
+
+        def output(self):
+            return luigi.LocalTarget("not_existing_file")
+
+    @luigi_tools.tasks.copy_params(
+        a_copy=luigi_tools.tasks.ParamLink(TaskWithListDictParams, "a"),
+        b_copy=luigi_tools.tasks.ParamLink(TaskWithListDictParams, "b"),
+    )
+    class TaskCopyListDictParams(luigi.Task):
+        """"""
+
+        a = luigi.ListParameter(description="a in TaskCopyListDictParams")
+        b = luigi.DictParameter(description="b in TaskCopyListDictParams")
+
+        def run(self):
+            assert self.a == (1, 2)
+            assert self.b == {"attr1": 1, "attr2": 2}
+            assert self.a_copy == self.a
+            assert self.b_copy == self.b
+
+        def output(self):
+            return luigi.LocalTarget("not_existing_file")
+
+    set_luigi_config(
+        {
+            "TaskWithListDictParams": {
+                "a": "[1, 2]",
+                "b": json.dumps({"attr1": 1, "attr2": 2}),
+            },
+            "TaskCopyListDictParams": {
+                "a": "[1, 2]",
+                "b": json.dumps({"attr1": 1, "attr2": 2}),
+                "a_copy": "[1, 2]",
+                "b_copy": json.dumps({"attr1": 1, "attr2": 2}),
+            },
+        }
+    )
+    assert luigi.build([TaskCopyListDictParams()], local_scheduler=True)
 
 
 @pytest.mark.filterwarnings("ignore::UserWarning:luigi.parameter")
@@ -304,6 +353,56 @@ def test_copy_params_with_globals(luigi_tools_working_directory):
     # The workflow now succeeds because TaskI().i == "new_value" and
     # TaskJ().i == "another_new_value"
     assert luigi.build([TaskJ()], local_scheduler=True)
+
+    # Test with parameters that are serialized to generate the task ID
+    class GlobalParamTaskWithListDictParams(luigi_tools.tasks.GlobalParamMixin, luigi.Task):
+        """"""
+
+        a = luigi.ListParameter(description="a in GlobalParamTaskWithListDictParams")
+        b = luigi.DictParameter(description="b in GlobalParamTaskWithListDictParams")
+
+        def run(self):
+            assert self.a == (1, 2)
+            assert self.b == {"attr1": 1, "attr2": 2}
+
+        def output(self):
+            return luigi.LocalTarget("not_existing_file")
+
+    @luigi_tools.tasks.copy_params(
+        a_copy=luigi_tools.tasks.ParamLink(GlobalParamTaskWithListDictParams, "a"),
+        b_copy=luigi_tools.tasks.ParamLink(GlobalParamTaskWithListDictParams, "b"),
+    )
+    class GlobalParamTaskCopyListDictParams(luigi_tools.tasks.GlobalParamMixin, luigi.Task):
+        """"""
+
+        a_new = luigi.ListParameter(description="a in GlobalParamTaskCopyListDictParams")
+        b_new = luigi.DictParameter(description="b in GlobalParamTaskCopyListDictParams")
+
+        def run(self):
+            assert self.a_new == (1, 2)
+            assert self.b_new == {"attr1": 1, "attr2": 2}
+            assert self.a_copy == self.a_new
+            assert self.b_copy == self.b_new
+
+        def output(self):
+            return luigi.LocalTarget("not_existing_file")
+
+    set_luigi_config(
+        {
+            "GlobalParamTaskWithListDictParams": {
+                "a": "[1, 2]",
+                "b": json.dumps({"attr1": 1, "attr2": 2}),
+            },
+            "GlobalParamTaskCopyListDictParams": {
+                "a_new": "[1, 2]",
+                "b_new": json.dumps({"attr1": 1, "attr2": 2}),
+            },
+        }
+    )
+    assert luigi.build(
+        [GlobalParamTaskWithListDictParams(), GlobalParamTaskCopyListDictParams()],
+        local_scheduler=True,
+    )
 
 
 def test_forceable_tasks(tmpdir, TasksFixture):

@@ -77,10 +77,11 @@ autosummary_generate = True
 
 # autodoc settings
 autodoc_typehints = "signature"
-autodoc_default_options = {"members": True,
-                           "show-inheritance": True}
+autodoc_default_options = {"members": True, "show-inheritance": True}
 
-intersphinx_mapping = {"python": ("https://docs.python.org/3", None),
-                       "luigi": ("https://luigi.readthedocs.io/en/stable", None)}
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "luigi": ("https://luigi.readthedocs.io/en/stable", None),
+}
 
 Parameter.__repr__ = lambda self: _param_repr(self.description, self._default)

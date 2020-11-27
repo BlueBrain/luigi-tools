@@ -12,7 +12,8 @@ from luigi_tools.utils import target_remove
 
 L = logging.getLogger(__name__)
 
-_no_default_value = object()
+
+_no_default_value = "__no_default_value__"
 
 
 class DuplicatedParameterError(Exception):
@@ -178,6 +179,12 @@ class copy_params:
                # (this means that self.another_m == luigi_tools.tasks._no_default_value)
                print(self.another_m)
                # ...
+
+    .. warning::
+        There is a limitation of using :class:`copy_params` on a :class:`GlobalParamMixin`.
+        In this particular case, the task from which a parameter is copied must be called
+        before the inheriting task (which does not mean it must be executed before, just
+        ``task()`` is enough). This is due to the metaclass magic of luigi.
     """
 
     def __init__(self, **params_to_copy):
@@ -206,6 +213,10 @@ class copy_params:
                     new_param._default = attr.default
                 elif issubclass(task_that_inherits, GlobalParamMixin):
                     new_param._default = _no_default_value
+                elif param._default == luigi.parameter._no_value:
+                    # The deepcopy make the new_param._default != luigi.parameter._no_value
+                    # so we must reset it in this case
+                    new_param._default = luigi.parameter._no_value
 
                 # Add it to the inheriting task with new default values
                 setattr(task_that_inherits, param_name, new_param)
