@@ -23,8 +23,8 @@ class GlobalParameterNoValueError(Exception):
     """Exception raised when the value of a global parameter can not be found."""
 
 
-class RerunnableTask(luigi.Task):
-    """A luigi task that can be forced running again by setting the 'rerun' parameter to True."""
+class RerunMixin:
+    """Mixin used to force a task to run again by setting the 'rerun' parameter to True."""
 
     rerun = luigi.BoolParameter(
         significant=False,
@@ -237,7 +237,7 @@ class copy_params:
         return task_that_inherits
 
 
-class WorkflowTask(GlobalParamMixin, RerunnableTask):
+class WorkflowTask(GlobalParamMixin, RerunMixin, luigi.Task):
     """Default task used in workflows.
 
     This task can be forced running again by setting the 'rerun' parameter to True.
