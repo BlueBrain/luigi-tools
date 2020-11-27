@@ -35,10 +35,10 @@ def test_copy_params(tmpdir):
             return luigi.LocalTarget(tmpdir)
 
     @luigi_tools.tasks.copy_params(
-        a=luigi_tools.tasks.ParamLink(TaskA),
-        aa=luigi_tools.tasks.ParamLink(TaskA, "a"),
-        a_default=luigi_tools.tasks.ParamLink(TaskA, "a", "given_default_value"),
-        a_none=luigi_tools.tasks.ParamLink(TaskA, "a", None),
+        a=luigi_tools.tasks.ParamRef(TaskA),
+        aa=luigi_tools.tasks.ParamRef(TaskA, "a"),
+        a_default=luigi_tools.tasks.ParamRef(TaskA, "a", "given_default_value"),
+        a_none=luigi_tools.tasks.ParamRef(TaskA, "a", None),
     )
     class TaskB(luigi.Task):
         """"""
@@ -85,7 +85,7 @@ def test_copy_params(tmpdir):
     with pytest.raises(DuplicatedParameterError):
 
         @luigi_tools.tasks.copy_params(
-            a=luigi_tools.tasks.ParamLink(TaskA),
+            a=luigi_tools.tasks.ParamRef(TaskA),
         )
         class TaskD(luigi.Task):
             """"""
@@ -107,8 +107,8 @@ def test_copy_params(tmpdir):
             return luigi.LocalTarget("not_existing_file")
 
     @luigi_tools.tasks.copy_params(
-        a_copy=luigi_tools.tasks.ParamLink(TaskWithListDictParams, "a"),
-        b_copy=luigi_tools.tasks.ParamLink(TaskWithListDictParams, "b"),
+        a_copy=luigi_tools.tasks.ParamRef(TaskWithListDictParams, "a"),
+        b_copy=luigi_tools.tasks.ParamRef(TaskWithListDictParams, "b"),
     )
     class TaskCopyListDictParams(luigi.Task):
         """"""
@@ -158,9 +158,9 @@ def test_copy_params_with_globals(luigi_tools_working_directory):
             return luigi.LocalTarget("not_existing_file")
 
     @luigi_tools.tasks.copy_params(
-        aa=luigi_tools.tasks.ParamLink(TaskA, "a_cfg"),
-        a_default=luigi_tools.tasks.ParamLink(TaskA, "a", "given_default_value"),
-        a_none=luigi_tools.tasks.ParamLink(TaskA, "a", None),
+        aa=luigi_tools.tasks.ParamRef(TaskA, "a_cfg"),
+        a_default=luigi_tools.tasks.ParamRef(TaskA, "a", "given_default_value"),
+        a_none=luigi_tools.tasks.ParamRef(TaskA, "a", None),
     )
     class TaskB(luigi_tools.tasks.GlobalParamMixin, luigi.Task):
         """"""
@@ -224,7 +224,7 @@ def test_copy_params_with_globals(luigi_tools_working_directory):
     with pytest.raises(DuplicatedParameterError):
 
         @luigi_tools.tasks.copy_params(
-            a=luigi_tools.tasks.ParamLink(TaskA),
+            a=luigi_tools.tasks.ParamRef(TaskA),
         )
         class TaskD(luigi_tools.tasks.GlobalParamMixin, luigi.Task):
             """"""
@@ -248,7 +248,7 @@ def test_copy_params_with_globals(luigi_tools_working_directory):
 
     # Global parameter with _no_default_value should raise GlobalParameterNoValueError
     @luigi_tools.tasks.copy_params(
-        a=luigi_tools.tasks.ParamLink(TaskA),
+        a=luigi_tools.tasks.ParamRef(TaskA),
     )
     class TaskF(luigi_tools.tasks.GlobalParamMixin, luigi.Task):
         """"""
@@ -322,7 +322,7 @@ def test_copy_params_with_globals(luigi_tools_working_directory):
             return luigi.LocalTarget(luigi_tools_working_directory / "TaskI_output.test")
 
     @luigi_tools.tasks.copy_params(
-        i=luigi_tools.tasks.ParamLink(TaskI),
+        i=luigi_tools.tasks.ParamRef(TaskI),
     )
     class TaskJ(luigi.Task):
         """"""
@@ -369,8 +369,8 @@ def test_copy_params_with_globals(luigi_tools_working_directory):
             return luigi.LocalTarget("not_existing_file")
 
     @luigi_tools.tasks.copy_params(
-        a_copy=luigi_tools.tasks.ParamLink(GlobalParamTaskWithListDictParams, "a"),
-        b_copy=luigi_tools.tasks.ParamLink(GlobalParamTaskWithListDictParams, "b"),
+        a_copy=luigi_tools.tasks.ParamRef(GlobalParamTaskWithListDictParams, "a"),
+        b_copy=luigi_tools.tasks.ParamRef(GlobalParamTaskWithListDictParams, "b"),
     )
     class GlobalParamTaskCopyListDictParams(luigi_tools.tasks.GlobalParamMixin, luigi.Task):
         """"""

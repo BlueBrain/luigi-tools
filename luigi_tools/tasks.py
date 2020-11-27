@@ -125,7 +125,7 @@ class GlobalParamMixin:
         return super().__setattr__(name, value)
 
 
-class ParamLink:
+class ParamRef:
     """Class to store parameter linking informations."""
 
     def __init__(self, cls, name=None, default=_no_default_value):
@@ -154,25 +154,25 @@ class copy_params:
         class AnotherTask(luigi.Task):
             m = luigi.IntParameter(default=1)
 
-        @copy_params(m=ParamLink(AnotherTask))
+        @copy_params(m=ParamRef(AnotherTask))
         class MyFirstTask(luigi.Task):
             def run(self):
                print(self.m) # this will be defined and print 1
                # ...
 
-        @copy_params(another_m=ParamLink(AnotherTask, "m"))
+        @copy_params(another_m=ParamRef(AnotherTask, "m"))
         class MySecondTask(luigi.Task):
             def run(self):
                print(self.another_m) # this will be defined and print 1
                # ...
 
-        @copy_params(another_m=ParamLink(AnotherTask, "m", 5))
+        @copy_params(another_m=ParamRef(AnotherTask, "m", 5))
         class MyFirstTask(luigi.Task):
             def run(self):
                print(self.another_m) # this will be defined and print 5
                # ...
 
-        @copy_params(another_m=ParamLink(AnotherTask, "m"))
+        @copy_params(another_m=ParamRef(AnotherTask, "m"))
         class MyFirstTask(GlobalParamMixin, luigi.Task):
             def run(self):
                # this will be defined and print 1 if self.another_m is not explicitely set
