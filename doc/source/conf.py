@@ -16,7 +16,7 @@
 from pkg_resources import get_distribution
 
 from luigi import Parameter
-from luigi_tools.utils import _param_repr
+from luigi_tools.util import _param_repr
 
 # -- Project information -----------------------------------------------------
 

@@ -5,9 +5,9 @@ from copy import deepcopy
 
 import luigi
 
-from luigi_tools.utils import apply_over_outputs
-from luigi_tools.utils import recursive_check
-from luigi_tools.utils import target_remove
+from luigi_tools.util import apply_over_outputs
+from luigi_tools.util import recursive_check
+from luigi_tools.util import target_remove
 
 
 L = logging.getLogger(__name__)
@@ -126,7 +126,7 @@ class GlobalParamMixin:
 
 
 class ParamRef:
-    """Class to store parameter reference informations."""
+    """Class to store parameter reference information."""
 
     def __init__(self, cls, name=None, default=_no_default_value):
         self.cls = cls
@@ -137,7 +137,7 @@ class ParamRef:
 class copy_params:
     """Copy a parameter from another Task.
 
-    This decorator take kwargs where keys are the parameter names and the values are
+    This decorator takes kwargs where keys are the parameter names and the values are
     :class:`ParamRef` instances.
 
     If no default value is given to the :class:`ParamRef`, two behaviours are possible:

@@ -5,9 +5,9 @@ import luigi
 from luigi.parameter import _no_value as PARAM_NO_VALUE
 import pytest
 
-import luigi_tools.tasks
-import luigi_tools.targets
-import luigi_tools.utils
+import luigi_tools.task
+import luigi_tools.target
+import luigi_tools.util
 
 from .tools import check_empty_file
 from .tools import check_not_empty_file
@@ -16,7 +16,7 @@ from .tools import create_not_empty_file
 
 
 def test_target_remove(tmpdir):
-    class TaskA(luigi_tools.tasks.WorkflowTask):
+    class TaskA(luigi_tools.task.WorkflowTask):
         """"""
 
         def run(self):
@@ -29,7 +29,7 @@ def test_target_remove(tmpdir):
 
             for i in luigi.task.flatten(self.output()):
                 assert i.exists()
-                luigi_tools.utils.target_remove(i)
+                luigi_tools.util.target_remove(i)
                 assert not i.exists()
 
         def output(self):
@@ -60,7 +60,7 @@ def test_apply_over_inputs():
         return key, task_output
 
     task = TaskB()
-    res = luigi_tools.utils.apply_over_inputs(task, get_a)
+    res = luigi_tools.util.apply_over_inputs(task, get_a)
     assert res == {"a": ("a", "a"), "b": ("b", "b"), "c": ("c", ["c1", "c2"])}
 
 
@@ -79,7 +79,7 @@ def test_apply_over_outputs():
         return key, task_output
 
     task = TaskA(a="test")
-    res = luigi_tools.utils.apply_over_outputs(task, get_a)
+    res = luigi_tools.util.apply_over_outputs(task, get_a)
     assert res == {
         "a": ("a", "test"),
         "b": ("b", "test_b"),
@@ -91,7 +91,7 @@ def test_dependency_graph(tmpdir, TasksFixture):
     all_tasks = TasksFixture()
     start = all_tasks.TaskE()
 
-    graph = luigi_tools.utils.get_dependency_graph(start)
+    graph = luigi_tools.util.get_dependency_graph(start)
     assert graph == [
         (all_tasks.TaskE(), all_tasks.TaskD()),
         (all_tasks.TaskD(), all_tasks.TaskB()),
@@ -102,7 +102,7 @@ def test_dependency_graph(tmpdir, TasksFixture):
 
 
 def test_param_repr():
-    assert luigi_tools.utils._param_repr(None, PARAM_NO_VALUE) == ""
-    assert luigi_tools.utils._param_repr(None, None) == "(None)"
-    assert luigi_tools.utils._param_repr("description", None) == "description(None)"
-    assert luigi_tools.utils._param_repr("description", "default") == "description(default)"
+    assert luigi_tools.util._param_repr(None, PARAM_NO_VALUE) == ""
+    assert luigi_tools.util._param_repr(None, None) == "(None)"
+    assert luigi_tools.util._param_repr("description", None) == "description(None)"
+    assert luigi_tools.util._param_repr("description", "default") == "description(default)"

@@ -6,11 +6,11 @@ import luigi
 import pytest
 from luigi.util import inherits
 
-import luigi_tools.tasks
-import luigi_tools.targets
-import luigi_tools.utils
-from luigi_tools.tasks import DuplicatedParameterError
-from luigi_tools.tasks import GlobalParameterNoValueError
+import luigi_tools.task
+import luigi_tools.target
+import luigi_tools.util
+from luigi_tools.task import DuplicatedParameterError
+from luigi_tools.task import GlobalParameterNoValueError
 
 from .tools import check_empty_file
 from .tools import check_not_empty_file
@@ -34,11 +34,11 @@ def test_copy_params(tmpdir):
         def output(self):
             return luigi.LocalTarget(tmpdir)
 
-    @luigi_tools.tasks.copy_params(
-        a=luigi_tools.tasks.ParamRef(TaskA),
-        aa=luigi_tools.tasks.ParamRef(TaskA, "a"),
-        a_default=luigi_tools.tasks.ParamRef(TaskA, "a", "given_default_value"),
-        a_none=luigi_tools.tasks.ParamRef(TaskA, "a", None),
+    @luigi_tools.task.copy_params(
+        a=luigi_tools.task.ParamRef(TaskA),
+        aa=luigi_tools.task.ParamRef(TaskA, "a"),
+        a_default=luigi_tools.task.ParamRef(TaskA, "a", "given_default_value"),
+        a_none=luigi_tools.task.ParamRef(TaskA, "a", None),
     )
     class TaskB(luigi.Task):
         """"""
@@ -75,7 +75,7 @@ def test_copy_params(tmpdir):
     # Empty copy_params arguments should raise a ValueError
     with pytest.raises(ValueError):
 
-        @luigi_tools.tasks.copy_params()
+        @luigi_tools.task.copy_params()
         class TaskC(luigi.Task):
             """"""
 
@@ -84,8 +84,8 @@ def test_copy_params(tmpdir):
     # Duplicated parameters should raise a DuplicatedParameterError
     with pytest.raises(DuplicatedParameterError):
 
-        @luigi_tools.tasks.copy_params(
-            a=luigi_tools.tasks.ParamRef(TaskA),
+        @luigi_tools.task.copy_params(
+            a=luigi_tools.task.ParamRef(TaskA),
         )
         class TaskD(luigi.Task):
             """"""
@@ -106,9 +106,9 @@ def test_copy_params(tmpdir):
         def output(self):
             return luigi.LocalTarget("not_existing_file")
 
-    @luigi_tools.tasks.copy_params(
-        a_copy=luigi_tools.tasks.ParamRef(TaskWithListDictParams, "a"),
-        b_copy=luigi_tools.tasks.ParamRef(TaskWithListDictParams, "b"),
+    @luigi_tools.task.copy_params(
+        a_copy=luigi_tools.task.ParamRef(TaskWithListDictParams, "a"),
+        b_copy=luigi_tools.task.ParamRef(TaskWithListDictParams, "b"),
     )
     class TaskCopyListDictParams(luigi.Task):
         """"""
@@ -144,7 +144,7 @@ def test_copy_params(tmpdir):
 
 @pytest.mark.filterwarnings("ignore::UserWarning:luigi.parameter")
 def test_copy_params_with_globals(luigi_tools_working_directory):
-    class TaskA(luigi_tools.tasks.GlobalParamMixin, luigi.Task):
+    class TaskA(luigi_tools.task.GlobalParamMixin, luigi.Task):
         """"""
 
         a = luigi.Parameter(default="a")
@@ -157,12 +157,12 @@ def test_copy_params_with_globals(luigi_tools_working_directory):
         def output(self):
             return luigi.LocalTarget("not_existing_file")
 
-    @luigi_tools.tasks.copy_params(
-        aa=luigi_tools.tasks.ParamRef(TaskA, "a_cfg"),
-        a_default=luigi_tools.tasks.ParamRef(TaskA, "a", "given_default_value"),
-        a_none=luigi_tools.tasks.ParamRef(TaskA, "a", None),
+    @luigi_tools.task.copy_params(
+        aa=luigi_tools.task.ParamRef(TaskA, "a_cfg"),
+        a_default=luigi_tools.task.ParamRef(TaskA, "a", "given_default_value"),
+        a_none=luigi_tools.task.ParamRef(TaskA, "a", None),
     )
-    class TaskB(luigi_tools.tasks.GlobalParamMixin, luigi.Task):
+    class TaskB(luigi_tools.task.GlobalParamMixin, luigi.Task):
         """"""
 
         b = luigi.Parameter(default="b")
@@ -214,7 +214,7 @@ def test_copy_params_with_globals(luigi_tools_working_directory):
     # Empty copy_params arguments should raise a ValueError
     with pytest.raises(ValueError):
 
-        @luigi_tools.tasks.copy_params()
+        @luigi_tools.task.copy_params()
         class TaskC(luigi.Task):
             """"""
 
@@ -223,22 +223,22 @@ def test_copy_params_with_globals(luigi_tools_working_directory):
     # Duplicated parameters should raise a DuplicatedParameterError
     with pytest.raises(DuplicatedParameterError):
 
-        @luigi_tools.tasks.copy_params(
-            a=luigi_tools.tasks.ParamRef(TaskA),
+        @luigi_tools.task.copy_params(
+            a=luigi_tools.task.ParamRef(TaskA),
         )
-        class TaskD(luigi_tools.tasks.GlobalParamMixin, luigi.Task):
+        class TaskD(luigi_tools.task.GlobalParamMixin, luigi.Task):
             """"""
 
             a = luigi.Parameter(default="a")
 
     # Global parameter with _no_default_value should raise GlobalParameterNoValueError
-    class TaskE(luigi_tools.tasks.GlobalParamMixin, luigi.Task):
+    class TaskE(luigi_tools.task.GlobalParamMixin, luigi.Task):
         """"""
 
-        e = luigi.Parameter(default=luigi_tools.tasks._no_default_value)
+        e = luigi.Parameter(default=luigi_tools.task._no_default_value)
 
         def run(self):
-            assert self.e == luigi_tools.tasks._no_default_value
+            assert self.e == luigi_tools.task._no_default_value
 
         def output(self):
             return luigi.LocalTarget("not_existing_file")
@@ -247,17 +247,17 @@ def test_copy_params_with_globals(luigi_tools_working_directory):
         assert luigi.build([TaskE()], local_scheduler=True)
 
     # Global parameter with _no_default_value should raise GlobalParameterNoValueError
-    @luigi_tools.tasks.copy_params(
-        a=luigi_tools.tasks.ParamRef(TaskA),
+    @luigi_tools.task.copy_params(
+        a=luigi_tools.task.ParamRef(TaskA),
     )
-    class TaskF(luigi_tools.tasks.GlobalParamMixin, luigi.Task):
+    class TaskF(luigi_tools.task.GlobalParamMixin, luigi.Task):
         """"""
 
-        f = luigi.Parameter(default=luigi_tools.tasks._no_default_value)
+        f = luigi.Parameter(default=luigi_tools.task._no_default_value)
 
         def run(self):
             assert self.a == "a"
-            assert self.f == luigi_tools.tasks._no_default_value
+            assert self.f == luigi_tools.task._no_default_value
 
         def output(self):
             return luigi.LocalTarget("not_existing_file")
@@ -321,8 +321,8 @@ def test_copy_params_with_globals(luigi_tools_working_directory):
         def output(self):
             return luigi.LocalTarget(luigi_tools_working_directory / "TaskI_output.test")
 
-    @luigi_tools.tasks.copy_params(
-        i=luigi_tools.tasks.ParamRef(TaskI),
+    @luigi_tools.task.copy_params(
+        i=luigi_tools.task.ParamRef(TaskI),
     )
     class TaskJ(luigi.Task):
         """"""
@@ -355,7 +355,7 @@ def test_copy_params_with_globals(luigi_tools_working_directory):
     assert luigi.build([TaskJ()], local_scheduler=True)
 
     # Test with parameters that are serialized to generate the task ID
-    class GlobalParamTaskWithListDictParams(luigi_tools.tasks.GlobalParamMixin, luigi.Task):
+    class GlobalParamTaskWithListDictParams(luigi_tools.task.GlobalParamMixin, luigi.Task):
         """"""
 
         a = luigi.ListParameter(description="a in GlobalParamTaskWithListDictParams")
@@ -368,11 +368,11 @@ def test_copy_params_with_globals(luigi_tools_working_directory):
         def output(self):
             return luigi.LocalTarget("not_existing_file")
 
-    @luigi_tools.tasks.copy_params(
-        a_copy=luigi_tools.tasks.ParamRef(GlobalParamTaskWithListDictParams, "a"),
-        b_copy=luigi_tools.tasks.ParamRef(GlobalParamTaskWithListDictParams, "b"),
+    @luigi_tools.task.copy_params(
+        a_copy=luigi_tools.task.ParamRef(GlobalParamTaskWithListDictParams, "a"),
+        b_copy=luigi_tools.task.ParamRef(GlobalParamTaskWithListDictParams, "b"),
     )
-    class GlobalParamTaskCopyListDictParams(luigi_tools.tasks.GlobalParamMixin, luigi.Task):
+    class GlobalParamTaskCopyListDictParams(luigi_tools.task.GlobalParamMixin, luigi.Task):
         """"""
 
         a_new = luigi.ListParameter(description="a in GlobalParamTaskCopyListDictParams")
@@ -470,7 +470,7 @@ def test_forceable_tasks(tmpdir, TasksFixture):
     # Test that calling a task inside another one does not remove its targets
     all_tasks.reset_classes()
 
-    class TaskF(luigi_tools.tasks.WorkflowTask):
+    class TaskF(luigi_tools.task.WorkflowTask):
         """"""
 
         counter = luigi.IntParameter(default=0)
@@ -521,7 +521,7 @@ def test_forceable_tasks(tmpdir, TasksFixture):
 
 
 def test_LogTargetMixin(tmpdir, caplog):
-    class TaskA(luigi_tools.tasks.LogTargetMixin, luigi.Task):
+    class TaskA(luigi_tools.task.LogTargetMixin, luigi.Task):
         """"""
 
         a = luigi.Parameter(default="a")
@@ -536,7 +536,7 @@ def test_LogTargetMixin(tmpdir, caplog):
         def exists(self):
             return True
 
-    class TaskB(luigi_tools.tasks.LogTargetMixin, luigi.Task):
+    class TaskB(luigi_tools.task.LogTargetMixin, luigi.Task):
         """"""
 
         b = luigi.Parameter(default="b")
@@ -553,14 +553,14 @@ def test_LogTargetMixin(tmpdir, caplog):
     caplog.clear()
     caplog.set_level(logging.DEBUG)
     assert luigi.build([TaskA()], local_scheduler=True)
-    res = [i for i in caplog.record_tuples if i[0] == "luigi_tools.tasks"]
-    assert res == [("luigi_tools.tasks", 10, f"Output of TaskA task: {tmpdir / 'test_a'}")]
+    res = [i for i in caplog.record_tuples if i[0] == "luigi_tools.task"]
+    assert res == [("luigi_tools.task", 10, f"Output of TaskA task: {tmpdir / 'test_a'}")]
 
     caplog.clear()
     caplog.set_level(logging.DEBUG)
     assert luigi.build([TaskB()], local_scheduler=True)
-    res = [i for i in caplog.record_tuples if i[0] == "luigi_tools.tasks"]
-    assert res == [("luigi_tools.tasks", 10, f"Output b of TaskB task: {tmpdir / 'test_b'}")]
+    res = [i for i in caplog.record_tuples if i[0] == "luigi_tools.task"]
+    assert res == [("luigi_tools.task", 10, f"Output b of TaskB task: {tmpdir / 'test_b'}")]
 
     class TaskC(luigi.Task):
         """"""
@@ -577,10 +577,10 @@ def test_LogTargetMixin(tmpdir, caplog):
     caplog.clear()
     caplog.set_level(logging.DEBUG)
     assert luigi.build([TaskC()], local_scheduler=True)
-    res = [i for i in caplog.record_tuples if i[0] == "luigi_tools.tasks"]
+    res = [i for i in caplog.record_tuples if i[0] == "luigi_tools.task"]
     assert res == []
 
-    class TaskD(luigi.Task, luigi_tools.tasks.LogTargetMixin):
+    class TaskD(luigi.Task, luigi_tools.task.LogTargetMixin):
         """"""
 
         d = luigi.Parameter(default="d")
@@ -595,10 +595,10 @@ def test_LogTargetMixin(tmpdir, caplog):
     caplog.clear()
     caplog.set_level(logging.DEBUG)
     assert luigi.build([TaskD()], local_scheduler=True)
-    res = [i for i in caplog.record_tuples if i[0] == "luigi_tools.tasks"]
+    res = [i for i in caplog.record_tuples if i[0] == "luigi_tools.task"]
     assert res == []
 
-    class TaskE(luigi_tools.tasks.LogTargetMixin, luigi_tools.tasks.GlobalParamMixin, luigi.Task):
+    class TaskE(luigi_tools.task.LogTargetMixin, luigi_tools.task.GlobalParamMixin, luigi.Task):
         """"""
 
         e = luigi.Parameter(default="e")
@@ -613,9 +613,9 @@ def test_LogTargetMixin(tmpdir, caplog):
     caplog.clear()
     caplog.set_level(logging.DEBUG)
     assert luigi.build([TaskE()], local_scheduler=True)
-    res = [i for i in caplog.record_tuples if i[0] == "luigi_tools.tasks"]
+    res = [i for i in caplog.record_tuples if i[0] == "luigi_tools.task"]
     assert res == [
-        ("luigi_tools.tasks", 10, "Attributes of TaskE task after global processing:"),
-        ("luigi_tools.tasks", 10, "Atribute: e == e"),
-        ("luigi_tools.tasks", 10, f"Output of TaskE task: {tmpdir / 'test_e'}"),
+        ("luigi_tools.task", 10, "Attributes of TaskE task after global processing:"),
+        ("luigi_tools.task", 10, "Atribute: e == e"),
+        ("luigi_tools.task", 10, f"Output of TaskE task: {tmpdir / 'test_e'}"),
     ]

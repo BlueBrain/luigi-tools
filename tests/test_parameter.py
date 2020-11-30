@@ -5,10 +5,10 @@ import warnings
 import luigi
 import pytest
 
-import luigi_tools.parameters
-import luigi_tools.tasks
-import luigi_tools.targets
-import luigi_tools.utils
+import luigi_tools.parameter
+import luigi_tools.task
+import luigi_tools.target
+import luigi_tools.util
 
 from .tools import create_empty_file
 from .tools import set_luigi_config
@@ -18,7 +18,7 @@ def test_ext_parameter(luigi_tools_working_directory):
     class TaskExtParameter(luigi.Task):
         """"""
 
-        a = luigi_tools.parameters.ExtParameter(default="ext_from_default")
+        a = luigi_tools.parameter.ExtParameter(default="ext_from_default")
         test_type = luigi.Parameter(default="default")
 
         def run(self):
@@ -46,7 +46,7 @@ def test_ratio_parameter(tmpdir):
     class TaskRatioParameter(luigi.Task):
         """"""
 
-        a = luigi_tools.parameters.RatioParameter(default=0.5)
+        a = luigi_tools.parameter.RatioParameter(default=0.5)
         b = luigi.FloatParameter(default=0.5)
 
         def run(self):
@@ -74,19 +74,19 @@ def test_optional_parameter(luigi_tools_working_directory):
             class TaskOptionalParameter(luigi.Task):
                 """"""
 
-                a = luigi_tools.parameters.OptionalIntParameter(default=1)
-                b = luigi_tools.parameters.OptionalFloatParameter(default=1.5)
-                c = luigi_tools.parameters.OptionalNumericalParameter(
+                a = luigi_tools.parameter.OptionalIntParameter(default=1)
+                b = luigi_tools.parameter.OptionalFloatParameter(default=1.5)
+                c = luigi_tools.parameter.OptionalNumericalParameter(
                     default=0.75, min_value=0, max_value=1, var_type=float
                 )
-                d = luigi_tools.parameters.OptionalRatioParameter(default=0.5)
-                e = luigi_tools.parameters.OptionalIntParameter(default=None)
+                d = luigi_tools.parameter.OptionalRatioParameter(default=0.5)
+                e = luigi_tools.parameter.OptionalIntParameter(default=None)
                 expected_a = luigi.IntParameter(default=1)
                 expected_b = luigi.FloatParameter(default=1.5)
                 expected_c = luigi.NumericalParameter(
                     default=0.75, min_value=0, max_value=1, var_type=float
                 )
-                expected_d = luigi_tools.parameters.RatioParameter(default=0.5)
+                expected_d = luigi_tools.parameter.RatioParameter(default=0.5)
                 expected_e = luigi.Parameter(default=None)
 
                 def run(self):
@@ -226,12 +226,12 @@ def test_optional_parameter(luigi_tools_working_directory):
     with pytest.raises(TypeError):
 
         class TaskOptionalParameterFail(luigi.Task):
-            a = luigi_tools.parameters.OptionalParameter()
+            a = luigi_tools.parameter.OptionalParameter()
 
     class TaskOptionalParameterWarning(luigi.Task):
         """"""
 
-        a = luigi_tools.parameters.OptionalIntParameter(default=1)
+        a = luigi_tools.parameter.OptionalIntParameter(default=1)
         expected_a = luigi.IntParameter(default=1)
 
         def run(self):
@@ -251,7 +251,7 @@ def test_optional_parameter(luigi_tools_working_directory):
         )
         warnings.simplefilter(
             action="always",
-            category=luigi_tools.parameters.OptionalParameterTypeWarning,
+            category=luigi_tools.parameter.OptionalParameterTypeWarning,
         )
         assert luigi.build(
             [TaskOptionalParameterWarning(a="zz", expected_a="zz")],
@@ -259,7 +259,7 @@ def test_optional_parameter(luigi_tools_working_directory):
         )
 
         assert len(w) == 1
-        assert issubclass(w[0].category, luigi_tools.parameters.OptionalParameterTypeWarning)
+        assert issubclass(w[0].category, luigi_tools.parameter.OptionalParameterTypeWarning)
         assert str(w[0].message) == (
             'OptionalIntParameter "a" with value "zz" is not of type int or None.'
         )
@@ -269,9 +269,9 @@ def test_bool_parameter(luigi_tools_working_directory):
     class TaskBoolParameter(luigi.Task):
         """"""
 
-        a = luigi_tools.parameters.BoolParameter(default=True)
-        b = luigi_tools.parameters.BoolParameter(default=False)
-        c = luigi_tools.parameters.BoolParameter(default=False, parsing="explicit")
+        a = luigi_tools.parameter.BoolParameter(default=True)
+        b = luigi_tools.parameter.BoolParameter(default=False)
+        c = luigi_tools.parameter.BoolParameter(default=False, parsing="explicit")
 
         def run(self):
             create_empty_file(self.output().path)
@@ -291,4 +291,4 @@ def test_bool_parameter(luigi_tools_working_directory):
         class TaskBoolParameterFail(luigi.Task):
             """"""
 
-            a = luigi_tools.parameters.BoolParameter(default=True, parsing="implicit")
+            a = luigi_tools.parameter.BoolParameter(default=True, parsing="implicit")

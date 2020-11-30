@@ -3,7 +3,7 @@ import os
 import luigi
 import pytest
 
-import luigi_tools.tasks
+import luigi_tools.task
 
 from .tools import create_not_empty_file
 from .tools import dict_to_config
@@ -52,7 +52,7 @@ def TasksFixture(tmpdir):
             self.reset_classes()
 
         def reset_classes(self):
-            class TaskA(luigi_tools.tasks.WorkflowTask):
+            class TaskA(luigi_tools.task.WorkflowTask):
                 """"""
 
                 counter = luigi.IntParameter(default=0)
@@ -65,7 +65,7 @@ def TasksFixture(tmpdir):
                 def output(self):
                     return luigi.LocalTarget(tmpdir / "TaskA.target")
 
-            class TaskB(luigi_tools.tasks.WorkflowTask):
+            class TaskB(luigi_tools.task.WorkflowTask):
                 """"""
 
                 counter = luigi.IntParameter(default=0)
@@ -87,7 +87,7 @@ def TasksFixture(tmpdir):
                         ],
                     ]
 
-            class TaskC(luigi_tools.tasks.WorkflowTask):
+            class TaskC(luigi_tools.task.WorkflowTask):
                 """"""
 
                 counter = luigi.IntParameter(default=0)
@@ -106,7 +106,7 @@ def TasksFixture(tmpdir):
                         "second_target": luigi.LocalTarget(tmpdir / "TaskC2.target"),
                     }
 
-            class TaskD(luigi_tools.tasks.WorkflowTask):
+            class TaskD(luigi_tools.task.WorkflowTask):
                 """"""
 
                 counter = luigi.IntParameter(default=0)
@@ -125,7 +125,7 @@ def TasksFixture(tmpdir):
                         luigi.LocalTarget(tmpdir / "TaskD2.target"),
                     ]
 
-            class TaskE(luigi_tools.tasks.WorkflowTask):
+            class TaskE(luigi_tools.task.WorkflowTask):
                 """"""
 
                 counter = luigi.IntParameter(default=0)

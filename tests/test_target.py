@@ -3,9 +3,9 @@ import os
 
 import luigi
 
-import luigi_tools.tasks
-import luigi_tools.targets
-import luigi_tools.utils
+import luigi_tools.task
+import luigi_tools.target
+import luigi_tools.util
 
 from .tools import create_not_empty_file
 
@@ -19,7 +19,7 @@ def test_output_target(tmpdir):
         * using default prefix
     """
 
-    class TaskA_OutputLocalTarget(luigi_tools.tasks.WorkflowTask):
+    class TaskA_OutputLocalTarget(luigi_tools.task.WorkflowTask):
         """"""
 
         def run(self):
@@ -38,38 +38,38 @@ def test_output_target(tmpdir):
                 os.makedirs(i.pathlib_path.parent, exist_ok=True)
                 create_not_empty_file(i.path)
                 assert i.exists()
-                luigi_tools.utils.target_remove(i)
+                luigi_tools.util.target_remove(i)
                 assert not i.exists()
 
         def output(self):
             return [
-                luigi_tools.targets.OutputLocalTarget("output_target.test", prefix=tmpdir),
-                luigi_tools.targets.OutputLocalTarget(
+                luigi_tools.target.OutputLocalTarget("output_target.test", prefix=tmpdir),
+                luigi_tools.target.OutputLocalTarget(
                     tmpdir / "absolute_output_target_no_prefix.test"
                 ),
-                luigi_tools.targets.OutputLocalTarget(
+                luigi_tools.target.OutputLocalTarget(
                     "relative_output_target.test", prefix=tmpdir / "test" / ".."
                 ),
-                luigi_tools.targets.OutputLocalTarget("output_target_default_prefix.test"),
-                luigi_tools.targets.OutputLocalTarget(
+                luigi_tools.target.OutputLocalTarget("output_target_default_prefix.test"),
+                luigi_tools.target.OutputLocalTarget(
                     tmpdir / "absolute_output_target_prefix.test",
                     prefix=tmpdir / "test",
                 ),
             ]
 
     try:
-        current_prefix = luigi_tools.targets.OutputLocalTarget._prefix
-        luigi_tools.targets.OutputLocalTarget.set_default_prefix(tmpdir / "subdir")
+        current_prefix = luigi_tools.target.OutputLocalTarget._prefix
+        luigi_tools.target.OutputLocalTarget.set_default_prefix(tmpdir / "subdir")
         assert luigi.build([TaskA_OutputLocalTarget()], local_scheduler=True)
     finally:
-        luigi_tools.targets.OutputLocalTarget.set_default_prefix(current_prefix)
+        luigi_tools.target.OutputLocalTarget.set_default_prefix(current_prefix)
 
     try:
-        luigi_tools.targets.OutputLocalTarget._prefix = None
-        target = luigi_tools.targets.OutputLocalTarget("test", prefix=None)
+        luigi_tools.target.OutputLocalTarget._prefix = None
+        target = luigi_tools.target.OutputLocalTarget("test", prefix=None)
         target._prefix = None
         assert target.path == "test"
-        luigi_tools.targets.OutputLocalTarget.set_default_prefix(None)
-        assert luigi_tools.targets.OutputLocalTarget._prefix.as_posix() == os.getcwd()
+        luigi_tools.target.OutputLocalTarget.set_default_prefix(None)
+        assert luigi_tools.target.OutputLocalTarget._prefix.as_posix() == os.getcwd()
     finally:
-        luigi_tools.targets.OutputLocalTarget.set_default_prefix(current_prefix)
+        luigi_tools.target.OutputLocalTarget.set_default_prefix(current_prefix)
