@@ -79,9 +79,11 @@ class OutputLocalTarget(luigi.LocalTarget):
 
     _prefix = None
 
-    def __init__(self, *args, prefix=None, **kwargs):
+    def __init__(self, *args, prefix=None, create_parent=False, **kwargs):
         super().__init__(*args, **kwargs)
         self._reset_prefix(self, prefix)
+        if create_parent:
+            self.mkdir()
 
     @property
     def path(self):
@@ -110,6 +112,10 @@ class OutputLocalTarget(luigi.LocalTarget):
         """
         OutputLocalTarget._reset_prefix(cls, prefix)
 
+    def get_default_prefix(self):
+        """Return the default prefix."""
+        return self._prefix
+
     @staticmethod
     def _reset_prefix(obj, prefix):
         # pylint: disable=protected-access
@@ -119,3 +125,20 @@ class OutputLocalTarget(luigi.LocalTarget):
             obj._prefix = Path(os.getcwd())
         else:
             obj._prefix = Path(obj._prefix)
+
+    def mkdir(self, is_dir=False, mode=511, parents=True, exist_ok=True):
+        """Create the directory of this path.
+
+        Args:
+            is_dir (bool): if set to True, the current path is create, otherwise only the parent
+                directory is create.
+            mode (int): numeric mode used to create the directory with given permissions (unix
+                only).
+            parents (bool): if set to True, the parents are also created if they are missing.
+            exist_ok (bool): if set to True, do not raise an exception if the directory already
+                exists.
+        """
+        if is_dir:
+            self.pathlib_path.mkdir(mode=mode, parents=parents, exist_ok=exist_ok)
+        else:
+            self.pathlib_path.parent.mkdir(mode=mode, parents=parents, exist_ok=exist_ok)

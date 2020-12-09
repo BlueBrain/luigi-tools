@@ -1,7 +1,10 @@
 """Tests for luigi tools."""
 import os
+import shutil
+from pathlib import Path
 
 import luigi
+import pytest
 
 import luigi_tools.task
 import luigi_tools.target
@@ -57,8 +60,14 @@ def test_output_target(tmpdir):
                 ),
             ]
 
+    current_prefix = luigi_tools.target.OutputLocalTarget._prefix
+
     try:
-        current_prefix = luigi_tools.target.OutputLocalTarget._prefix
+        current_dir = Path(os.getcwd())
+        assert luigi_tools.target.OutputLocalTarget("path").get_default_prefix() == current_dir
+        assert luigi_tools.target.OutputLocalTarget(
+            "path", prefix=tmpdir
+        ).get_default_prefix() == Path(tmpdir)
         luigi_tools.target.OutputLocalTarget.set_default_prefix(tmpdir / "subdir")
         assert luigi.build([TaskA_OutputLocalTarget()], local_scheduler=True)
     finally:
@@ -71,5 +80,31 @@ def test_output_target(tmpdir):
         assert target.path == "test"
         luigi_tools.target.OutputLocalTarget.set_default_prefix(None)
         assert luigi_tools.target.OutputLocalTarget._prefix.as_posix() == os.getcwd()
+    finally:
+        luigi_tools.target.OutputLocalTarget.set_default_prefix(current_prefix)
+
+    try:
+        other_subdir = tmpdir / "other_subdir"
+        luigi_tools.target.OutputLocalTarget.set_default_prefix(other_subdir / "test" / "create")
+        target = luigi_tools.target.OutputLocalTarget("test_file", prefix=None)
+
+        target.mkdir()
+        assert target.pathlib_path.parent.is_dir()
+        assert not target.pathlib_path.exists()
+        shutil.rmtree(other_subdir)
+
+        target.mkdir(is_dir=True)
+        assert target.pathlib_path.is_dir()
+
+        with pytest.raises(OSError):
+            target.mkdir(exist_ok=False)
+
+        shutil.rmtree(other_subdir)
+        with pytest.raises(FileNotFoundError):
+            target.mkdir(parents=False)
+
+        auto_target = luigi_tools.target.OutputLocalTarget("test_file", create_parent=True)
+        assert auto_target.pathlib_path.parent.is_dir()
+        assert not auto_target.pathlib_path.exists()
     finally:
         luigi_tools.target.OutputLocalTarget.set_default_prefix(current_prefix)

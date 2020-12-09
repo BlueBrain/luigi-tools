@@ -81,6 +81,8 @@ def test_optional_parameter(luigi_tools_working_directory):
                 )
                 d = luigi_tools.parameter.OptionalRatioParameter(default=0.5)
                 e = luigi_tools.parameter.OptionalIntParameter(default=None)
+                f = luigi_tools.parameter.OptionalListParameter(default=None)
+                g = luigi_tools.parameter.OptionalChoiceParameter(default=None, choices=["a", "b"])
                 expected_a = luigi.IntParameter(default=1)
                 expected_b = luigi.FloatParameter(default=1.5)
                 expected_c = luigi.NumericalParameter(
@@ -88,8 +90,12 @@ def test_optional_parameter(luigi_tools_working_directory):
                 )
                 expected_d = luigi_tools.parameter.RatioParameter(default=0.5)
                 expected_e = luigi.Parameter(default=None)
+                expected_f = luigi.ListParameter(default=None)
+                expected_g = luigi.ChoiceParameter(default="null", choices=["a", "b", "null"])
 
                 def run(self):
+                    if self.expected_g == "null":
+                        self.expected_g = None
                     print(
                         "self.a =",
                         self.a,
@@ -101,18 +107,27 @@ def test_optional_parameter(luigi_tools_working_directory):
                         self.d,
                         "self.e =",
                         self.e,
+                        "self.f =",
+                        self.f,
+                        "self.g =",
+                        self.g,
                     )
                     assert self.a == self.expected_a
                     assert self.b == self.expected_b
                     assert self.c == self.expected_c
                     assert self.d == self.expected_d
                     assert self.e == self.expected_e
+                    assert self.f == self.expected_f
+                    assert self.g == self.expected_g
                     create_empty_file(self.output().path)
 
                 def output(self):
                     return luigi.LocalTarget(
                         luigi_tools_working_directory
-                        / f"test_optional_parameter_{self.a}_{self.b}_{self.c}_{self.d}_{self.e}.test"
+                        / (
+                            "test_optional_parameter_"
+                            f"{self.a}_{self.b}_{self.c}_{self.d}_{self.e}_{self.f}_{self.g}.test"
+                        )
                     )
 
             return TaskOptionalParameter
@@ -130,6 +145,8 @@ def test_optional_parameter(luigi_tools_working_directory):
                 "c": "null",
                 "d": "null",
                 "e": "null",
+                "f": "null",
+                "g": "null",
             }
         }
     )
@@ -142,6 +159,8 @@ def test_optional_parameter(luigi_tools_working_directory):
                 expected_c=None,
                 expected_d=None,
                 expected_e=None,
+                expected_f=None,
+                expected_g="null",
             )
         ],
         local_scheduler=True,
@@ -151,15 +170,12 @@ def test_optional_parameter(luigi_tools_working_directory):
         {
             "TaskOptionalParameter": {
                 "a": "0",
-                "expected_a": "0",
                 "b": "0.7",
-                "expected_b": "0.7",
                 "c": "0.8",
-                "expected_c": "0.8",
                 "d": "0.9",
-                "expected_d": "0.9",
                 "e": "1",
-                "expected_e": "1",
+                "f": "[1, 2]",
+                "g": "b",
             }
         }
     )
@@ -172,6 +188,8 @@ def test_optional_parameter(luigi_tools_working_directory):
                 expected_c=0.8,
                 expected_d=0.9,
                 expected_e=1,
+                expected_f=[1, 2],
+                expected_g="b",
             )
         ],
         local_scheduler=True,
@@ -186,7 +204,7 @@ def test_optional_parameter(luigi_tools_working_directory):
     )
     task = factory()
     with pytest.raises(ValueError):
-        assert luigi.build([task(expected_a="not numerical")], local_scheduler=True)
+        assert luigi.build([task()], local_scheduler=True)
 
     set_luigi_config(
         {
@@ -197,7 +215,7 @@ def test_optional_parameter(luigi_tools_working_directory):
     )
     task = factory()
     with pytest.raises(ValueError):
-        assert luigi.build([task(expected_b="not numerical")], local_scheduler=True)
+        assert luigi.build([task()], local_scheduler=True)
 
     set_luigi_config(
         {
@@ -208,7 +226,7 @@ def test_optional_parameter(luigi_tools_working_directory):
     )
     task = factory()
     with pytest.raises(ValueError):
-        assert luigi.build([task(expected_c="not numerical")], local_scheduler=True)
+        assert luigi.build([task()], local_scheduler=True)
 
     set_luigi_config(
         {
@@ -219,7 +237,29 @@ def test_optional_parameter(luigi_tools_working_directory):
     )
     task = factory()
     with pytest.raises(ValueError):
-        assert luigi.build([task(expected_d="not numerical")], local_scheduler=True)
+        assert luigi.build([task()], local_scheduler=True)
+
+    set_luigi_config(
+        {
+            "TaskOptionalParameter": {
+                "f": "not list",
+            }
+        }
+    )
+    task = factory()
+    with pytest.raises(ValueError):
+        assert luigi.build([task()], local_scheduler=True)
+
+    set_luigi_config(
+        {
+            "TaskOptionalParameter": {
+                "g": "not dict",
+            }
+        }
+    )
+    task = factory()
+    with pytest.raises(ValueError):
+        assert luigi.build([task()], local_scheduler=True)
 
     set_luigi_config()
 

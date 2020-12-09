@@ -125,6 +125,18 @@ class OptionalRatioParameter(OptionalParameter, RatioParameter):
     expected_type = float
 
 
+class OptionalChoiceParameter(OptionalParameter, luigi.ChoiceParameter):
+    """Class to parse optional choice parameters."""
+
+    expected_type = str
+
+
+class OptionalListParameter(OptionalParameter, luigi.ListParameter):
+    """Class to parse optional list parameters."""
+
+    expected_type = tuple
+
+
 class BoolParameter(luigi.BoolParameter):
     """Class to parse boolean parameters and set explicit parsing when default is True."""
 
