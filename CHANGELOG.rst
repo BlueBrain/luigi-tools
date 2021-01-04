@@ -1,6 +1,17 @@
 Changelog
 =========
 
+Version 0.0.5
+-------------
+
+- Set default value of OutputLocalTarget.__init__.create_parent() parameter to True
+- Improve luigi config files in tests
+
+Version 0.0.4
+-------------
+
+- Add new optional parameters and improve OutputLocalTarget
+
 Version 0.0.3
 -------------
 
