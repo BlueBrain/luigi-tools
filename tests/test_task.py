@@ -125,7 +125,7 @@ def test_copy_params(tmpdir):
         def output(self):
             return luigi.LocalTarget("not_existing_file")
 
-    set_luigi_config(
+    with set_luigi_config(
         {
             "TaskWithListDictParams": {
                 "a": "[1, 2]",
@@ -138,8 +138,8 @@ def test_copy_params(tmpdir):
                 "b_copy": json.dumps({"attr1": 1, "attr2": 2}),
             },
         }
-    )
-    assert luigi.build([TaskCopyListDictParams()], local_scheduler=True)
+    ):
+        assert luigi.build([TaskCopyListDictParams()], local_scheduler=True)
 
 
 @pytest.mark.filterwarnings("ignore::UserWarning:luigi.parameter")
@@ -293,7 +293,7 @@ def test_copy_params_with_globals(luigi_tools_working_directory):
         def output(self):
             return luigi.LocalTarget("not_existing_file")
 
-    set_luigi_config(
+    with set_luigi_config(
         {
             "TaskG": {
                 "g": "new_value",
@@ -303,10 +303,10 @@ def test_copy_params_with_globals(luigi_tools_working_directory):
                 "h": "h_from_cfg",
             },
         }
-    )
-    with pytest.raises(AssertionError):
-        # The workflow fails because TaskG().g == "another_new_value" != "new_value"
-        assert luigi.build([TaskH()], local_scheduler=True)
+    ):
+        with pytest.raises(AssertionError):
+            # The workflow fails because TaskG().g == "another_new_value" != "new_value"
+            assert luigi.build([TaskH()], local_scheduler=True)
 
     # Compare with luigi.util.inherits
     class TaskI(luigi.Task):
@@ -339,7 +339,7 @@ def test_copy_params_with_globals(luigi_tools_working_directory):
         def output(self):
             return luigi.LocalTarget("not_existing_file")
 
-    set_luigi_config(
+    with set_luigi_config(
         {
             "TaskI": {
                 "i": "new_value",
@@ -349,10 +349,10 @@ def test_copy_params_with_globals(luigi_tools_working_directory):
                 "j": "j_from_cfg",
             },
         }
-    )
-    # The workflow now succeeds because TaskI().i == "new_value" and
-    # TaskJ().i == "another_new_value"
-    assert luigi.build([TaskJ()], local_scheduler=True)
+    ):
+        # The workflow now succeeds because TaskI().i == "new_value" and
+        # TaskJ().i == "another_new_value"
+        assert luigi.build([TaskJ()], local_scheduler=True)
 
     # Test with parameters that are serialized to generate the task ID
     class GlobalParamTaskWithListDictParams(luigi_tools.task.GlobalParamMixin, luigi.Task):
@@ -387,7 +387,7 @@ def test_copy_params_with_globals(luigi_tools_working_directory):
         def output(self):
             return luigi.LocalTarget("not_existing_file")
 
-    set_luigi_config(
+    with set_luigi_config(
         {
             "GlobalParamTaskWithListDictParams": {
                 "a": "[1, 2]",
@@ -398,11 +398,11 @@ def test_copy_params_with_globals(luigi_tools_working_directory):
                 "b_new": json.dumps({"attr1": 1, "attr2": 2}),
             },
         }
-    )
-    assert luigi.build(
-        [GlobalParamTaskWithListDictParams(), GlobalParamTaskCopyListDictParams()],
-        local_scheduler=True,
-    )
+    ):
+        assert luigi.build(
+            [GlobalParamTaskWithListDictParams(), GlobalParamTaskCopyListDictParams()],
+            local_scheduler=True,
+        )
 
 
 def test_forceable_tasks(tmpdir, TasksFixture):

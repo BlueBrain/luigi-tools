@@ -30,16 +30,8 @@ def luigi_tools_working_directory(tmp_working_dir, luigi_tools_params):
     params = luigi_tools_params
 
     # Set config
-    luigi_config, configfile = set_luigi_config(params)
-
-    yield tmp_working_dir
-
-    # Reset luigi config
-    luigi_config.clear()
-
-    # Remove config file
-    if os.path.exists(configfile):
-        os.remove(configfile)
+    with set_luigi_config(params):
+        yield tmp_working_dir
 
 
 @pytest.fixture

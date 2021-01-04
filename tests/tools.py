@@ -45,24 +45,36 @@ def export_config(params, filepath):
         params.write(configfile)
 
 
-def set_luigi_config(params=None):
-    configfile = "luigi.cfg"
+class set_luigi_config:
+    """Context manager to set current luigi config."""
 
-    # Reset luigi config
-    luigi_config = luigi.configuration.get_config()
-    luigi_config.clear()
+    def __init__(self, params=None):
+        self.params = params
+        self.luigi_config = luigi.configuration.get_config()
 
-    # Remove config file
-    if os.path.exists(configfile):
-        os.remove(configfile)
+    def __enter__(self):
+        self.configfile = "luigi.cfg"
 
-    # Export config
-    if params is not None:
-        export_config(params, configfile)
+        # Reset luigi config
+        self.luigi_config.clear()
 
-        # Set current config in luigi
-        luigi_config.read(configfile)
-    else:
-        configfile = None
+        # Remove config file
+        if os.path.exists(self.configfile):
+            os.remove(self.configfile)
 
-    return luigi_config, configfile
+        # Export config
+        if self.params is not None:
+            export_config(self.params, self.configfile)
+
+            # Set current config in luigi
+            self.luigi_config.read(self.configfile)
+        else:
+            self.configfile = None
+
+    def __exit__(self, *args):
+        # Remove config file
+        if self.configfile is not None and os.path.exists(self.configfile):
+            os.remove(self.configfile)
+
+        # Reset luigi config
+        self.luigi_config.clear()
