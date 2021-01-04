@@ -106,5 +106,11 @@ def test_output_target(tmpdir):
         auto_target = luigi_tools.target.OutputLocalTarget("test_file", create_parent=True)
         assert auto_target.pathlib_path.parent.is_dir()
         assert not auto_target.pathlib_path.exists()
+
+        not_auto_target = luigi_tools.target.OutputLocalTarget(
+            "test_dir/test_file", create_parent=False
+        )
+        assert not not_auto_target.pathlib_path.parent.exists()
+        assert not not_auto_target.pathlib_path.exists()
     finally:
         luigi_tools.target.OutputLocalTarget.set_default_prefix(current_prefix)

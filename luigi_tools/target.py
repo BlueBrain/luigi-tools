@@ -8,7 +8,10 @@ import luigi
 class OutputLocalTarget(luigi.LocalTarget):
     """A target that adds a prefix before the given path.
 
-    If ``prefix`` is not given, the current working directory is taken.
+    Args:
+        prefix (str): The prefix to use. If not given, the current working directory is taken.
+        create_parent (bool): If set to ``True``, the parent directory is automatically
+            created.
 
     This class can be subclassed to easily create an output directory tree.
 
@@ -79,7 +82,7 @@ class OutputLocalTarget(luigi.LocalTarget):
 
     _prefix = None
 
-    def __init__(self, *args, prefix=None, create_parent=False, **kwargs):
+    def __init__(self, *args, prefix=None, create_parent=True, **kwargs):
         super().__init__(*args, **kwargs)
         self._reset_prefix(self, prefix)
         if create_parent:
