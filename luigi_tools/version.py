@@ -1,2 +1,2 @@
 """Package version."""
-VERSION = "0.0.5"  # pragma: no cover
+VERSION = "0.0.6.dev0"  # pragma: no cover

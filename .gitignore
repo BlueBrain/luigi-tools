@@ -10,3 +10,4 @@ dist
 doc/build
 doc/source/generated
 reports
+.vscode

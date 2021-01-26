@@ -619,3 +619,44 @@ def test_LogTargetMixin(tmpdir, caplog):
         ("luigi_tools.task", 10, "Atribute: e == e"),
         ("luigi_tools.task", 10, f"Output of TaskE task: {tmpdir / 'test_e'}"),
     ]
+
+
+def test_remove_corrupted_output(tmpdir, caplog):
+    class TaskToFail(luigi_tools.task.RemoveCorruptedOutputMixin, luigi.Task):
+        """A Task that's expected to fail and create incomplete/wrong output."""
+
+        def output(self):
+            return luigi.LocalTarget(tmpdir / "matrix.dat")
+
+        def run(self):
+            f_path = self.output().path
+            with open(f_path, "w") as f_handle:
+                for idx in range(10):
+                    f_handle.write(f"{idx}\n")
+                    if idx >= 5:
+                        raise RuntimeError("something unexpected happened!")
+
+    task_instance = TaskToFail(clean_failed=True)
+    try:
+        caplog.clear()
+        caplog.set_level(logging.DEBUG)
+        luigi.build([task_instance], local_scheduler=True)
+    except RuntimeError:
+        print("Task is failed as expected.")
+
+    res = [i for i in caplog.record_tuples if i[0] == "luigi_tools.util"]
+    assert res == [
+        ("luigi_tools.util", 10, f"Removing {tmpdir / 'matrix.dat'}"),
+    ]
+
+    assert not (tmpdir / "matrix.dat").exists()
+
+    task_instance.clean_failed = False
+    try:
+        luigi.build([task_instance], local_scheduler=True)
+    except RuntimeError:
+        print("Task is failed as expected.")
+
+    with open(tmpdir / "matrix.dat", "r") as f_handle:
+        matrix_values = f_handle.read().splitlines()
+        assert len(matrix_values) == 6

@@ -26,6 +26,10 @@ def target_remove(target, *args, **kwargs):
     """Remove a given target by calling its 'exists()' and 'remove()' methods."""
     try:
         if target.exists():
+            try:
+                L.debug("Removing %s", target.path)
+            except AttributeError:  # pragma: no cover
+                pass
             target.remove()
     except AttributeError as e:
         raise AttributeError("The target must have 'exists()' and 'remove()' methods") from e

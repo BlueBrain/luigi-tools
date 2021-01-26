@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.0.6
+-------------
+
+- Introducing RemoveCorruptedOutputMixin
+
 Version 0.0.5
 -------------
 

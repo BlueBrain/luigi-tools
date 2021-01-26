@@ -125,6 +125,31 @@ class GlobalParamMixin:
         return super().__setattr__(name, value)
 
 
+class RemoveCorruptedOutputMixin:
+    """Mixin used to remove incomplete outputs of a failed Task.
+
+    The clean_failed parameter must be set True to enable this feature.
+    """
+
+    clean_failed = luigi.BoolParameter(
+        significant=False,
+        default=False,
+        description="Trigger to remove the outputs of the failed tasks.",
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        event_handler = super().event_handler
+
+        # pylint: disable=unused-variable, unused-argument
+        @event_handler(luigi.Event.FAILURE)
+        def remove_all_output(self, exception):
+            class_name = self.__class__.__name__
+            if self.clean_failed:
+                L.debug("%s failed! Cleaning the targets...", class_name)
+                apply_over_outputs(self, target_remove)
+
+
 class ParamRef:
     """Class to store parameter reference information."""
 
