@@ -358,8 +358,8 @@ def test_copy_params_with_globals(luigi_tools_working_directory):
     class GlobalParamTaskWithListDictParams(luigi_tools.task.GlobalParamMixin, luigi.Task):
         """"""
 
-        a = luigi.ListParameter(description="a in GlobalParamTaskWithListDictParams")
-        b = luigi.DictParameter(description="b in GlobalParamTaskWithListDictParams")
+        a = luigi.ListParameter(default="a in GlobalParamTaskWithListDictParams")
+        b = luigi.DictParameter(default="b in GlobalParamTaskWithListDictParams")
 
         def run(self):
             assert self.a == (1, 2)
@@ -375,8 +375,8 @@ def test_copy_params_with_globals(luigi_tools_working_directory):
     class GlobalParamTaskCopyListDictParams(luigi_tools.task.GlobalParamMixin, luigi.Task):
         """"""
 
-        a_new = luigi.ListParameter(description="a in GlobalParamTaskCopyListDictParams")
-        b_new = luigi.DictParameter(description="b in GlobalParamTaskCopyListDictParams")
+        a_new = luigi.ListParameter(default="a in GlobalParamTaskCopyListDictParams")
+        b_new = luigi.DictParameter(default="b in GlobalParamTaskCopyListDictParams")
 
         def run(self):
             assert self.a_new == (1, 2)
@@ -403,6 +403,42 @@ def test_copy_params_with_globals(luigi_tools_working_directory):
             [GlobalParamTaskWithListDictParams(), GlobalParamTaskCopyListDictParams()],
             local_scheduler=True,
         )
+
+    class NotComparable:
+        def __eq__(self, other):
+            raise TypeError(f"Can't compare {self.__class__} with {type(other)}")
+
+    class GlobalParamTaskSetGetAttr(luigi_tools.task.GlobalParamMixin, luigi.Task):
+        a = luigi.ListParameter(default="a in GlobalParamTaskSetGetAttr")
+        b = None
+        c = 1
+
+        def run(self):
+            assert self.a == "a in GlobalParamTaskSetGetAttr"
+            self.a = NotComparable()
+            assert isinstance(self.a, NotComparable)
+            self.a = "a in GlobalParamTaskSetGetAttr"
+            assert self.a == "a in GlobalParamTaskSetGetAttr"
+
+            assert self.b is None
+            self.b = NotComparable()
+            assert isinstance(self.b, NotComparable)
+            self.b = None
+            assert self.b is None
+
+            assert self.c == 1
+            self.c = NotComparable()
+            assert isinstance(self.c, NotComparable)
+            self.c = 1
+            assert self.c == 1
+
+        def output(self):
+            return luigi.LocalTarget("not_existing_file")
+
+    assert luigi.build(
+        [GlobalParamTaskSetGetAttr()],
+        local_scheduler=True,
+    )
 
 
 def test_forceable_tasks(tmpdir, TasksFixture):
