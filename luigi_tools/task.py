@@ -99,7 +99,7 @@ class GlobalParamMixin:
     def __getattribute__(self, name):
         """Get the attribute value and get it from the linked parameter is the value is None."""
         tmp = super().__getattribute__(name)
-        if tmp != _no_default_value:
+        if not isinstance(tmp, str) or tmp != _no_default_value:
             return tmp
         if hasattr(self, "_global_params"):
             global_param = self._global_params.get(name)
@@ -115,7 +115,7 @@ class GlobalParamMixin:
             global_params = self._global_params
         except AttributeError:
             global_params = {}
-        if value == _no_default_value and name in global_params:
+        if name in global_params and isinstance(value, str) and value == _no_default_value:
             L.warning(
                 "The Parameter '%s' of the task '%s' is set to None, thus the global "
                 "value will be taken frow now on",
