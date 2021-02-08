@@ -35,6 +35,7 @@ setup(
     packages=find_packages(exclude=["tests"]),
     python_requires=">=3.6",
     install_requires=reqs,
+    extras_require={"graphviz": ["graphviz"]},
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Intended Audience :: Education",

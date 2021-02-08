@@ -1,18 +1,18 @@
 """Tests for luigi tools."""
-import os
+from pathlib import Path
 
 import luigi
-from luigi.parameter import _no_value as PARAM_NO_VALUE
 import pytest
+from luigi.parameter import _no_value as PARAM_NO_VALUE
 
 import luigi_tools.task
 import luigi_tools.target
 import luigi_tools.util
 
-from .tools import check_empty_file
-from .tools import check_not_empty_file
-from .tools import create_empty_file
 from .tools import create_not_empty_file
+
+
+DATA = Path(__file__).parent / "data"
 
 
 def test_target_remove(tmpdir):
@@ -23,7 +23,7 @@ def test_target_remove(tmpdir):
             for i in luigi.task.flatten(self.output()):
                 i.makedirs()
 
-            os.makedirs(self.output()[0].path)
+            Path(self.output()[0].path).mkdir()
             create_not_empty_file(self.output()[0].path + "/file.test")
             create_not_empty_file(self.output()[1].path)
 
@@ -91,6 +91,7 @@ def test_dependency_graph(tmpdir, TasksFixture):
     all_tasks = TasksFixture()
     start = all_tasks.TaskE()
 
+    # Test get_dependency_graph()
     graph = luigi_tools.util.get_dependency_graph(start)
     assert graph == [
         (all_tasks.TaskE(), all_tasks.TaskD()),
@@ -99,6 +100,92 @@ def test_dependency_graph(tmpdir, TasksFixture):
         (all_tasks.TaskD(), all_tasks.TaskC()),
         (all_tasks.TaskC(), all_tasks.TaskA()),
     ]
+
+    # Test graphviz_dependency_graph()
+    dot = luigi_tools.util.graphviz_dependency_graph(graph)
+    assert dot.body == [
+        "\tTaskE [color=red penwidth=1.5]",
+        "\tTaskD",
+        "\tTaskE -> TaskD",
+        "\tTaskB",
+        "\tTaskD -> TaskB",
+        "\tTaskA",
+        "\tTaskB -> TaskA",
+        "\tTaskC",
+        "\tTaskD -> TaskC",
+        "\tTaskA",
+        "\tTaskC -> TaskA",
+    ]
+    assert dot.node_attr == {
+        "shape": "box",
+        "fontsize": "9",
+        "height": "0.25",
+        "fontname": '"Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans"',
+        "style": "setlinewidth(0.5),filled",
+        "fillcolor": "white",
+    }
+    assert dot.edge_attr == {"arrowsize": "0.5", "style": "setlinewidth(0.5)"}
+
+    # Test graphviz_dependency_graph() with custom attributes
+    from graphviz import Digraph
+
+    dot_with_attrs = luigi_tools.util.graphviz_dependency_graph(
+        graph,
+        graph_attrs={"bgcolor": "red"},
+        node_attrs={"fontsize": "10", "height": "0.5"},
+        edge_attrs={"arrowsize": "0.75"},
+        root_attrs={"color": "blue"},
+        task_names={all_tasks.TaskD(): "custom_name"},
+        graphviz_class=Digraph,
+        node_kwargs={all_tasks.TaskA(): {"custom_attr": "custom value"}},
+        edge_kwargs={(all_tasks.TaskB(), all_tasks.TaskA()): {"label": "custom label"}},
+    )
+    assert dot_with_attrs.body == [
+        "\tTaskE [color=blue penwidth=1.5]",
+        "\tcustom_name",
+        "\tTaskE -> custom_name",
+        "\tTaskB",
+        "\tcustom_name -> TaskB",
+        '\tTaskA [custom_attr="custom value"]',
+        '\tTaskB -> TaskA [label="custom label"]',
+        "\tTaskC",
+        "\tcustom_name -> TaskC",
+        '\tTaskA [custom_attr="custom value"]',
+        "\tTaskC -> TaskA",
+    ]
+    assert dot_with_attrs.node_attr == {
+        "shape": "box",
+        "fontsize": "10",
+        "height": "0.5",
+        "fontname": '"Vera Sans, DejaVu Sans, Liberation Sans, Arial, Helvetica, sans"',
+        "style": "setlinewidth(0.5),filled",
+        "fillcolor": "white",
+    }
+    assert dot_with_attrs.edge_attr == {"arrowsize": "0.75", "style": "setlinewidth(0.5)"}
+
+    # Test graphviz_dependency_graph() with empty graph
+    with pytest.raises(ValueError):
+        luigi_tools.util.graphviz_dependency_graph([])
+
+    # Test render_dependency_graph()
+    output_file = Path(tmpdir / "test_dependency_graph.png")
+    luigi_tools.util.render_dependency_graph(
+        dot,
+        str(output_file),
+    )
+
+    assert output_file.exists()
+
+    # Test render_dependency_graph() with given format
+    output_file = Path(tmpdir / "test_dependency_graph_format.pdf")
+    luigi_tools.util.render_dependency_graph(
+        dot,
+        str(output_file),
+        format="png",
+    )
+
+    assert not output_file.exists()
+    assert output_file.with_suffix(".png").exists()
 
 
 def test_param_repr():

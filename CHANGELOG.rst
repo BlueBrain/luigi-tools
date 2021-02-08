@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.0.7
+-------------
+
+- Add dependency graph rendering with GraphViz
+
 Version 0.0.6
 -------------
 

@@ -81,6 +81,7 @@ autodoc_default_options = {"members": True, "show-inheritance": True}
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
+    "graphviz": ("https://graphviz.readthedocs.io/en/stable", None),
     "luigi": ("https://luigi.readthedocs.io/en/stable", None),
 }
 
