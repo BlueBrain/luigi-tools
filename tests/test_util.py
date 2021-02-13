@@ -87,18 +87,17 @@ def test_apply_over_outputs():
     }
 
 
-def test_dependency_graph(tmpdir, TasksFixture):
-    all_tasks = TasksFixture()
-    start = all_tasks.TaskE()
+def test_dependency_graph(tmpdir, task_collection):
+    start = task_collection.TaskE()
 
     # Test get_dependency_graph()
     graph = luigi_tools.util.get_dependency_graph(start)
     assert graph == [
-        (all_tasks.TaskE(), all_tasks.TaskD()),
-        (all_tasks.TaskD(), all_tasks.TaskB()),
-        (all_tasks.TaskB(), all_tasks.TaskA()),
-        (all_tasks.TaskD(), all_tasks.TaskC()),
-        (all_tasks.TaskC(), all_tasks.TaskA()),
+        (task_collection.TaskE(), task_collection.TaskD()),
+        (task_collection.TaskD(), task_collection.TaskB()),
+        (task_collection.TaskB(), task_collection.TaskA()),
+        (task_collection.TaskD(), task_collection.TaskC()),
+        (task_collection.TaskC(), task_collection.TaskA()),
     ]
 
     # Test graphviz_dependency_graph()
@@ -135,10 +134,10 @@ def test_dependency_graph(tmpdir, TasksFixture):
         node_attrs={"fontsize": "10", "height": "0.5"},
         edge_attrs={"arrowsize": "0.75"},
         root_attrs={"color": "blue"},
-        task_names={all_tasks.TaskD(): "custom_name"},
+        task_names={task_collection.TaskD(): "custom_name"},
         graphviz_class=Digraph,
-        node_kwargs={all_tasks.TaskA(): {"custom_attr": "custom value"}},
-        edge_kwargs={(all_tasks.TaskB(), all_tasks.TaskA()): {"label": "custom label"}},
+        node_kwargs={task_collection.TaskA(): {"custom_attr": "custom value"}},
+        edge_kwargs={(task_collection.TaskB(), task_collection.TaskA()): {"label": "custom label"}},
     )
     assert dot_with_attrs.body == [
         "\tTaskE [color=blue penwidth=1.5]",

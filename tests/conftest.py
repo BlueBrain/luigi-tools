@@ -35,20 +35,22 @@ def luigi_tools_working_directory(tmp_working_dir, luigi_tools_params):
 
 
 @pytest.fixture
-def TasksFixture(tmpdir):
+def task_collection(tmpdir):
     class TaskClasses:
         """Class with some luigi tasks to test"""
 
         def __init__(self):
             self.tmpdir = tmpdir
             self.reset_classes()
+            self.classes = self._classes()
+            self.targets = self._targets()
+            self.reset_classes()  # Reset again to return classes that are not registered by luigi
 
         def reset_classes(self):
             class TaskA(luigi_tools.task.WorkflowTask):
                 """"""
 
                 counter = luigi.IntParameter(default=0)
-                rerun = luigi.BoolParameter()
 
                 def run(self):
                     for i in luigi.task.flatten(self.output()):
@@ -59,9 +61,6 @@ def TasksFixture(tmpdir):
 
             class TaskB(luigi_tools.task.WorkflowTask):
                 """"""
-
-                counter = luigi.IntParameter(default=0)
-                rerun = luigi.BoolParameter()
 
                 def requires(self):
                     return TaskA()
@@ -82,9 +81,6 @@ def TasksFixture(tmpdir):
             class TaskC(luigi_tools.task.WorkflowTask):
                 """"""
 
-                counter = luigi.IntParameter(default=0)
-                rerun = luigi.BoolParameter()
-
                 def requires(self):
                     return TaskA()
 
@@ -101,9 +97,6 @@ def TasksFixture(tmpdir):
             class TaskD(luigi_tools.task.WorkflowTask):
                 """"""
 
-                counter = luigi.IntParameter(default=0)
-                rerun = luigi.BoolParameter()
-
                 def requires(self):
                     return [TaskB(), TaskC()]
 
@@ -119,9 +112,6 @@ def TasksFixture(tmpdir):
 
             class TaskE(luigi_tools.task.WorkflowTask):
                 """"""
-
-                counter = luigi.IntParameter(default=0)
-                rerun = luigi.BoolParameter()
 
                 def requires(self):
                     return TaskD()
@@ -144,10 +134,8 @@ def TasksFixture(tmpdir):
             self.TaskC = TaskC
             self.TaskD = TaskD
             self.TaskE = TaskE
-            self.counter = 0
 
-        @property
-        def classes(self):
+        def _classes(self):
             return [
                 self.TaskA,
                 self.TaskB,
@@ -156,4 +144,10 @@ def TasksFixture(tmpdir):
                 self.TaskE,
             ]
 
-    return TaskClasses
+        def _targets(self):
+            targets = {}
+            for task in self.classes:
+                targets[task.__name__] = task().output()
+            return targets
+
+    return TaskClasses()

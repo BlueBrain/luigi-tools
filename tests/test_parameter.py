@@ -89,7 +89,7 @@ def test_optional_parameter(luigi_tools_working_directory):
                     default=0.75, min_value=0, max_value=1, var_type=float
                 )
                 expected_d = luigi_tools.parameter.RatioParameter(default=0.5)
-                expected_e = luigi.Parameter(default=None)
+                expected_e = luigi.IntParameter(default=None)
                 expected_f = luigi.ListParameter(default=None)
                 expected_g = luigi.ChoiceParameter(default="null", choices=["a", "b", "null"])
 

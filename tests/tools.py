@@ -1,14 +1,20 @@
 """A few helpers for tests"""
 import os
+from pathlib import Path
 
 from configparser import ConfigParser
 
 import luigi.configuration
 
 
+def check_existing_file(filename):
+    """Check if a file exists"""
+    return Path(filename).exists()
+
+
 def create_empty_file(filename):
     """Create an empty file"""
-    with open(filename, "w") as f:
+    with open(filename, "w"):
         pass
 
 
