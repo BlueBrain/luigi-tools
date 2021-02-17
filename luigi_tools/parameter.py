@@ -101,6 +101,12 @@ class OptionalParameter(luigi.OptionalParameter):
             )
 
 
+class OptionalStrParameter(OptionalParameter, luigi.Parameter):
+    """Class to parse optional str parameters."""
+
+    expected_type = str
+
+
 class OptionalIntParameter(OptionalParameter, luigi.IntParameter):
     """Class to parse optional int parameters."""
 
