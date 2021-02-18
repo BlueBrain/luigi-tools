@@ -1,4 +1,5 @@
 """Tests for luigi tools."""
+from configparser import ConfigParser
 from pathlib import Path
 
 import luigi
@@ -10,6 +11,7 @@ import luigi_tools.target
 import luigi_tools.util
 
 from .tools import create_not_empty_file
+from .tools import set_luigi_config
 
 
 DATA = Path(__file__).parent / "data"
@@ -192,3 +194,138 @@ def test_param_repr():
     assert luigi_tools.util._param_repr(None, None) == "(None)"
     assert luigi_tools.util._param_repr("description", None) == "description(None)"
     assert luigi_tools.util._param_repr("description", "default") == "description(default)"
+
+
+class TestRegisterTemplates:
+    @pytest.fixture
+    def Task(self, tmpdir):
+        class Task(luigi.Task):
+            a = luigi.Parameter(default="a")
+            expected_a = luigi.Parameter(default="a")
+
+            def run(self):
+                assert self.a == self.expected_a
+
+            def output(self):
+                return tmpdir / "not_existing_file"
+
+        return Task
+
+    @pytest.fixture
+    def template_dir(self, tmpdir):
+        template_dir = tmpdir / "templates"
+        template_dir.mkdir()
+        config = ConfigParser()
+        config.read_dict({"Task": {"a": "a_from_template"}})
+        with open(template_dir / "template_1.cfg", "w") as f:
+            config.write(f)
+        return str(template_dir)
+
+    def test_cfg_only(self, Task, template_dir):
+        with set_luigi_config(
+            {
+                "Task": {"a": "a_from_cfg"},
+            }
+        ):
+            luigi_tools.util.register_templates(template_dir, "template_1")
+            assert luigi.build([Task(expected_a="a_from_cfg")], local_scheduler=True)
+
+    def test_template_only(self, Task, template_dir):
+        with set_luigi_config(
+            {
+                "Template": {"name": "template_1"},
+            }
+        ):
+            luigi_tools.util.register_templates(template_dir)
+            assert luigi.build([Task(expected_a="a_from_template")], local_scheduler=True)
+
+    def test_template_and_cfg(self, Task, template_dir):
+        with set_luigi_config(
+            {
+                "Template": {"name": "template_1"},
+                "Task": {"a": "a_from_cfg"},
+            }
+        ):
+            luigi_tools.util.register_templates(template_dir)
+            assert luigi.build([Task(expected_a="a_from_cfg")], local_scheduler=True)
+
+    def test_missing_template(self, Task, template_dir):
+        with set_luigi_config(
+            {
+                "Template": {"name": "missing_template"},
+                "Task": {"a": "a_from_cfg"},
+            }
+        ):
+            with pytest.raises(ValueError, match=r"The template .* could not be found\."):
+                luigi_tools.util.register_templates(template_dir)
+
+    def test_template_directory_in_cfg(self, Task, template_dir):
+        with set_luigi_config(
+            {
+                "Template": {
+                    "name": "template_1",
+                    "directory": str(template_dir),
+                },
+                "Task": {"a": "a_from_cfg"},
+            }
+        ):
+            luigi_tools.util.register_templates()
+            assert luigi.build([Task(expected_a="a_from_cfg")], local_scheduler=True)
+
+    def test_template_directory_override(self, Task, template_dir):
+        directory = Path(template_dir)
+        new_directory = directory.with_name("new_templates")
+        directory.rename(new_directory)
+        with set_luigi_config(
+            {
+                "Template": {
+                    "name": "template_1",
+                    "directory": str(new_directory),
+                }
+            }
+        ):
+            luigi_tools.util.register_templates(template_dir)
+            assert luigi.build([Task(expected_a="a_from_template")], local_scheduler=True)
+
+    def test_no_directory(self, Task):
+        with set_luigi_config(
+            {
+                "Template": {"name": "template_name"},
+            }
+        ):
+            msg = (
+                r"A directory must either be given to this function or in the \[Template\] section "
+                r"of the luigi\.cfg file\."
+            )
+            with pytest.raises(ValueError, match=msg):
+                luigi_tools.util.register_templates()
+
+    def test_no_name(self, Task):
+        with set_luigi_config(
+            {
+                "Template": {"directory": "any directory"},
+            }
+        ):
+            msg = (
+                r"A name must either be given to this function or in the \[Template\] section of "
+                r"the luigi\.cfg file\."
+            )
+            with pytest.raises(ValueError, match=msg):
+                luigi_tools.util.register_templates()
+
+    def test_no_hierarchy_end(self, Task, template_dir):
+        # Register the template only
+        luigi_tools.util.register_templates(template_dir, "template_1", hierarchy_end=False)
+
+        # Rename and update the template
+        directory = Path(template_dir)
+        new_directory = directory.with_name("new_templates")
+        new_directory.mkdir()
+        config = ConfigParser()
+        config.read_dict({"Task": {"a": "a_from_2nd_template"}})
+        with open(new_directory / "template_2.cfg", "w") as f:
+            config.write(f)
+
+        # Register the new template and the luigi.cfg file
+        luigi_tools.util.register_templates(new_directory, "template_2")
+        assert luigi.build([Task(expected_a="a_from_2nd_template")], local_scheduler=True)

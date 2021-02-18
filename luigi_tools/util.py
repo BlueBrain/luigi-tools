@@ -227,3 +227,65 @@ def render_dependency_graph(graph, filepath, **kwargs):
         fileformat = match.group(1) or None
     cleanup = kwargs.pop("cleanup", True)
     graph.render(filename=filename, format=fileformat, cleanup=cleanup, **kwargs)
+
+
+def register_templates(directory=None, name=None, hierarchy_end=True):
+    """Add INI templates to the config file list processed by luigi.
+
+    This function should be used before the :class:`luigi.Task` are processed, so it should usually
+    be used in the ``__init__.py`` of your package.
+
+    In order to use a template, a ``Template`` section entry must be added to the luigi.cfg of the
+    project. This section should contain at least one entry with the name of the template to use,
+    and, optionally, another entry with the path to the directory containing the templates, as the
+    following example:
+
+    .. code-block:: INI
+
+        [Template]
+        name = template_name
+        directory = /path/to/the/template/directory
+
+    If the ``directory`` or the ``name`` entries are given in the ``luigi.cfg`` file, they override
+    the arguments given to this function.
+
+    A template file should be similar to a ``luigi.cfg`` file with only the entries for which
+    specific default values should be defined. The file should named according to the template
+    name. For example, the template named ``template_1`` should be a INI file located in the given
+    directory and named ``template_1.cfg``.
+
+    Args:
+        directory (str): Path to the directory containing the template files.
+        name (str): The name of the template to use.
+        hierarchy_end (bool): If set to False, the ``luigi.cfg`` entry is not added after the
+            template entry, so it is possible to combine several templates before processing
+            the ``luigi.cfg`` file.
+    """
+    base_config = luigi.configuration.get_config()
+
+    if "Template" in base_config:
+        template_config = base_config["Template"]
+    else:
+        template_config = {}
+
+    template_path = template_config.get("directory", directory)
+    if template_path is None:
+        raise ValueError(
+            "A directory must either be given to this function or in the [Template] section of "
+            "the luigi.cfg file."
+        )
+    template_path = Path(template_path)
+
+    template_name = template_config.get("name", name)
+    if template_name is None:
+        raise ValueError(
+            "A name must either be given to this function or in the [Template] section of "
+            "the luigi.cfg file."
+        )
+
+    template = (template_path / template_name).with_suffix(".cfg")
+    if not template.exists():
+        raise ValueError(f"The template '{template}' could not be found.")
+    luigi.configuration.add_config_path(template)
+    if hierarchy_end:
+        luigi.configuration.add_config_path("luigi.cfg")
