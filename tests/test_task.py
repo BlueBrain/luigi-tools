@@ -11,13 +11,13 @@ import luigi_tools.target
 import luigi_tools.util
 from luigi_tools.task import DuplicatedParameterError
 from luigi_tools.task import GlobalParameterNoValueError
+from luigi_tools.util import set_luigi_config
 
 from .tools import check_empty_file
 from .tools import check_existing_file
 from .tools import check_not_empty_file
 from .tools import create_empty_file
 from .tools import create_not_empty_file
-from .tools import set_luigi_config
 
 
 @pytest.mark.filterwarnings("ignore::UserWarning:luigi.parameter")

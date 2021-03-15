@@ -1,4 +1,5 @@
 """Tests for luigi tools."""
+import copy
 from configparser import ConfigParser
 from pathlib import Path
 
@@ -9,9 +10,9 @@ from luigi.parameter import _no_value as PARAM_NO_VALUE
 import luigi_tools.task
 import luigi_tools.target
 import luigi_tools.util
+from luigi_tools.util import set_luigi_config
 
 from .tools import create_not_empty_file
-from .tools import set_luigi_config
 
 
 DATA = Path(__file__).parent / "data"
@@ -198,6 +199,15 @@ def test_param_repr():
 
 class TestRegisterTemplates:
     @pytest.fixture
+    def config_reseter(self):
+        cfg_cls = luigi.configuration.cfg_parser.LuigiConfigParser
+        current_config = copy.deepcopy(cfg_cls._config_paths)
+        yield
+        cfg_cls._config_paths = current_config
+        cfg_cls.reload()
+        luigi.configuration.get_config().clear()
+
+    @pytest.fixture
     def Task(self, tmpdir):
         class Task(luigi.Task):
             a = luigi.Parameter(default="a")
@@ -221,7 +231,7 @@ class TestRegisterTemplates:
             config.write(f)
         return str(template_dir)
 
-    def test_cfg_only(self, Task, template_dir):
+    def test_cfg_only(self, Task, template_dir, config_reseter):
         with set_luigi_config(
             {
                 "Task": {"a": "a_from_cfg"},
@@ -230,7 +240,7 @@ class TestRegisterTemplates:
             luigi_tools.util.register_templates(template_dir, "template_1")
             assert luigi.build([Task(expected_a="a_from_cfg")], local_scheduler=True)
 
-    def test_template_only(self, Task, template_dir):
+    def test_template_only(self, Task, template_dir, config_reseter):
         with set_luigi_config(
             {
                 "Template": {"name": "template_1"},
@@ -239,7 +249,7 @@ class TestRegisterTemplates:
             luigi_tools.util.register_templates(template_dir)
             assert luigi.build([Task(expected_a="a_from_template")], local_scheduler=True)
 
-    def test_template_and_cfg(self, Task, template_dir):
+    def test_template_and_cfg(self, Task, template_dir, config_reseter):
         with set_luigi_config(
             {
                 "Template": {"name": "template_1"},
@@ -249,7 +259,7 @@ class TestRegisterTemplates:
             luigi_tools.util.register_templates(template_dir)
             assert luigi.build([Task(expected_a="a_from_cfg")], local_scheduler=True)
 
-    def test_missing_template(self, Task, template_dir):
+    def test_missing_template(self, Task, template_dir, config_reseter):
         with set_luigi_config(
             {
                 "Template": {"name": "missing_template"},
@@ -259,7 +269,7 @@ class TestRegisterTemplates:
             with pytest.raises(ValueError, match=r"The template .* could not be found\."):
                 luigi_tools.util.register_templates(template_dir)
 
-    def test_template_directory_in_cfg(self, Task, template_dir):
+    def test_template_directory_in_cfg(self, Task, template_dir, config_reseter):
         with set_luigi_config(
             {
                 "Template": {
@@ -272,7 +282,7 @@ class TestRegisterTemplates:
             luigi_tools.util.register_templates()
             assert luigi.build([Task(expected_a="a_from_cfg")], local_scheduler=True)
 
-    def test_template_directory_override(self, Task, template_dir):
+    def test_template_directory_override(self, Task, template_dir, config_reseter):
         directory = Path(template_dir)
         new_directory = directory.with_name("new_templates")
         directory.rename(new_directory)
@@ -287,7 +297,7 @@ class TestRegisterTemplates:
             luigi_tools.util.register_templates(template_dir)
             assert luigi.build([Task(expected_a="a_from_template")], local_scheduler=True)
 
-    def test_no_directory(self, Task):
+    def test_no_directory(self, Task, config_reseter):
         with set_luigi_config(
             {
                 "Template": {"name": "template_name"},
@@ -300,7 +310,7 @@ class TestRegisterTemplates:
             with pytest.raises(ValueError, match=msg):
                 luigi_tools.util.register_templates()
 
-    def test_no_name(self, Task):
+    def test_no_name(self, Task, config_reseter):
         with set_luigi_config(
             {
                 "Template": {"directory": "any directory"},
@@ -313,7 +323,7 @@ class TestRegisterTemplates:
             with pytest.raises(ValueError, match=msg):
                 luigi_tools.util.register_templates()
 
-    def test_no_hierarchy_end(self, Task, template_dir):
+    def test_no_hierarchy_end(self, Task, template_dir, config_reseter):
         # Register the template only
         luigi_tools.util.register_templates(template_dir, "template_1", hierarchy_end=False)
 
@@ -329,3 +339,71 @@ class TestRegisterTemplates:
         # Register the new template and the luigi.cfg file
         luigi_tools.util.register_templates(new_directory, "template_2")
         assert luigi.build([Task(expected_a="a_from_2nd_template")], local_scheduler=True)
+
+
+class TestSetLuigiConfig:
+    @pytest.fixture
+    def Task(self, tmpdir):
+        class Task(luigi.Task):
+            a = luigi.Parameter(default="a")
+            expected_a = luigi.Parameter(default="a")
+
+            def run(self):
+                assert self.a == self.expected_a
+
+            def output(self):
+                return tmpdir / "not_existing_file"
+
+        return Task
+
+    def test_defaults(self, Task):
+        assert luigi.build([Task()], local_scheduler=True)
+
+    def test_new_config(self, Task):
+        with set_luigi_config(
+            {
+                "Task": {"a": "a_from_cfg"},
+            }
+        ):
+            assert luigi.build([Task(expected_a="a_from_cfg")], local_scheduler=True)
+
+        failed_task = []
+        exceptions = []
+
+        @Task.event_handler(luigi.Event.FAILURE)
+        def check_exception(task, exception):
+            failed_task.append(str(task))
+            exceptions.append(str(exception))
+
+        with set_luigi_config(
+            {
+                "Task": {"a": "a_from_cfg"},
+            }
+        ):
+            assert not luigi.build([Task(expected_a="different_value")], local_scheduler=True)
+
+        assert failed_task == [str(Task(a="a_from_cfg", expected_a="different_value"))]
+        assert exceptions == [
+            "assert 'a_from_cfg' == 'different_value'\n  - different_value\n  + a_from_cfg"
+        ]
+
+    def test_config_file(self, Task):
+        filename = "test_config_file.cfg"
+        with set_luigi_config(
+            {
+                "Task": {"a": "a_from_cfg"},
+            },
+            filename,
+        ):
+            assert luigi.build([Task(expected_a="a_from_cfg")], local_scheduler=True)
+            assert Path(filename).exists()
+        assert not Path(filename).exists()
+
+    def test_params_ConfigParser(self, Task):
+        params = {
+            "Task": {"a": "a_from_cfg"},
+        }
+        config = ConfigParser()
+        config.read_dict(params)
+        with set_luigi_config(config):
+            assert luigi.build([Task(expected_a="a_from_cfg")], local_scheduler=True)

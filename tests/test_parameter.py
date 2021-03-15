@@ -9,9 +9,9 @@ import luigi_tools.parameter
 import luigi_tools.task
 import luigi_tools.target
 import luigi_tools.util
+from luigi_tools.util import set_luigi_config
 
 from .tools import create_empty_file
-from .tools import set_luigi_config
 
 
 def test_ext_parameter(luigi_tools_working_directory):

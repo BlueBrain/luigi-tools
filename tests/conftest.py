@@ -4,10 +4,9 @@ import luigi
 import pytest
 
 import luigi_tools.task
+from luigi_tools.util import set_luigi_config
 
 from .tools import create_not_empty_file
-from .tools import dict_to_config
-from .tools import set_luigi_config
 
 
 @pytest.fixture(scope="function")
@@ -21,16 +20,13 @@ def tmp_working_dir(tmp_path):
 
 @pytest.fixture
 def luigi_tools_params():
-    return dict_to_config({"TaskA": {"a_cfg": "default_value_in_cfg"}})
+    return {"TaskA": {"a_cfg": "default_value_in_cfg"}}
 
 
 @pytest.fixture
 def luigi_tools_working_directory(tmp_working_dir, luigi_tools_params):
-    # Setup config
-    params = luigi_tools_params
-
     # Set config
-    with set_luigi_config(params):
+    with set_luigi_config(luigi_tools_params):
         yield tmp_working_dir
 
 
