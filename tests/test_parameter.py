@@ -84,6 +84,7 @@ def test_optional_parameter(luigi_tools_working_directory):
                 f = luigi_tools.parameter.OptionalListParameter(default=None)
                 g = luigi_tools.parameter.OptionalChoiceParameter(default=None, choices=["a", "b"])
                 h = luigi_tools.parameter.OptionalStrParameter(default="h")
+                i = luigi_tools.parameter.OptionalBoolParameter(default=None)
                 expected_a = luigi.IntParameter(default=1)
                 expected_b = luigi.FloatParameter(default=1.5)
                 expected_c = luigi.NumericalParameter(
@@ -94,6 +95,7 @@ def test_optional_parameter(luigi_tools_working_directory):
                 expected_f = luigi.ListParameter(default=None)
                 expected_g = luigi.ChoiceParameter(default="null", choices=["a", "b", "null"])
                 expected_h = luigi.Parameter(default="h")
+                expected_i = luigi.BoolParameter(default=None)
 
                 def run(self):
                     if self.expected_g == "null":
@@ -115,6 +117,8 @@ def test_optional_parameter(luigi_tools_working_directory):
                         self.g,
                         "self.h =",
                         self.h,
+                        "self.i =",
+                        self.i,
                     )
                     assert self.a == self.expected_a
                     assert self.b == self.expected_b
@@ -124,6 +128,7 @@ def test_optional_parameter(luigi_tools_working_directory):
                     assert self.f == self.expected_f
                     assert self.g == self.expected_g
                     assert self.h == self.expected_h
+                    assert self.i == self.expected_i
                     create_empty_file(self.output().path)
 
                 def output(self):
@@ -131,7 +136,7 @@ def test_optional_parameter(luigi_tools_working_directory):
                         luigi_tools_working_directory
                         / (
                             "test_optional_parameter_"
-                            "{}_{}_{}_{}_{}_{}_{}_{}.test".format(
+                            "{}_{}_{}_{}_{}_{}_{}_{}_{}.test".format(
                                 self.a,
                                 self.b,
                                 self.c,
@@ -140,6 +145,7 @@ def test_optional_parameter(luigi_tools_working_directory):
                                 self.f,
                                 self.g,
                                 self.h,
+                                self.i,
                             )
                         )
                     )
@@ -162,6 +168,7 @@ def test_optional_parameter(luigi_tools_working_directory):
                 "f": "null",
                 "g": "null",
                 "h": "null",
+                "i": "null",
             }
         }
     ):
@@ -177,6 +184,7 @@ def test_optional_parameter(luigi_tools_working_directory):
                     expected_f=None,
                     expected_g="null",
                     expected_h=None,
+                    expected_i=None,
                 )
             ],
             local_scheduler=True,
@@ -193,6 +201,7 @@ def test_optional_parameter(luigi_tools_working_directory):
                 "f": "[1, 2]",
                 "g": "b",
                 "h": "b",
+                "i": "true",
             }
         }
     ):
@@ -208,6 +217,7 @@ def test_optional_parameter(luigi_tools_working_directory):
                     expected_f=[1, 2],
                     expected_g="b",
                     expected_h="b",
+                    expected_i=True,
                 )
             ],
             local_scheduler=True,
@@ -272,6 +282,17 @@ def test_optional_parameter(luigi_tools_working_directory):
         {
             "TaskOptionalParameter": {
                 "g": "not dict",
+            }
+        }
+    ):
+        task = factory()
+        with pytest.raises(ValueError):
+            assert luigi.build([task()], local_scheduler=True)
+
+    with set_luigi_config(
+        {
+            "TaskOptionalParameter": {
+                "i": "not bool",
             }
         }
     ):

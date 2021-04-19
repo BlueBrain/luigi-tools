@@ -74,7 +74,9 @@ class OptionalParameter(luigi.OptionalParameter):
 
     def parse(self, x):
         """Parse the given value if it is not an empty string, ``None`` or ``'null'``."""
-        if x and x.lower() != "null":
+        if not isinstance(x, str):
+            return x
+        elif x.lower() != "null":
             return self._base_cls.parse(self, x)
         else:
             return None
@@ -105,6 +107,12 @@ class OptionalStrParameter(OptionalParameter, luigi.Parameter):
     """Class to parse optional str parameters."""
 
     expected_type = str
+
+
+class OptionalBoolParameter(OptionalParameter, luigi.BoolParameter):
+    """Class to parse optional bool parameters."""
+
+    expected_type = bool
 
 
 class OptionalIntParameter(OptionalParameter, luigi.IntParameter):
