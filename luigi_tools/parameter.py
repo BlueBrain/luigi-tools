@@ -73,10 +73,10 @@ class OptionalParameter(luigi.OptionalParameter):
         super().__init__(*args, **kwargs)
 
     def parse(self, x):
-        """Parse the given value if it is not an empty string, ``None`` or ``'null'``."""
+        """Parse the given value if it is not an empty string and not equal to ``'null'``."""
         if not isinstance(x, str):
             return x
-        elif x.lower() != "null":
+        elif x and x.lower() != "null":
             return self._base_cls.parse(self, x)
         else:
             return None

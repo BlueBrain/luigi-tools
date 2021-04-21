@@ -160,6 +160,39 @@ def test_optional_parameter(luigi_tools_working_directory):
     with set_luigi_config(
         {
             "TaskOptionalParameter": {
+                "a": "",
+                "b": "",
+                "c": "",
+                "d": "",
+                "e": "",
+                "f": "",
+                "g": "",
+                "h": "",
+                "i": "",
+            }
+        }
+    ):
+        task = factory()
+        assert luigi.build(
+            [
+                task(
+                    expected_a=None,
+                    expected_b=None,
+                    expected_c=None,
+                    expected_d=None,
+                    expected_e=None,
+                    expected_f=None,
+                    expected_g="null",
+                    expected_h=None,
+                    expected_i=None,
+                )
+            ],
+            local_scheduler=True,
+        )
+
+    with set_luigi_config(
+        {
+            "TaskOptionalParameter": {
                 "a": "null",
                 "b": "null",
                 "c": "null",
