@@ -1,12 +1,20 @@
-#!/usr/bin/env python3
+"""This package provides tools to extend the luigi library.
 
-import imp
-import sys
+Copyright 2021 Blue Brain Project / EPFL
 
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+"""
 from setuptools import setup, find_packages
-
-if sys.version_info < (3, 6):
-    sys.exit("Sorry, Python < 3.6 is not supported")
 
 # Read the contents of the README file
 with open("README.rst", encoding="utf-8") as f:
@@ -22,13 +30,22 @@ docs_reqs = [
     "sphinx-bluebrain-theme",
 ]
 
-VERSION = imp.load_source("", "luigi_tools/version.py").VERSION
+version_template = '''"""The package version.
+
+This file was generated automatically, do not change it.
+"""
+__version__ = "{version}"
+'''
 
 setup(
     name="luigi-tools",
     author="bbp-ou-nse",
     author_email="bbp-ou-nse@groupes.epfl.ch",
-    version=VERSION,
+    use_scm_version={
+        "write_to": "luigi_tools/version.py",
+        "write_to_template": version_template,
+        "local_scheme": "no-local-version",
+    },
     description="Tools to work with luigi",
     long_description=README,
     long_description_content_type="text/x-rst",
@@ -37,7 +54,7 @@ setup(
         "Tracker": "https://github.com/BlueBrain/luigi-tools/issues",
         "Source": "https://github.com/BlueBrain/luigi-tools",
     },
-    license="BBP-internal-confidential",
+    license="Apache License, Version 2.0",
     packages=find_packages(exclude=["tests"]),
     python_requires=">=3.6",
     install_requires=reqs,
@@ -46,7 +63,7 @@ setup(
         "docs": docs_reqs,
     },
     classifiers=[
-        "Development Status :: 2 - Pre-Alpha",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Education",
         "Intended Audience :: Science/Research",
         "Programming Language :: Python",
