@@ -1,11 +1,10 @@
-# Contributing to the Blue Brain Nexus Platform
+# Contributing
 
-We would love for you to contribute to the Blue Brain Nexus Platform and help make it even better
+We would love for you to contribute to the luigi-tools package and help make it even better
 than it is today! As a contributor, here are the guidelines we would like you to follow:
- - [Issues and Bugs](#issue)
- - [Feature Requests](#feature)
- - [Submission Guidelines](#submit)
- - [Signing the CLA](#cla)
+* [Issues and Bugs](#issue)
+* [Feature Requests](#feature)
+* [Submission Guidelines](#submit)
 
 ## <a name="issue"></a> Got a question or found a bug?
 
@@ -43,52 +42,61 @@ preferably be in touch with you to gather information.
 When you wish to contribute to the code base, please consider the following guidelines:
 * Make a [fork](https://guides.github.com/activities/forking/) of this repository.
 * Make your changes in your fork, in a new git branch:
-     ```shell
-     git checkout -b my-fix-branch master
-     ```
+  ```shell
+  git checkout -b my-fix-branch main
+  ```
+
 * Create your patch, **including appropriate test cases** (please note that the coverage must
   always be equal to 100%).
 * Run the full test suite, and ensure that all tests pass.
 * Commit your changes using a descriptive commit message.
-     ```shell
-     git commit -a
-     ```
-  Note: the optional commit `-a` command line option will automatically “add” and “rm” edited files.
+  ```shell
+  git commit -a
+  ```
+
+  Note: the optional commit `-a` command line option will automatically **add** and **rm** edited
+  files.
 * Push your branch to GitHub:
-    ```shell
-    git push origin my-fix-branch
-    ```
-* In GitHub, send a Pull Request to the `master` branch of the upstream repository of the relevant
+  ```shell
+  git push origin my-fix-branch
+  ```
+
+* In GitHub, send a Pull Request to the `main` branch of the upstream repository of the relevant
   component.
 * If we suggest changes then:
   * Make the required updates.
   * Re-run the test suites to ensure tests are still passing.
   * Rebase your branch and force push to your GitHub repository (this will update your Pull Request):
+
     ```shell
-    git rebase master -i
+    git rebase main -i
     git push -f
     ```
-That’s it! Thank you for your contribution!
+
+That's it! Thank you for your contribution!
 
 #### After your pull request is merged
 
 After your pull request is merged, you can safely delete your branch and pull the changes from the
 main (upstream) repository:
 * Delete the remote branch on GitHub either through the GitHub web UI or your local shell as follows:
-    ```shell
-    git push origin --delete my-fix-branch
-    ```
-* Check out the master branch:
-    ```shell
-    git checkout master -f
-    ```
+  ```shell
+  git push origin --delete my-fix-branch
+  ```
+
+* Check out the main branch:
+  ```shell
+  git checkout main
+  ```
+
 * Delete the local branch:
-    ```shell
-    git branch -D my-fix-branch
-    ```
-* Update your master with the latest upstream version:
-    ```shell
-    git pull --ff upstream master
-    ```
+  ```shell
+  git branch -D my-fix-branch
+  ```
+
+* Update your main with the latest upstream version:
+  ```shell
+  git pull --ff upstream main
+  ```
 
 [github]: https://github.com/BlueBrain/luigi-tools

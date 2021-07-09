@@ -1,4 +1,4 @@
-.. include:: ../../README.rst
+.. mdinclude:: ../../README.md
 
 
 .. toctree::
@@ -8,3 +8,4 @@
    Home <self>
    api
    changelog
+   contributing
