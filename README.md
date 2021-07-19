@@ -34,7 +34,7 @@ The [Luigi][luigi_url] package describes itself as follow:
 > jobs. It handles dependency resolution, workflow management, visualization, handling failures,
 > command line integration, and much more.
 
-The [luigi-tools][luigi_tools_url] package is supposed to make luigi easier for developpers.
+The [luigi-tools][luigi_tools_url] package is supposed to make luigi easier for developers.
 The following presents a few examples of the main features of the package.
 
 ### Boolean parameter
@@ -96,7 +96,7 @@ sometimes it is desirable to overwrite a former result, especially during the de
 For this reason, a mixin that adds a `--rerun` parameter to a task is introduced. When this
 parameter is set to `True`, all the targets of this task are deleted as well as the targets of the
 tasks that depend on this one. So when all the tasks that are related to this task will run again.
-As for any mixin, it must be go on the left of the `Task` class in the inheritence list.
+As for any mixin, it must be go on the left of the `Task` class in the inheritance list.
 
 ```python
 from luigi.task import Task
@@ -117,7 +117,7 @@ luigi -m my_module another_task_that_depends_on_mytask --MyTask-rerun
 
 ### Copy parameters
 
-In some situations, several tasks have a few parameters in common. This can lead to painfull
+In some situations, several tasks have a few parameters in common. This can lead to painful
 situations, and luigi provides some dedicated tools to deal with this,
 [as described here](https://luigi.readthedocs.io/en/stable/api/luigi.util.html?highlight=inherits#using-inherits-and-requires-to-ease-parameter-pain).
 Nevertheless, the tools provided by [Luigi][luigi_url] have a major drawback: all the tasks with
@@ -213,7 +213,7 @@ If `TaskB` did not inherit from `GlobalParamMixin`, then it would have the value
 ### Dependency graph
 
 The `luigi-tools` package provides several functions to get the dependency graph of a task and to
-render it using GraphViz. This can be very usefull to show how the tasks of a workflow are
+render it using GraphViz. This can be very useful to show how the tasks of a workflow are
 organized.
 
 
