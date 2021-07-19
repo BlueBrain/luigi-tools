@@ -17,7 +17,7 @@ Copyright 2021 Blue Brain Project / EPFL
 from setuptools import setup, find_packages
 
 # Read the contents of the README file
-with open("README.rst", encoding="utf-8") as f:
+with open("README.md", encoding="utf-8") as f:
     README = f.read()
 
 reqs = [
@@ -39,8 +39,7 @@ __version__ = "{version}"
 
 setup(
     name="luigi-tools",
-    author="bbp-ou-nse",
-    author_email="bbp-ou-nse@groupes.epfl.ch",
+    author="Blue Brain Project, EPFL",
     use_scm_version={
         "write_to": "luigi_tools/version.py",
         "write_to_template": version_template,
@@ -48,7 +47,7 @@ setup(
     },
     description="Tools to work with luigi",
     long_description=README,
-    long_description_content_type="text/x-rst",
+    long_description_content_type="text/x-md",
     url="https://bbpteam.epfl.ch/documentation/projects/luigi-tools",
     project_urls={
         "Tracker": "https://github.com/BlueBrain/luigi-tools/issues",
@@ -64,14 +63,15 @@ setup(
     },
     classifiers=[
         "Development Status :: 4 - Beta",
-        "Intended Audience :: Education",
+        "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
+        "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
-        "Topic :: Scientific/Engineering :: Bio-Informatics",
+        "Topic :: Scientific/Engineering",
     ],
     include_package_data=True,
 )
