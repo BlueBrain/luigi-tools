@@ -1,6 +1,6 @@
 [![Build status](https://github.com/BlueBrain/luigi-tools/actions/workflows/run-tox.yml/badge.svg?branch=main)](https://github.com/BlueBrain/luigi-tools/actions)
 [![License](https://img.shields.io/badge/License-Apache%202-blue)](https://github.com/BlueBrain/luigi-tools/blob/master/LICENSE.txt)
-<!-- [![Documentation status](https://readthedocs.org/projects/luigi-tools/badge/?version=latest)](https://luigi-tools.readthedocs.io/) -->
+[![Documentation status](https://readthedocs.org/projects/luigi-tools/badge/?version=latest)](https://luigi-tools.readthedocs.io/)
 
 
 # Luigi-tools
