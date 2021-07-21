@@ -47,7 +47,7 @@ setup(
     },
     description="Tools to work with luigi",
     long_description=README,
-    long_description_content_type="text/x-md",
+    long_description_content_type="text/markdown",
     url="https://luigi-tools.readthedocs.io/en/latest",
     project_urls={
         "Tracker": "https://github.com/BlueBrain/luigi-tools/issues",
