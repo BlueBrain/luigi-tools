@@ -40,11 +40,6 @@ __version__ = "{version}"
 setup(
     name="luigi-tools",
     author="Blue Brain Project, EPFL",
-    use_scm_version={
-        "write_to": "luigi_tools/version.py",
-        "write_to_template": version_template,
-        "local_scheme": "no-local-version",
-    },
     description="Tools to work with luigi",
     long_description=README,
     long_description_content_type="text/markdown",

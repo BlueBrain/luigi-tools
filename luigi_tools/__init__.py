@@ -14,4 +14,6 @@ Copyright 2021 Blue Brain Project / EPFL
    See the License for the specific language governing permissions and
    limitations under the License.
 """
-from luigi_tools.version import __version__
+from pkg_resources import get_distribution
+
+__version__ = get_distribution("luigi-tools").version

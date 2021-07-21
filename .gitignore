@@ -11,3 +11,5 @@ doc/build
 doc/source/generated
 reports
 .vscode
+
+luigi_tools/version.py
