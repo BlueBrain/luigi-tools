@@ -226,5 +226,4 @@ For license and authors, see `LICENSE.txt` and `AUTHORS.md` respectively.
 Copyright © 2021 Blue Brain Project/EPFL
 
 [luigi_url]: https://luigi.readthedocs.io/en/stable/
-[luigi_tools_url]: https://bbpteam.epfl.ch/documentation/projects/luigi-tools
-<!-- [luigi_tools_url]: https://luigi-tools.readthedocs.io/en/stable/ -->
+[luigi_tools_url]: https://luigi-tools.readthedocs.io/en/latest/
