@@ -48,7 +48,7 @@ setup(
     description="Tools to work with luigi",
     long_description=README,
     long_description_content_type="text/x-md",
-    url="https://bbpteam.epfl.ch/documentation/projects/luigi-tools",
+    url="https://luigi-tools.readthedocs.io/en/latest",
     project_urls={
         "Tracker": "https://github.com/BlueBrain/luigi-tools/issues",
         "Source": "https://github.com/BlueBrain/luigi-tools",
