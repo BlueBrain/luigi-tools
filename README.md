@@ -16,7 +16,7 @@ Here are a few examples of these features:
 * add functions to get and display the dependency graph of a given task.
 * add a mechanism to setup templates for the `luigi.cfg` files, so the user just has to update specific values instead of copying the entire `luigi.cfg`.
 
-Please read the [complete documentation][luigi_tools_url] for more details.
+Please read the [complete API documentation][luigi_tools_api_url] for more details.
 
 ## Installation
 
@@ -226,4 +226,5 @@ For license and authors, see `LICENSE.txt` and `AUTHORS.md` respectively.
 Copyright © 2021 Blue Brain Project/EPFL
 
 [luigi_url]: https://luigi.readthedocs.io/en/stable/
-[luigi_tools_url]: https://luigi-tools.readthedocs.io/en/latest/
+[luigi_tools_url]: https://luigi-tools.readthedocs.io/en/stable/
+[luigi_tools_api_url]: https://luigi-tools.readthedocs.io/en/stable/api.html
