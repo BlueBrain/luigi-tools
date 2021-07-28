@@ -71,6 +71,19 @@ class RatioParameter(luigi.NumericalParameter):
             return x
 
 
+class BoolParameter(luigi.BoolParameter):
+    """Class to parse boolean parameters and set explicit parsing when default is True."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self._default is True:
+            if kwargs.get("parsing", "explicit") == self.__class__.IMPLICIT_PARSING:
+                raise ValueError(
+                    "A BoolParameter with 'default = True' can not use implicit parsing."
+                )
+            self.parsing = self.__class__.EXPLICIT_PARSING
+
+
 class OptionalParameter(luigi.OptionalParameter):
     """Mixin to make a parameter class optional."""
 
@@ -163,16 +176,3 @@ class OptionalListParameter(OptionalParameter, luigi.ListParameter):
     """Class to parse optional list parameters."""
 
     expected_type = tuple
-
-
-class BoolParameter(luigi.BoolParameter):
-    """Class to parse boolean parameters and set explicit parsing when default is True."""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if self._default is True:
-            if kwargs.get("parsing", "explicit") == self.__class__.IMPLICIT_PARSING:
-                raise ValueError(
-                    "A BoolParameter with 'default = True' can not use implicit parsing."
-                )
-            self.parsing = self.__class__.EXPLICIT_PARSING
