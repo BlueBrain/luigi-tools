@@ -84,47 +84,41 @@ class BoolParameter(luigi.BoolParameter):
             self.parsing = self.__class__.EXPLICIT_PARSING
 
 
-class OptionalParameter(luigi.OptionalParameter):
+class OptionalParameter:
     """Mixin to make a parameter class optional."""
 
     expected_type = type(None)
 
-    def __init__(self, *args, **kwargs):
-        self._cls = self.__class__
-        self._base_cls = self.__class__.__bases__[-1]
-        if OptionalParameter in (self._cls, self._base_cls):
-            raise TypeError(
-                "OptionalParameter can only be used as a mixin (must not be the rightmost "
-                "class in the class definition)"
-            )
-        super().__init__(*args, **kwargs)
+    def serialize(self, x):
+        """Parse the given value if the value is not None else return an empty string."""
+        if x is None:
+            return ""
+        else:
+            return super().serialize(x)  # pylint: disable=no-member
 
     def parse(self, x):
         """Parse the given value if it is not an empty string and not equal to ``'null'``."""
         if not isinstance(x, str):
             return x
-        elif x and x.lower() != "null":
-            return self._base_cls.parse(self, x)
+        elif x:
+            return super().parse(x)  # pylint: disable=no-member
         else:
             return None
 
     def normalize(self, x):
         """Normalize the given value if it is not ``None``."""
-        if x is not None:
-            return self._base_cls.normalize(self, x)
-        else:
+        if x is None:
             return None
+        return super().normalize(x)  # pylint: disable=no-member
 
     def _warn_on_wrong_param_type(self, param_name, param_value):
-        if self.__class__ != self._cls:  # pragma: no cover
-            return
-        if not isinstance(param_value, self._cls.expected_type) and param_value is not None:
+        if not isinstance(param_value, self.expected_type) and param_value is not None:
             warnings.warn(
                 '{} "{}" with value "{}" is not of type {} or None.'.format(
-                    self._cls.__name__,
+                    self.__class__.__name__,
                     param_name,
                     param_value,
-                    self._cls.expected_type.__name__,
+                    self.expected_type.__name__,
                 ),
                 OptionalParameterTypeWarning,
             )
@@ -174,5 +168,17 @@ class OptionalChoiceParameter(OptionalParameter, luigi.ChoiceParameter):
 
 class OptionalListParameter(OptionalParameter, luigi.ListParameter):
     """Class to parse optional list parameters."""
+
+    expected_type = tuple
+
+
+class OptionalDictParameter(OptionalParameter, luigi.DictParameter):
+    """Class to parse optional dict parameters."""
+
+    expected_type = luigi.freezing.FrozenOrderedDict
+
+
+class OptionalTupleParameter(OptionalParameter, luigi.TupleParameter):
+    """Class to parse optional tuple parameters."""
 
     expected_type = tuple

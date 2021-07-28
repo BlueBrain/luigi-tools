@@ -373,6 +373,9 @@ class TestSetLuigiConfig:
     def test_defaults(self, Task):
         assert luigi.build([Task()], local_scheduler=True)
 
+        with set_luigi_config():
+            assert luigi.build([Task()], local_scheduler=True)
+
     def test_new_config(self, Task):
         with set_luigi_config(
             {
