@@ -282,6 +282,18 @@ class copy_params:
                     _warn_on_wrong_global_param_type, new_param
                 )
 
+                # Fix task_value() to not normalize when the parameter does not have default value
+                def task_value(_self, task_name, param_name):
+                    # pylint: disable=protected-access
+                    value = _self._get_value(task_name, param_name)
+                    if value == _no_default_value:
+                        return value
+                    else:
+                        return _self._actual_task_value(task_name, param_name)
+
+                new_param._actual_task_value = new_param.task_value
+                new_param.task_value = types.MethodType(task_value, new_param)
+
                 # Add link to global parameter
                 if issubclass(task_that_inherits, GlobalParamMixin):
                     if not hasattr(task_that_inherits, "_global_params"):

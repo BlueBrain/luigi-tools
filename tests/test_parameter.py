@@ -391,30 +391,36 @@ def test_optional_parameter(luigi_tools_working_directory):
         )
 
 
-def test_bool_parameter(luigi_tools_working_directory):
-    class TaskBoolParameter(luigi.Task):
-        """"""
-
-        a = luigi_tools.parameter.BoolParameter(default=True)
-        b = luigi_tools.parameter.BoolParameter(default=False)
-        c = luigi_tools.parameter.BoolParameter(default=False, parsing="explicit")
-
-        def run(self):
-            create_empty_file(self.output().path)
-
-        def output(self):
-            return luigi.LocalTarget(
-                luigi_tools_working_directory
-                / f"test_bool_parameter_{self.a}_{self.b}_{self.c}.test"
-            )
-
-    assert TaskBoolParameter.a.parsing == "explicit"
-    assert TaskBoolParameter.b.parsing == "implicit"
-    assert TaskBoolParameter.c.parsing == "explicit"
-
-    with pytest.raises(ValueError):
-
-        class TaskBoolParameterFail(luigi.Task):
+class TestBoolParameter:
+    def test_auto_set_parsing(self):
+        class TaskBoolParameter(luigi.Task):
             """"""
 
-            a = luigi_tools.parameter.BoolParameter(default=True, parsing="implicit")
+            a = luigi_tools.parameter.BoolParameter(default=True)
+            b = luigi_tools.parameter.BoolParameter(default=False)
+            c = luigi_tools.parameter.BoolParameter(default=False, parsing="explicit")
+            d = luigi_tools.parameter.BoolParameter()
+
+            def run(self):
+                assert self.a is True
+                assert self.b is False
+                assert self.c is False
+                assert self.d is False and self.d is not None
+
+            def output(self):
+                return luigi.LocalTarget("not_existing_file")
+
+        assert TaskBoolParameter.a.parsing == "explicit"
+        assert TaskBoolParameter.b.parsing == "implicit"
+        assert TaskBoolParameter.c.parsing == "explicit"
+
+        with set_luigi_config():
+            assert luigi.build([TaskBoolParameter()], local_scheduler=True)
+
+    def test_true_implicit_failing(self):
+        with pytest.raises(ValueError):
+
+            class TaskBoolParameterFail(luigi.Task):
+                """"""
+
+                a = luigi_tools.parameter.BoolParameter(default=True, parsing="implicit")
