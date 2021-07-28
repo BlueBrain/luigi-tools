@@ -20,6 +20,7 @@ import luigi
 import pytest
 from luigi.util import inherits
 
+import luigi_tools.parameter
 import luigi_tools.task
 import luigi_tools.target
 import luigi_tools.util
@@ -34,127 +35,210 @@ from .tools import create_empty_file
 from .tools import create_not_empty_file
 
 
-@pytest.mark.filterwarnings("ignore::UserWarning:luigi.parameter")
-def test_copy_params(tmpdir):
-    class TaskA(luigi.Task):
-        """"""
-
-        a = luigi.Parameter(default="default_value_a")
-        b = luigi.Parameter(default="default_value_b")
-
-        def run(self):
-            print(self.a)
-            return self.a
-
-        def output(self):
-            return luigi.LocalTarget(tmpdir)
-
-    @luigi_tools.task.copy_params(
-        a=luigi_tools.task.ParamRef(TaskA),
-        aa=luigi_tools.task.ParamRef(TaskA, "a"),
-        a_default=luigi_tools.task.ParamRef(TaskA, "a", "given_default_value"),
-        a_none=luigi_tools.task.ParamRef(TaskA, "a", None),
-    )
-    class TaskB(luigi.Task):
-        """"""
-
-        b = luigi.Parameter(default="b")
-        b_none = luigi.Parameter(default=None)
-
-        def run(self):
-            print(self.a, self.aa, self.a_default, self.a_none, self.b, self.b_none)
-            return self.a, self.aa, self.a_default, self.a_none, self.b, self.b_none
-
-        def output(self):
-            return luigi.LocalTarget(tmpdir)
-
-    # Test with default value
-    task = TaskB()
-    res = task.run()
-
-    assert res == (
-        "default_value_a",
-        "default_value_a",
-        "given_default_value",
-        None,
-        "b",
-        None,
-    )
-
-    # Test with another value
-    task = TaskB(a="new_a", aa="new_aa", a_default="new_default", b="bb")
-    res = task.run()
-
-    assert res == ("new_a", "new_aa", "new_default", None, "bb", None)
-
-    # Empty copy_params arguments should raise a ValueError
-    with pytest.raises(ValueError):
-
-        @luigi_tools.task.copy_params()
-        class TaskC(luigi.Task):
+class TestCopyParams:
+    @pytest.mark.filterwarnings("ignore::UserWarning:luigi.parameter")
+    def test_copy_params(tmpdir):
+        class TaskA(luigi.Task):
             """"""
 
-            a = luigi.Parameter(default="a")
+            a = luigi.Parameter(default="default_value_a")
+            b = luigi.Parameter(default="default_value_b")
 
-    # Duplicated parameters should raise a DuplicatedParameterError
-    with pytest.raises(DuplicatedParameterError):
+            def run(self):
+                print(self.a)
+                return self.a
+
+            def output(self):
+                return luigi.LocalTarget(tmpdir)
 
         @luigi_tools.task.copy_params(
             a=luigi_tools.task.ParamRef(TaskA),
+            aa=luigi_tools.task.ParamRef(TaskA, "a"),
+            a_default=luigi_tools.task.ParamRef(TaskA, "a", "given_default_value"),
+            a_none=luigi_tools.task.ParamRef(TaskA, "a", None),
         )
-        class TaskD(luigi.Task):
+        class TaskB(luigi.Task):
             """"""
 
-            a = luigi.Parameter(default="a")
+            b = luigi.Parameter(default="b")
+            b_none = luigi.Parameter(default=None)
 
-    # Test with parameters that are serialized to generate the task ID
-    class TaskWithListDictParams(luigi.Task):
-        """"""
+            def run(self):
+                print(self.a, self.aa, self.a_default, self.a_none, self.b, self.b_none)
+                return self.a, self.aa, self.a_default, self.a_none, self.b, self.b_none
 
-        a = luigi.ListParameter(description="a in TaskWithListDictParams")
-        b = luigi.DictParameter(description="b in TaskWithListDictParams")
+            def output(self):
+                return luigi.LocalTarget(tmpdir)
 
-        def run(self):
-            assert self.a == (1, 2)
-            assert self.b == {"attr1": 1, "attr2": 2}
+        # Test with default value
+        task = TaskB()
+        res = task.run()
 
-        def output(self):
-            return luigi.LocalTarget("not_existing_file")
+        assert res == (
+            "default_value_a",
+            "default_value_a",
+            "given_default_value",
+            None,
+            "b",
+            None,
+        )
 
-    @luigi_tools.task.copy_params(
-        a_copy=luigi_tools.task.ParamRef(TaskWithListDictParams, "a"),
-        b_copy=luigi_tools.task.ParamRef(TaskWithListDictParams, "b"),
-    )
-    class TaskCopyListDictParams(luigi.Task):
-        """"""
+        # Test with another value
+        task = TaskB(a="new_a", aa="new_aa", a_default="new_default", b="bb")
+        res = task.run()
 
-        a = luigi.ListParameter(description="a in TaskCopyListDictParams")
-        b = luigi.DictParameter(description="b in TaskCopyListDictParams")
+        assert res == ("new_a", "new_aa", "new_default", None, "bb", None)
 
-        def run(self):
-            assert self.a == (1, 2)
-            assert self.b == {"attr1": 1, "attr2": 2}
-            assert self.a_copy == self.a
-            assert self.b_copy == self.b
+        # Empty copy_params arguments should raise a ValueError
+        with pytest.raises(ValueError):
 
-        def output(self):
-            return luigi.LocalTarget("not_existing_file")
+            @luigi_tools.task.copy_params()
+            class TaskC(luigi.Task):
+                """"""
 
-    with set_luigi_config(
-        {
-            "TaskWithListDictParams": {
-                "a": "[1, 2]",
-                "b": json.dumps({"attr1": 1, "attr2": 2}),
-            },
-            "TaskCopyListDictParams": {
-                "a": "[1, 2]",
-                "b": json.dumps({"attr1": 1, "attr2": 2}),
-                "a_copy": "[1, 2]",
-                "b_copy": json.dumps({"attr1": 1, "attr2": 2}),
-            },
-        }
+                a = luigi.Parameter(default="a")
+
+        # Duplicated parameters should raise a DuplicatedParameterError
+        with pytest.raises(DuplicatedParameterError):
+
+            @luigi_tools.task.copy_params(
+                a=luigi_tools.task.ParamRef(TaskA),
+            )
+            class TaskD(luigi.Task):
+                """"""
+
+                a = luigi.Parameter(default="a")
+
+        # Test with parameters that are serialized to generate the task ID
+        class TaskWithListDictParams(luigi.Task):
+            """"""
+
+            a = luigi.ListParameter(description="a in TaskWithListDictParams")
+            b = luigi.DictParameter(description="b in TaskWithListDictParams")
+
+            def run(self):
+                assert self.a == (1, 2)
+                assert self.b == {"attr1": 1, "attr2": 2}
+
+            def output(self):
+                return luigi.LocalTarget("not_existing_file")
+
+        @luigi_tools.task.copy_params(
+            a_copy=luigi_tools.task.ParamRef(TaskWithListDictParams, "a"),
+            b_copy=luigi_tools.task.ParamRef(TaskWithListDictParams, "b"),
+        )
+        class TaskCopyListDictParams(luigi.Task):
+            """"""
+
+            a = luigi.ListParameter(description="a in TaskCopyListDictParams")
+            b = luigi.DictParameter(description="b in TaskCopyListDictParams")
+
+            def run(self):
+                assert self.a == (1, 2)
+                assert self.b == {"attr1": 1, "attr2": 2}
+                assert self.a_copy == self.a
+                assert self.b_copy == self.b
+
+            def output(self):
+                return luigi.LocalTarget("not_existing_file")
+
+        with set_luigi_config(
+            {
+                "TaskWithListDictParams": {
+                    "a": "[1, 2]",
+                    "b": json.dumps({"attr1": 1, "attr2": 2}),
+                },
+                "TaskCopyListDictParams": {
+                    "a": "[1, 2]",
+                    "b": json.dumps({"attr1": 1, "attr2": 2}),
+                    "a_copy": "[1, 2]",
+                    "b_copy": json.dumps({"attr1": 1, "attr2": 2}),
+                },
+            }
+        ):
+            assert luigi.build([TaskCopyListDictParams()], local_scheduler=True)
+
+    def type_test(
+        self, cls_param, initial_value, str_initial_value, new_value, str_new_value, **kwargs
     ):
-        assert luigi.build([TaskCopyListDictParams()], local_scheduler=True)
+
+        # Test with parameters that are serialized to generate the task ID
+        class TaskWithTypeParams(luigi_tools.task.GlobalParamMixin, luigi.Task):
+            """"""
+
+            a = cls_param(description="a in TaskWithTypeParams")
+
+            def run(self):
+                assert self.a == initial_value
+
+            def output(self):
+                return luigi.LocalTarget("not_existing_file")
+
+        @luigi_tools.task.copy_params(
+            a_copy=luigi_tools.task.ParamRef(TaskWithTypeParams, "a"),
+        )
+        class TaskCopyTypeParams(luigi_tools.task.GlobalParamMixin, luigi.Task):
+            """"""
+
+            a = cls_param(description="a in TaskCopyTypeParams")
+            with_value = luigi.BoolParameter()
+
+            def run(self):
+                if cls_param is luigi_tools.parameter.OptionalListParameter:
+                    assert self.a == tuple(initial_value)
+                else:
+                    assert self.a == initial_value
+                if self.with_value:
+                    assert self.a_copy == new_value
+                else:
+                    assert self.a_copy == self.a
+
+            def output(self):
+                return luigi.LocalTarget("not_existing_file")
+
+        with set_luigi_config(
+            {
+                "TaskWithTypeParams": {
+                    "a": str_initial_value,
+                },
+                "TaskCopyTypeParams": {
+                    "a": str_initial_value,
+                    "a_copy": str_new_value,
+                },
+            }
+        ):
+            assert luigi.build(
+                [TaskWithTypeParams(), TaskCopyTypeParams(with_value=True)], local_scheduler=True
+            )
+
+        with set_luigi_config(
+            {
+                "TaskWithTypeParams": {
+                    "a": str_initial_value,
+                },
+                "TaskCopyTypeParams": {
+                    "a": str_initial_value,
+                },
+            }
+        ):
+            assert luigi.build(
+                [TaskWithTypeParams(), TaskCopyTypeParams(with_value=False)], local_scheduler=True
+            )
+        print("test end with", cls_param)
+
+    def test_int_param(self, tmp_working_dir):
+        self.type_test(luigi.parameter.IntParameter, 1, "1", 2, "2")
+
+    def test_float_param(self, tmp_working_dir):
+        self.type_test(luigi.parameter.FloatParameter, 1.5, "1.5", 2.5, "2.5")
+
+    def test_bool_param(self, tmp_working_dir):
+        self.type_test(luigi_tools.parameter.BoolParameter, True, "true", False, "false")
+
+    def test_optional_list_param(self, tmp_working_dir):
+        self.type_test(
+            luigi_tools.parameter.OptionalListParameter, (1, 2), "[1, 2]", (10, 20), "[10, 20]"
+        )
 
 
 class TestCopyParamsWithGlobals:
@@ -482,6 +566,42 @@ class TestCopyParamsWithGlobals:
             [GlobalParamTaskSetGetAttr()],
             local_scheduler=True,
         )
+
+    def test_task_value(self):
+        """Test monkey patch of task_value().
+
+        This test fails without monkey patch because a list parameter can not be None.
+        """
+
+        class TaskListParameter(luigi_tools.task.GlobalParamMixin, luigi.Task):
+            """"""
+
+            a = luigi.parameter.ListParameter(default=(1, 2))
+            b = luigi.parameter.ListParameter()
+
+            def run(self):
+                assert self.a == (1, 2)
+                assert self.b == tuple()
+
+            def output(self):
+                return luigi.LocalTarget("not_existing_file")
+
+        @luigi_tools.task.copy_params(
+            a=luigi_tools.task.ParamRef(TaskListParameter),
+            b=luigi_tools.task.ParamRef(TaskListParameter),
+        )
+        class TaskCopyListParameter(luigi_tools.task.GlobalParamMixin, luigi.Task):
+            """"""
+
+            def run(self):
+                assert self.a == (1, 2)
+                assert self.b == tuple()
+
+            def output(self):
+                return luigi.LocalTarget("not_existing_file")
+
+        with set_luigi_config({"TaskListParameter": {"b": []}, "TaskCopyListParameter": {"b": []}}):
+            assert luigi.build([TaskListParameter(), TaskCopyListParameter()], local_scheduler=True)
 
 
 class TestForceableTask:

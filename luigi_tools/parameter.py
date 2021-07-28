@@ -123,7 +123,7 @@ class OptionalStrParameter(OptionalParameter, luigi.Parameter):
     expected_type = str
 
 
-class OptionalBoolParameter(OptionalParameter, luigi.BoolParameter):
+class OptionalBoolParameter(OptionalParameter, BoolParameter):
     """Class to parse optional bool parameters."""
 
     expected_type = bool
