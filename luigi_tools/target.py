@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """This module provides some specific luigi targets."""
-import os
 from pathlib import Path
 
 import luigi
@@ -39,22 +38,16 @@ class OutputLocalTarget(luigi.LocalTarget):
         class PathConfig(luigi.Config):
             '''Paths config.'''
             result_path = luigi.Parameter()
-            result_sub_path_1 = luigi.Parameter()
-            result_sub_path_2 = luigi.Parameter()
 
         class Sub1OutputLocalTarget(OutputLocalTarget):
             '''Specific target for first category outputs.'''
+            __prefix = result_sub_path_1
 
         class Sub2OutputLocalTarget(OutputLocalTarget):
             '''Specific target for second category outputs.'''
+            __prefix = result_sub_path_2
 
         OutputLocalTarget.set_default_prefix(PathConfig().result_path)
-        Sub1OutputLocalTarget.set_default_prefix(
-            OutputLocalTarget._prefix / PathConfig().result_sub_path_1
-        )
-        Sub2OutputLocalTarget.set_default_prefix(
-            OutputLocalTarget._prefix / PathConfig().result_sub_path_2
-        )
 
         class TaskA(luigi.Task):
             def run(self):
@@ -87,20 +80,30 @@ class OutputLocalTarget(luigi.LocalTarget):
 
         └── result_path
             ├── sub_path_1
-            │   ├── file1.dat
-            │   └── file2.dat
+            │   ├── file1.dat
+            │   └── file2.dat
             └── sub_path_2
                 ├── file1.dat
                 └── file2.dat
     """
 
-    _prefix = None
+    __prefix = Path()  # pylint: disable=unused-private-member
 
     def __init__(self, *args, prefix=None, create_parent=True, **kwargs):
         super().__init__(*args, **kwargs)
-        self._reset_prefix(self, prefix)
+        if not hasattr(self, self._mangled_prefix_name()):
+            raise RuntimeError(
+                f"The '__prefix' attribute was not set for the class {self.__class__.__name__}"
+            )
+        if prefix is not None:
+            self.set_prefix(prefix)
         if create_parent:
             self.mkdir()
+
+    @classmethod
+    def _mangled_prefix_name(cls):
+        attr_name = "_" + cls.__name__ + "__prefix"
+        return attr_name
 
     @property
     def path(self):
@@ -111,37 +114,47 @@ class OutputLocalTarget(luigi.LocalTarget):
     def path(self, path):
         self._path = Path(path)
 
+    @classmethod
+    def super_prefix(cls):
+        """Build a prefix from the default prefixes of the parent classes."""
+        prefixes = []
+        for base in cls.__mro__[1:]:
+            try:
+                prefixes.append(base.get_default_prefix())
+            except AttributeError:
+                continue
+        return Path(*prefixes[::-1])
+
     @property
     def pathlib_path(self):
         """The path stored in this target returned as a :class:`pathlib.Path` object."""
-        if self._prefix is not None:
-            return self._prefix / self._path
-        else:
-            return self._path
+        return (self.super_prefix() / self.get_prefix()) / self._path
+
+    @classmethod
+    def get_default_prefix(cls):
+        """Return the default prefix."""
+        return getattr(cls, cls._mangled_prefix_name()) or Path()
+
+    @staticmethod
+    def _format_prefix(prefix):
+        return Path(prefix or "")
 
     @classmethod
     def set_default_prefix(cls, prefix):
         """Set the default prefix to the class.
 
         .. warning::
-            This method is not thread-safe and should not be used inside a
-            :class:`luigi.Task`.
+            This method is not thread-safe and should not be used inside a :class:`luigi.Task`.
         """
-        OutputLocalTarget._reset_prefix(cls, prefix)
+        setattr(cls, cls._mangled_prefix_name(), cls._format_prefix(prefix))
 
-    def get_default_prefix(self):
+    def get_prefix(self):
         """Return the default prefix."""
-        return self._prefix
+        return getattr(self, self._mangled_prefix_name()) or Path()
 
-    @staticmethod
-    def _reset_prefix(obj, prefix):
-        # pylint: disable=protected-access
-        if prefix is not None:
-            obj._prefix = Path(prefix).absolute()
-        elif obj._prefix is None:
-            obj._prefix = Path(os.getcwd())
-        else:
-            obj._prefix = Path(obj._prefix)
+    def set_prefix(self, prefix):
+        """Set the prefix of the current instance."""
+        return setattr(self, self._mangled_prefix_name(), self._format_prefix(prefix))
 
     def mkdir(self, is_dir=False, mode=511, parents=True, exist_ok=True):
         """Create the directory of this path.
