@@ -41,11 +41,11 @@ class OutputLocalTarget(luigi.LocalTarget):
 
         class Sub1OutputLocalTarget(OutputLocalTarget):
             '''Specific target for first category outputs.'''
-            __prefix = result_sub_path_1
+            __prefix = "sub_path_1"
 
-        class Sub2OutputLocalTarget(OutputLocalTarget):
+        class Sub2OutputLocalTarget(Sub1OutputLocalTarget):
             '''Specific target for second category outputs.'''
-            __prefix = result_sub_path_2
+            __prefix = "sub_path_2"
 
         OutputLocalTarget.set_default_prefix(PathConfig().result_path)
 
@@ -79,12 +79,12 @@ class OutputLocalTarget(luigi.LocalTarget):
     .. code-block:: bash
 
         └── result_path
-            ├── sub_path_1
-            │   ├── file1.dat
-            │   └── file2.dat
-            └── sub_path_2
+            └── sub_path_1
                 ├── file1.dat
                 └── file2.dat
+                └── sub_path_2
+                    ├── file1.dat
+                    └── file2.dat
     """
 
     __prefix = Path()  # pylint: disable=unused-private-member
