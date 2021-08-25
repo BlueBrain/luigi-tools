@@ -247,6 +247,16 @@ class TestOutputTarget:
             == "/tmp/sub_prefix_2/sub_sub_prefix_2/sub_sub_sub_prefix/path"
         )
 
+        # Test with absolute paths for both parent and child classes
+        SubOutputLocalTarget.set_default_prefix("/tmp/sub_prefix_2")
+        SubSubOutputLocalTarget.set_default_prefix("/tmp/sub_sub_prefix_2")
+        assert SubOutputLocalTarget("path").path == "/tmp/sub_prefix_2/path"
+        assert SubSubOutputLocalTarget("path").path == "/tmp/sub_sub_prefix_2/path"
+        assert (
+            SubSubSubOutputLocalTarget("path").path
+            == "/tmp/sub_sub_prefix_2/sub_sub_sub_prefix/path"
+        )
+
         # Reset prefix
         SubSubOutputLocalTarget.set_default_prefix(None)
         assert SubOutputLocalTarget("path").path == "/tmp/sub_prefix_2/path"

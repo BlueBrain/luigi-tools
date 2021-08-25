@@ -353,7 +353,7 @@ class set_luigi_config:
         params = self.get_config()
 
         # Export params
-        with open(filepath, "w") as configfile:
+        with open(filepath, "w") as configfile:  # pylint: disable=unspecified-encoding
             params.write(configfile)
 
     def __exit__(self, *args):
