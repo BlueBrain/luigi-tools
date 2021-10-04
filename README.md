@@ -127,20 +127,17 @@ in other workflow management systems such as [Snakemake][snakemake_url].
 ```python
 from luigi_tools.task import RemoveCorruptedOutputMixin
 
-class ResilientTask(RemoveCorruptedOutputMixin, luigi.Task):
-    """Resilient to the bugs caused by incomplete and corrupted outputs."""
+    class TaskA(RemoveCorruptedOutputMixin, luigi.Task):
+        """TaskA can remove its output upon failure."""
+        pass
 
-    RemoveCorruptedOutputMixin.clean_failed = luigi.BoolParameter(
-        significant=False,
-        default=True,
-        description="Trigger to remove the outputs of the failed tasks.",
-        parsing=luigi.BoolParameter.EXPLICIT_PARSING,
-    )
+```
 
-class TaskA(ResilientTask):
-    """TaskA removes its output upon failure."""
-    pass
+The `clean_failed` flag must explicitly be set to true.
+This allows users to set it to false to debug the output without changing the code.
 
+```bash
+luigi -m my_module TaskA --clean_failed true
 ```
 
 ### Copy parameters
