@@ -121,7 +121,7 @@ luigi -m my_module another_task_that_depends_on_mytask --MyTask-rerun
 
 When a task fails unexpectedly, it may leave an incomplete or corrupted output 
 that leads to wrong results in the downstream. With the RemoveCorruptedOutputMixin,
-Luigi automatically removes the output of the tasks that failed. This is the default behaviour 
+Luigi automatically removes the output targets of the tasks that failed. This is the default behaviour 
 in other workflow management systems such as [Snakemake][snakemake_url].
 
 ```python
