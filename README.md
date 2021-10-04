@@ -133,7 +133,7 @@ from luigi_tools.task import RemoveCorruptedOutputMixin
 
 ```
 
-The `clean_failed` flag must explicitly be set to true.
+The `clean_failed` is `false` by default and it must explicitly be set to `true`.
 This allows users to set it to false to debug the output without changing the code.
 
 ```bash
