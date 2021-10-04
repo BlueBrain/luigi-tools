@@ -46,7 +46,7 @@ class RatioParameter(luigi.NumericalParameter):
         *args,
         left_op=luigi.parameter.operator.le,
         right_op=luigi.parameter.operator.le,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(
             *args,
@@ -55,7 +55,7 @@ class RatioParameter(luigi.NumericalParameter):
             var_type=float,
             left_op=left_op,
             right_op=right_op,
-            **kwargs
+            **kwargs,
         )
 
     def normalize(self, x):
@@ -114,11 +114,9 @@ class OptionalParameter:
     def _warn_on_wrong_param_type(self, param_name, param_value):
         if not isinstance(param_value, self.expected_type) and param_value is not None:
             warnings.warn(
-                '{} "{}" with value "{}" is not of type {} or None.'.format(
-                    self.__class__.__name__,
-                    param_name,
-                    param_value,
-                    self.expected_type.__name__,
+                (
+                    f'{self.__class__.__name__} "{param_name}" with value '
+                    f'"{param_value}" is not of type {self.expected_type.__name__} or None.'
                 ),
                 OptionalParameterTypeWarning,
             )
