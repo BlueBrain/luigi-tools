@@ -12,6 +12,8 @@ Here are a few examples of these features:
 * add several types of optional parameters.
 * add a `OutputLocalTarget` class to help building an output tree.
 * add a mixin that adds a `--rerun` parameter that forces a given task to run again even if its targets exist, and also rerun all the tasks that depend on this one.
+* add a mixin to remove the output of failed tasks which is likely to be corrupted or incomplete.
+This feature applies the default behaviour of a [snakemake][snakemake_url] rule (Task).
 * add a new `@copy_params` mechanism to copy the parameters from a task to another (the `@inherits` gives the same object to all the inheriting tasks while `@copy_params` only copies the definition of the parameter so each inheriting task can be given a different value).
 * add functions to get and display the dependency graph of a given task.
 * add a mechanism to setup templates for the `luigi.cfg` files, so the user just has to update specific values instead of copying the entire `luigi.cfg`.
@@ -113,6 +115,32 @@ Now the task `MyTask` has a boolean parameter `--rerun` which can be called in t
 ```bash
 luigi -m my_module mytask --rerun
 luigi -m my_module another_task_that_depends_on_mytask --MyTask-rerun
+```
+
+### Clear the output of failed tasks
+
+When a task fails unexpectedly, it may leave an incomplete or corrupted output 
+that leads to wrong results in the downstream. With the RemoveCorruptedOutputMixin,
+Luigi automatically removes the output of the tasks that failed. This is the default behaviour 
+in other workflow management systems such as [Snakemake][snakemake_url].
+
+```python
+from luigi_tools.task import RemoveCorruptedOutputMixin
+
+class ResilientTask(RemoveCorruptedOutputMixin, luigi.Task):
+    """Resilient to the bugs caused by incomplete and corrupted outputs."""
+
+    RemoveCorruptedOutputMixin.clean_failed = luigi.BoolParameter(
+        significant=False,
+        default=True,
+        description="Trigger to remove the outputs of the failed tasks.",
+        parsing=luigi.BoolParameter.EXPLICIT_PARSING,
+    )
+
+class TaskA(ResilientTask):
+    """TaskA removes its output upon failure."""
+    pass
+
 ```
 
 ### Copy parameters
@@ -228,3 +256,4 @@ Copyright © 2021 Blue Brain Project/EPFL
 [luigi_url]: https://luigi.readthedocs.io/en/stable/
 [luigi_tools_url]: https://luigi-tools.readthedocs.io/en/stable/
 [luigi_tools_api_url]: https://luigi-tools.readthedocs.io/en/stable/api.html
+[snakemake_url]: https://snakemake.readthedocs.io/en/stable/
