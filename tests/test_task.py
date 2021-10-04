@@ -847,6 +847,12 @@ def test_remove_corrupted_output(tmpdir, caplog):
                     if idx >= 5:
                         raise RuntimeError("something unexpected happened!")
 
+    @TaskToFail.event_handler(luigi.Event.FAILURE)
+    def check_exception(task, exception):
+        """Gets triggered upon luigi.Event.FAILURE event."""
+        assert isinstance(exception, RuntimeError)
+        assert exception.args[0] == "something unexpected happened!"
+
     task_instance = TaskToFail(clean_failed=True)
     caplog.clear()
     caplog.set_level(logging.DEBUG)
