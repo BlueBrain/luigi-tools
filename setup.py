@@ -30,13 +30,6 @@ docs_reqs = [
     "sphinx-bluebrain-theme",
 ]
 
-version_template = '''"""The package version.
-
-This file was generated automatically, do not change it.
-"""
-__version__ = "{version}"
-'''
-
 setup(
     name="luigi-tools",
     author="Blue Brain Project, EPFL",
@@ -66,6 +59,7 @@ setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "Topic :: Scientific/Engineering",
     ],
     include_package_data=True,
