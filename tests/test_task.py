@@ -847,13 +847,19 @@ def test_remove_corrupted_output(tmpdir, caplog):
                     if idx >= 5:
                         raise RuntimeError("something unexpected happened!")
 
+    @TaskToFail.event_handler(luigi.Event.FAILURE)
+    def check_exception(task, exception):
+        """Gets triggered upon luigi.Event.FAILURE event."""
+        assert isinstance(exception, RuntimeError)
+        assert exception.args[0] == "something unexpected happened!"
+
     task_instance = TaskToFail(clean_failed=True)
-    try:
-        caplog.clear()
-        caplog.set_level(logging.DEBUG)
-        luigi.build([task_instance], local_scheduler=True)
-    except RuntimeError:
-        print("Task is failed as expected.")
+    caplog.clear()
+    caplog.set_level(logging.DEBUG)
+    luigi.build([task_instance], local_scheduler=True)
+
+    # there are missing targets
+    assert not task_instance.complete()
 
     res = [i for i in caplog.record_tuples if i[0] == "luigi_tools.util"]
     assert res == [
@@ -863,10 +869,10 @@ def test_remove_corrupted_output(tmpdir, caplog):
     assert not (tmpdir / "matrix.dat").exists()
 
     task_instance.clean_failed = False
-    try:
-        luigi.build([task_instance], local_scheduler=True)
-    except RuntimeError:
-        print("Task is failed as expected.")
+    luigi.build([task_instance], local_scheduler=True)
+
+    # all targets are produced
+    assert task_instance.complete()
 
     with open(tmpdir / "matrix.dat", "r") as f_handle:
         matrix_values = f_handle.read().splitlines()
