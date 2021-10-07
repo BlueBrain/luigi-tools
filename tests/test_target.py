@@ -179,14 +179,10 @@ class TestOutputTarget:
         assert not not_auto_target.pathlib_path.parent.exists()
         assert not not_auto_target.pathlib_path.exists()
 
-        with pytest.raises(
-            RuntimeError, match="The '__prefix' attribute was not set for the class NoPrefix"
-        ):
+        class NoPrefix(luigi_tools.target.OutputLocalTarget):
+            pass
 
-            class NoPrefix(luigi_tools.target.OutputLocalTarget):
-                pass
-
-            NoPrefix("path")
+        assert NoPrefix("path").path == other_subdir / "test" / "create" / "path"
 
     def test_super_prefix(self, tmpdir, reset_prefix):
         class SubOutputLocalTarget(luigi_tools.target.OutputLocalTarget):
@@ -195,7 +191,12 @@ class TestOutputTarget:
         class SubSubOutputLocalTarget(SubOutputLocalTarget):
             __prefix = Path("sub_sub_prefix")
 
-        class SubSubSubOutputLocalTarget(SubSubOutputLocalTarget):
+        class NoPrefix(SubSubOutputLocalTarget):
+            """Test that a target without prefix in the MRO does not break the feature."""
+
+            pass
+
+        class SubSubSubOutputLocalTarget(NoPrefix):
             __prefix = Path("sub_sub_sub_prefix")
 
         current_dir = Path(os.getcwd())
