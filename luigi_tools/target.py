@@ -91,10 +91,6 @@ class OutputLocalTarget(luigi.LocalTarget):
 
     def __init__(self, *args, prefix=None, create_parent=True, **kwargs):
         super().__init__(*args, **kwargs)
-        if not hasattr(self, self._mangled_prefix_name()):
-            raise RuntimeError(
-                f"The '__prefix' attribute was not set for the class {self.__class__.__name__}"
-            )
         if prefix is not None:
             self.set_prefix(prefix)
         if create_parent:
@@ -133,7 +129,7 @@ class OutputLocalTarget(luigi.LocalTarget):
     @classmethod
     def get_default_prefix(cls):
         """Return the default prefix."""
-        return getattr(cls, cls._mangled_prefix_name()) or Path()
+        return getattr(cls, cls._mangled_prefix_name(), Path()) or Path()
 
     @staticmethod
     def _format_prefix(prefix):
@@ -150,7 +146,7 @@ class OutputLocalTarget(luigi.LocalTarget):
 
     def get_prefix(self):
         """Return the default prefix."""
-        return getattr(self, self._mangled_prefix_name()) or Path()
+        return getattr(self, self._mangled_prefix_name(), Path()) or Path()
 
     def set_prefix(self, prefix):
         """Set the prefix of the current instance."""
