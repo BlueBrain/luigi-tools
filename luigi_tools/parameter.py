@@ -15,6 +15,7 @@
 """This module provides some specific luigi parameters."""
 import re
 import warnings
+from pathlib import Path
 
 import luigi
 
@@ -180,3 +181,25 @@ class OptionalTupleParameter(OptionalParameter, luigi.TupleParameter):
     """Class to parse optional tuple parameters."""
 
     expected_type = tuple
+
+
+class PathParameter(luigi.Parameter):
+    """Class to parse file path parameters."""
+
+    def __init__(self, *args, absolute=False, create=False, exists=False, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.absolute = absolute
+        self.create = create
+        self.exists = exists
+
+    def normalize(self, x):
+        """Normalize the given value to file path."""
+        path = Path(x)
+        if self.absolute:
+            path = path.absolute()
+        if self.create:
+            path.mkdir(parents=True, exist_ok=True)
+        if self.exists and not path.exists():
+            raise ValueError(f"The path {path} does not exist.")
+        return path
