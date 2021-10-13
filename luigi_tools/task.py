@@ -48,13 +48,10 @@ class RerunMixin:
     )  #:
 
     def __init__(self, *args, **kwargs):
-        print("################### Enter RerunMixin")
         super().__init__(*args, **kwargs)
-        print("################### Mid RerunMixin")
 
         if recursive_check(self):
             apply_over_outputs(self, target_remove)
-        print("################### End RerunMixin")
 
 
 class LogTargetMixin:
