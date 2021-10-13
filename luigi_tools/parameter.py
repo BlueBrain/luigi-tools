@@ -184,7 +184,13 @@ class OptionalTupleParameter(OptionalParameter, luigi.TupleParameter):
 
 
 class PathParameter(luigi.Parameter):
-    """Class to parse file path parameters."""
+    """Class to parse file path parameters.
+
+    Args:
+        absolute (bool): the given path is converted to an absolute path.
+        create (bool): a folder is automatically created to the given path.
+        exists (bool): raise a :class:`ValueError` if the path does not exist.
+    """
 
     def __init__(self, *args, absolute=False, create=False, exists=False, **kwargs):
         super().__init__(*args, **kwargs)
@@ -194,7 +200,7 @@ class PathParameter(luigi.Parameter):
         self.exists = exists
 
     def normalize(self, x):
-        """Normalize the given value to file path."""
+        """Normalize the given value to a :class:`pathlib.Path` object."""
         path = Path(x)
         if self.absolute:
             path = path.absolute()
