@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """This module provides some specific luigi parameters."""
-import re
 import warnings
 
 import luigi
@@ -26,11 +25,11 @@ class OptionalParameterTypeWarning(UserWarning):
 class ExtParameter(luigi.Parameter):
     """Class to parse file extension parameters."""
 
-    def parse(self, x):
-        """Parse the given value to an extension suffix without dot."""
-        pattern = re.compile(r"\.?(.*)")
-        match = re.match(pattern, x)
-        return match.group(1)
+    def normalize(self, x):
+        """Normalize the given value to an extension suffix without dot."""
+        if x.startswith("."):
+            x = x[1:]
+        return x
 
 
 class RatioParameter(luigi.NumericalParameter):

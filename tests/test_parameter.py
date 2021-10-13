@@ -32,7 +32,7 @@ def test_ext_parameter(luigi_tools_working_directory):
     class TaskExtParameter(luigi.Task):
         """"""
 
-        a = luigi_tools.parameter.ExtParameter(default="ext_from_default")
+        a = luigi_tools.parameter.ExtParameter(default=".ext_from_default")
         test_type = luigi.Parameter(default="default")
 
         def run(self):
