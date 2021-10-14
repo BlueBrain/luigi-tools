@@ -556,20 +556,33 @@ def test_path_parameter(tmpdir, default, absolute, create, exists):
             create=create,
             exists=exists,
         )
+        b = luigi_tools.parameter.OptionalPathParameter(
+            default=str(tmpdir / default) if default is not None else str(tmpdir),
+            absolute=absolute,
+            create=create,
+            exists=exists,
+        )
+        c = luigi_tools.parameter.OptionalPathParameter(default=None)
+        d = luigi_tools.parameter.OptionalPathParameter(default="not empty default")
 
         def run(self):
             # Use the parameter as a Path object
             new_file = self.a / "test.file"
+            new_optional_file = self.b / "test_optional.file"
             if default is not None and not create:
                 new_file.parent.mkdir(parents=True)
             new_file.touch()
+            new_optional_file.touch()
             assert new_file.exists()
+            assert new_optional_file.exists()
+            assert self.c is None
+            assert self.d is None
 
         def output(self):
             return luigi.LocalTarget("not_existing_file")
 
     # Test with default values
-    with set_luigi_config():
+    with set_luigi_config({"TaskPathParameter": {"d": ""}}):
         if default is not None and not create and exists:
             with pytest.raises(ValueError, match="The path .* does not exist"):
                 luigi.build([TaskPathParameter()], local_scheduler=True)
@@ -582,7 +595,11 @@ def test_path_parameter(tmpdir, default, absolute, create, exists):
             "TaskPathParameter": {
                 "a": str(tmpdir / (default + "_from_config"))
                 if default is not None
-                else str(tmpdir)
+                else str(tmpdir),
+                "b": str(tmpdir / (default + "_from_config"))
+                if default is not None
+                else str(tmpdir),
+                "d": "",
             }
         }
     ):
