@@ -14,6 +14,7 @@
 
 """This module provides some specific luigi parameters."""
 import warnings
+from pathlib import Path
 
 import luigi
 
@@ -81,6 +82,34 @@ class BoolParameter(luigi.BoolParameter):
                     "A BoolParameter with 'default = True' can not use implicit parsing."
                 )
             self.parsing = self.__class__.EXPLICIT_PARSING
+
+
+class PathParameter(luigi.Parameter):
+    """Class to parse file path parameters.
+
+    Args:
+        absolute (bool): the given path is converted to an absolute path.
+        create (bool): a folder is automatically created to the given path.
+        exists (bool): raise a :class:`ValueError` if the path does not exist.
+    """
+
+    def __init__(self, *args, absolute=False, create=False, exists=False, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.absolute = absolute
+        self.create = create
+        self.exists = exists
+
+    def normalize(self, x):
+        """Normalize the given value to a :class:`pathlib.Path` object."""
+        path = Path(x)
+        if self.absolute:
+            path = path.absolute()
+        if self.create:
+            path.mkdir(parents=True, exist_ok=True)
+        if self.exists and not path.exists():
+            raise ValueError(f"The path {path} does not exist.")
+        return path
 
 
 class OptionalParameter:
@@ -179,3 +208,9 @@ class OptionalTupleParameter(OptionalParameter, luigi.TupleParameter):
     """Class to parse optional tuple parameters."""
 
     expected_type = tuple
+
+
+class OptionalPathParameter(OptionalParameter, PathParameter):
+    """Class to parse optional path parameters."""
+
+    expected_type = str
