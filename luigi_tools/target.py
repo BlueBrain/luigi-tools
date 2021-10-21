@@ -89,11 +89,14 @@ class OutputLocalTarget(luigi.LocalTarget):
 
     __prefix = Path()  # pylint: disable=unused-private-member
 
-    def __init__(self, *args, prefix=None, create_parent=True, **kwargs):
+    def __init__(self, *args, prefix=None, create_parent=True, create=False, **kwargs):
         super().__init__(*args, **kwargs)
         if prefix is not None:
             self.set_prefix(prefix)
-        if create_parent:
+
+        if create:
+            self.mkdir(is_dir=True)
+        elif create_parent:
             self.mkdir()
 
     @classmethod
@@ -156,8 +159,8 @@ class OutputLocalTarget(luigi.LocalTarget):
         """Create the directory of this path.
 
         Args:
-            is_dir (bool): if set to True, the current path is create, otherwise only the parent
-                directory is create.
+            is_dir (bool): if set to True, the current path is created, otherwise only the parent
+                directory is created.
             mode (int): numeric mode used to create the directory with given permissions (unix
                 only).
             parents (bool): if set to True, the parents are also created if they are missing.
