@@ -353,6 +353,40 @@ class TestOptionalParameter:
                 'OptionalIntParameter "a" with value "zz" is not of type int or None.'
             )
 
+    def test_warning(current_test):
+        class TestOptionalFloatParameter(
+            luigi_tools.parameter.OptionalParameter, luigi.FloatParameter
+        ):
+            """Class to parse optional float parameters."""
+
+            expected_type = (int, float)
+
+        class TestConfig(luigi.Config):
+            param = TestOptionalFloatParameter()
+
+        with warnings.catch_warnings(record=True) as record:
+            TestConfig(param=1)
+
+        assert len(record) == 0
+
+        with warnings.catch_warnings(record=True) as record:
+            warnings.filterwarnings(
+                action="ignore",
+                category=Warning,
+            )
+            warnings.simplefilter(
+                action="always",
+                category=luigi_tools.parameter.OptionalParameterTypeWarning,
+            )
+            assert luigi.build([TestConfig(param="0")], local_scheduler=True)
+
+        assert len(record) == 1
+        assert issubclass(record[0].category, luigi_tools.parameter.OptionalParameterTypeWarning)
+        assert str(record[0].message) == (
+            """TestOptionalFloatParameter "param" with value "0" is not of any type in ['int', """
+            """'float'] or None."""
+        )
+
     def actual_test(current_test, cls, default, expected_value, expected_type, bad_data, **kwargs):
         class TestConfig(luigi.Config):
             param = cls(default=default, **kwargs)

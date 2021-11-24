@@ -120,17 +120,17 @@ def test_dependency_graph(tmpdir, task_collection):
     # Test graphviz_dependency_graph()
     dot = luigi_tools.util.graphviz_dependency_graph(graph)
     assert dot.body == [
-        "\tTaskE [color=red penwidth=1.5]",
-        "\tTaskD",
-        "\tTaskE -> TaskD",
-        "\tTaskB",
-        "\tTaskD -> TaskB",
-        "\tTaskA",
-        "\tTaskB -> TaskA",
-        "\tTaskC",
-        "\tTaskD -> TaskC",
-        "\tTaskA",
-        "\tTaskC -> TaskA",
+        "\tTaskE [color=red penwidth=1.5]\n",
+        "\tTaskD\n",
+        "\tTaskE -> TaskD\n",
+        "\tTaskB\n",
+        "\tTaskD -> TaskB\n",
+        "\tTaskA\n",
+        "\tTaskB -> TaskA\n",
+        "\tTaskC\n",
+        "\tTaskD -> TaskC\n",
+        "\tTaskA\n",
+        "\tTaskC -> TaskA\n",
     ]
     assert dot.node_attr == {
         "shape": "box",
@@ -157,17 +157,17 @@ def test_dependency_graph(tmpdir, task_collection):
         edge_kwargs={(task_collection.TaskB(), task_collection.TaskA()): {"label": "custom label"}},
     )
     assert dot_with_attrs.body == [
-        "\tTaskE [color=blue penwidth=1.5]",
-        "\tcustom_name",
-        "\tTaskE -> custom_name",
-        "\tTaskB",
-        "\tcustom_name -> TaskB",
-        '\tTaskA [custom_attr="custom value"]',
-        '\tTaskB -> TaskA [label="custom label"]',
-        "\tTaskC",
-        "\tcustom_name -> TaskC",
-        '\tTaskA [custom_attr="custom value"]',
-        "\tTaskC -> TaskA",
+        "\tTaskE [color=blue penwidth=1.5]\n",
+        "\tcustom_name\n",
+        "\tTaskE -> custom_name\n",
+        "\tTaskB\n",
+        "\tcustom_name -> TaskB\n",
+        '\tTaskA [custom_attr="custom value"]\n',
+        '\tTaskB -> TaskA [label="custom label"]\n',
+        "\tTaskC\n",
+        "\tcustom_name -> TaskC\n",
+        '\tTaskA [custom_attr="custom value"]\n',
+        "\tTaskC -> TaskA\n",
     ]
     assert dot_with_attrs.node_attr == {
         "shape": "box",
