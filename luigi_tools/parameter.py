@@ -145,11 +145,11 @@ class OptionalParameter:
                 # pylint: disable=not-an-iterable
                 param_type = f"any type in {[i.__name__ for i in self.expected_type]}"
             except TypeError:
-                param_type = f"type {self.expected_type.__name__}"
+                param_type = f"type '{self.expected_type.__name__}'"
             warnings.warn(
                 (
-                    f'{self.__class__.__name__} "{param_name}" with value '
-                    f'"{param_value}" is not of {param_type} or None.'
+                    f"{self.__class__.__name__} '{param_name}' with value "
+                    f"'{param_value}' is not of {param_type} or None."
                 ),
                 OptionalParameterTypeWarning,
             )
