@@ -386,7 +386,9 @@ class TestOptionalParameter:
                 action="always",
                 category=luigi_tools.parameter.OptionalParameterTypeWarning,
             )
-            assert luigi.build([TestConfig(param_single="0", param_multi="1")], local_scheduler=True)
+            assert luigi.build(
+                [TestConfig(param_single="0", param_multi="1")], local_scheduler=True
+            )
 
         assert len(record) == 2
         assert issubclass(record[0].category, luigi_tools.parameter.OptionalParameterTypeWarning)
