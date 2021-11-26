@@ -17,6 +17,7 @@ import warnings
 from pathlib import Path
 
 import luigi
+import luigi_tools
 
 
 class OptionalParameterTypeWarning(UserWarning):
@@ -91,6 +92,12 @@ class PathParameter(luigi.Parameter):
         absolute (bool): the given path is converted to an absolute path.
         create (bool): a folder is automatically created to the given path.
         exists (bool): raise a :class:`ValueError` if the path does not exist.
+
+    .. moved_to_luigi::
+        :previous_luigi_version: 3.0.3
+
+        The moved version dropped the ``create`` parameter as it was confusing for users that may
+        use it instead of using a target.
     """
 
     def __init__(self, *args, absolute=False, create=False, exists=False, **kwargs):
@@ -99,6 +106,8 @@ class PathParameter(luigi.Parameter):
         self.absolute = absolute
         self.create = create
         self.exists = exists
+
+        luigi_tools.moved_to_luigi_warning(previous_luigi_version="3.0.3")
 
     def normalize(self, x):
         """Normalize the given value to a :class:`pathlib.Path` object."""
@@ -113,9 +122,18 @@ class PathParameter(luigi.Parameter):
 
 
 class OptionalParameter:
-    """Mixin to make a parameter class optional."""
+    """Mixin to make a parameter class optional.
+
+    .. moved_to_luigi::
+        :previous_luigi_version: 3.0.3
+    """
 
     expected_type = type(None)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        luigi_tools.moved_to_luigi_warning(previous_luigi_version="3.0.3")
 
     def serialize(self, x):
         """Parse the given value if the value is not None else return an empty string."""
