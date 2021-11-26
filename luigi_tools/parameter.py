@@ -141,10 +141,15 @@ class OptionalParameter:
 
     def _warn_on_wrong_param_type(self, param_name, param_value):
         if not isinstance(param_value, self.expected_type) and param_value is not None:
+            try:
+                # pylint: disable=not-an-iterable
+                param_type = f"any type in {[i.__name__ for i in self.expected_type]}"
+            except TypeError:
+                param_type = f"type '{self.expected_type.__name__}'"
             warnings.warn(
                 (
-                    f'{self.__class__.__name__} "{param_name}" with value '
-                    f'"{param_value}" is not of type {self.expected_type.__name__} or None.'
+                    f"{self.__class__.__name__} '{param_name}' with value "
+                    f"'{param_value}' is not of {param_type} or None."
                 ),
                 OptionalParameterTypeWarning,
             )
@@ -213,4 +218,4 @@ class OptionalTupleParameter(OptionalParameter, luigi.TupleParameter):
 class OptionalPathParameter(OptionalParameter, PathParameter):
     """Class to parse optional path parameters."""
 
-    expected_type = str
+    expected_type = (str, Path)

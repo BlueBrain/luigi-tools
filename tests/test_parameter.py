@@ -350,8 +350,57 @@ class TestOptionalParameter:
             assert len(w) == 1
             assert issubclass(w[0].category, luigi_tools.parameter.OptionalParameterTypeWarning)
             assert str(w[0].message) == (
-                'OptionalIntParameter "a" with value "zz" is not of type int or None.'
+                "OptionalIntParameter 'a' with value 'zz' is not of type 'int' or None."
             )
+
+    def test_warning(current_test):
+        class TestOptionalFloatParameterSingleType(
+            luigi_tools.parameter.OptionalParameter, luigi.FloatParameter
+        ):
+            """Class to parse optional float parameters."""
+
+            expected_type = float
+
+        class TestOptionalFloatParameterMultiTypes(
+            luigi_tools.parameter.OptionalParameter, luigi.FloatParameter
+        ):
+            """Class to parse optional float parameters."""
+
+            expected_type = (int, float)
+
+        class TestConfig(luigi.Config):
+            param_single = TestOptionalFloatParameterSingleType()
+            param_multi = TestOptionalFloatParameterMultiTypes()
+
+        with warnings.catch_warnings(record=True) as record:
+            TestConfig(param_single=0.0, param_multi=1.0)
+
+        assert len(record) == 0
+
+        with warnings.catch_warnings(record=True) as record:
+            warnings.filterwarnings(
+                action="ignore",
+                category=Warning,
+            )
+            warnings.simplefilter(
+                action="always",
+                category=luigi_tools.parameter.OptionalParameterTypeWarning,
+            )
+            assert luigi.build(
+                [TestConfig(param_single="0", param_multi="1")], local_scheduler=True
+            )
+
+        assert len(record) == 2
+        assert issubclass(record[0].category, luigi_tools.parameter.OptionalParameterTypeWarning)
+        assert issubclass(record[1].category, luigi_tools.parameter.OptionalParameterTypeWarning)
+        assert str(record[0].message) == (
+            """TestOptionalFloatParameterSingleType 'param_single' with value '0' is not of type """
+            """'float' or None."""
+        )
+        assert str(record[1].message) == (
+            """TestOptionalFloatParameterMultiTypes 'param_multi' with value '1' is not of any """
+            """type in ['int', 'float'] or None."""
+        )
 
     def actual_test(current_test, cls, default, expected_value, expected_type, bad_data, **kwargs):
         class TestConfig(luigi.Config):
@@ -382,7 +431,7 @@ class TestOptionalParameter:
                 else:
                     assert warnings.warn.call_count == 1
                     warnings.warn.assert_called_with(
-                        '{} "param" with value "{}" is not of type {} or None.'.format(
+                        "{} 'param' with value '{}' is not of type '{}' or None.".format(
                             cls.__name__, bad_data, expected_type
                         ),
                         luigi_tools.parameter.OptionalParameterTypeWarning,

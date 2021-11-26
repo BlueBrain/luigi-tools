@@ -20,8 +20,8 @@ from pathlib import Path
 import luigi
 import pytest
 
-import luigi_tools.task
 import luigi_tools.target
+import luigi_tools.task
 import luigi_tools.util
 
 from .tools import create_not_empty_file
