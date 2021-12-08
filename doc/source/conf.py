@@ -17,7 +17,7 @@ from pkg_resources import get_distribution
 from luigi import Parameter
 from luigi_tools.util import _param_repr
 
-sys.path.insert(0, os.path.abspath('_ext'))
+sys.path.insert(0, os.path.abspath("_ext"))
 
 # -- Project information -----------------------------------------------------
 

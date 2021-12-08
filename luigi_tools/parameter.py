@@ -21,7 +21,11 @@ import luigi_tools
 
 
 class OptionalParameterTypeWarning(UserWarning):
-    """Warning class for OptionalParameter with wrong type."""
+    """Warning class for OptionalParameter with wrong type.
+
+    .. moved_to_luigi::
+        :previous_luigi_version: 3.0.3
+    """
 
 
 class ExtParameter(luigi.Parameter):
@@ -174,66 +178,110 @@ class OptionalParameter:
 
 
 class OptionalStrParameter(OptionalParameter, luigi.Parameter):
-    """Class to parse optional str parameters."""
+    """Class to parse optional str parameters.
+
+    .. moved_to_luigi::
+        :previous_luigi_version: 3.0.3
+    """
 
     expected_type = str
 
 
 class OptionalBoolParameter(OptionalParameter, BoolParameter):
-    """Class to parse optional bool parameters."""
+    """Class to parse optional bool parameters.
+
+    .. moved_to_luigi::
+        :previous_luigi_version: 3.0.3
+    """
 
     expected_type = bool
 
 
 class OptionalIntParameter(OptionalParameter, luigi.IntParameter):
-    """Class to parse optional int parameters."""
+    """Class to parse optional int parameters.
+
+    .. moved_to_luigi::
+        :previous_luigi_version: 3.0.3
+    """
 
     expected_type = int
 
 
 class OptionalFloatParameter(OptionalParameter, luigi.FloatParameter):
-    """Class to parse optional float parameters."""
+    """Class to parse optional float parameters.
+
+    .. moved_to_luigi::
+        :previous_luigi_version: 3.0.3
+    """
 
     expected_type = float
 
 
 class OptionalNumericalParameter(OptionalParameter, luigi.NumericalParameter):
-    """Class to parse optional numerical parameters."""
+    """Class to parse optional numerical parameters.
+
+    .. moved_to_luigi::
+        :previous_luigi_version: 3.0.3
+    """
 
     expected_type = float
 
 
 class OptionalRatioParameter(OptionalParameter, RatioParameter):
-    """Class to parse optional ratio parameters."""
+    """Class to parse optional ratio parameters.
+
+    .. moved_to_luigi::
+        :previous_luigi_version: 3.0.3
+    """
 
     expected_type = float
 
 
 class OptionalChoiceParameter(OptionalParameter, luigi.ChoiceParameter):
-    """Class to parse optional choice parameters."""
+    """Class to parse optional choice parameters.
+
+    .. moved_to_luigi::
+        :previous_luigi_version: 3.0.3
+    """
 
     expected_type = str
 
 
 class OptionalListParameter(OptionalParameter, luigi.ListParameter):
-    """Class to parse optional list parameters."""
+    """Class to parse optional list parameters.
+
+    .. moved_to_luigi::
+        :previous_luigi_version: 3.0.3
+    """
 
     expected_type = tuple
 
 
 class OptionalDictParameter(OptionalParameter, luigi.DictParameter):
-    """Class to parse optional dict parameters."""
+    """Class to parse optional dict parameters.
+
+    .. moved_to_luigi::
+        :previous_luigi_version: 3.0.3
+    """
 
     expected_type = luigi.freezing.FrozenOrderedDict
 
 
 class OptionalTupleParameter(OptionalParameter, luigi.TupleParameter):
-    """Class to parse optional tuple parameters."""
+    """Class to parse optional tuple parameters.
+
+    .. moved_to_luigi::
+        :previous_luigi_version: 3.0.3
+    """
 
     expected_type = tuple
 
 
 class OptionalPathParameter(OptionalParameter, PathParameter):
-    """Class to parse optional path parameters."""
+    """Class to parse optional path parameters.
+
+    .. moved_to_luigi::
+        :previous_luigi_version: 3.0.3
+    """
 
     expected_type = (str, Path)

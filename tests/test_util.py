@@ -458,14 +458,16 @@ def test_deprecation_warning():
             " It will be deprecated in version 3.4.5."
         ),
     ):
-        luigi_tools.moved_to_luigi_warning(previous_luigi_version="1.2.3", deprecation_version="3.4.5")
+        luigi_tools.moved_to_luigi_warning(
+            previous_luigi_version="1.2.3", deprecation_version="3.4.5"
+        )
 
     with pytest.raises(
         ValueError,
         match=(
             "Either the 'luigi_version' or the 'previous_luigi_version' argument must be not None "
             "but not both of them"
-        )
+        ),
     ):
         luigi_tools.moved_to_luigi_warning()
 
@@ -474,6 +476,6 @@ def test_deprecation_warning():
         match=(
             "Either the 'luigi_version' or the 'previous_luigi_version' argument must be not None "
             "but not both of them"
-        )
+        ),
     ):
         luigi_tools.moved_to_luigi_warning("1.2.3", "3.4.5")

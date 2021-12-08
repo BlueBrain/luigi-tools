@@ -24,7 +24,9 @@ class MovedToLuigiWarning(DeprecationWarning):
     """Warning for features moved to the official luigi package."""
 
 
-def moved_to_luigi_warning(luigi_version=None, previous_luigi_version=None, deprecation_version=None):
+def moved_to_luigi_warning(
+    luigi_version=None, previous_luigi_version=None, deprecation_version=None
+):
     """Raise a deprecation warning for features moved to official luigi package.
 
     Args:
@@ -40,7 +42,7 @@ def moved_to_luigi_warning(luigi_version=None, previous_luigi_version=None, depr
             "Either the 'luigi_version' or the 'previous_luigi_version' argument must be not None "
             "but not both of them"
         )
-    elif luigi_version is not None:
+    if luigi_version is not None:
         msg = (
             "This feature was moved to the luigi package and is available since version "
             f"{luigi_version}."
