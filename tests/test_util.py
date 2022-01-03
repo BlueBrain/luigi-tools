@@ -21,6 +21,7 @@ import luigi
 import pytest
 from luigi.parameter import _no_value as PARAM_NO_VALUE
 
+import luigi_tools
 import luigi_tools.task
 import luigi_tools.target
 import luigi_tools.util
@@ -424,3 +425,57 @@ class TestSetLuigiConfig:
         config.read_dict(params)
         with set_luigi_config(config):
             assert luigi.build([Task(expected_a="a_from_cfg")], local_scheduler=True)
+
+
+def test_deprecation_warning():
+    with pytest.warns(
+        luigi_tools.MovedToLuigiWarning,
+        match="This feature was moved to the luigi package and is available since version 1.2.3.",
+    ):
+        luigi_tools.moved_to_luigi_warning("1.2.3")
+
+    with pytest.warns(
+        luigi_tools.MovedToLuigiWarning,
+        match=(
+            "This feature was moved to the luigi package and is available since version 1.2.3. It "
+            "will be deprecated in version 3.4.5."
+        ),
+    ):
+        luigi_tools.moved_to_luigi_warning("1.2.3", deprecation_version="3.4.5")
+
+    with pytest.warns(
+        luigi_tools.MovedToLuigiWarning,
+        match=(
+            "This feature was moved to the luigi package and will be available after version 1.2.3."
+        ),
+    ):
+        luigi_tools.moved_to_luigi_warning(previous_luigi_version="1.2.3")
+
+    with pytest.warns(
+        luigi_tools.MovedToLuigiWarning,
+        match=(
+            "This feature was moved to the luigi package and will be available after version 1.2.3."
+            " It will be deprecated in version 3.4.5."
+        ),
+    ):
+        luigi_tools.moved_to_luigi_warning(
+            previous_luigi_version="1.2.3", deprecation_version="3.4.5"
+        )
+
+    with pytest.raises(
+        ValueError,
+        match=(
+            "Either the 'luigi_version' or the 'previous_luigi_version' argument must be not None "
+            "but not both of them"
+        ),
+    ):
+        luigi_tools.moved_to_luigi_warning()
+
+    with pytest.raises(
+        ValueError,
+        match=(
+            "Either the 'luigi_version' or the 'previous_luigi_version' argument must be not None "
+            "but not both of them"
+        ),
+    ):
+        luigi_tools.moved_to_luigi_warning("1.2.3", "3.4.5")

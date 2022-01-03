@@ -26,6 +26,7 @@ reqs = [
 
 docs_reqs = [
     "m2r2",
+    "mistune<2",
     "sphinx",
     "sphinx-bluebrain-theme",
 ]

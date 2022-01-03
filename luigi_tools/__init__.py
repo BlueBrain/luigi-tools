@@ -13,6 +13,49 @@
 # limitations under the License.
 
 """This module contains some generic luigi tools."""
+import warnings
+
 from pkg_resources import get_distribution
 
 __version__ = get_distribution("luigi-tools").version
+
+
+class MovedToLuigiWarning(DeprecationWarning):
+    """Warning for features moved to the official luigi package."""
+
+
+def moved_to_luigi_warning(
+    luigi_version=None, previous_luigi_version=None, deprecation_version=None
+):
+    """Raise a deprecation warning for features moved to official luigi package.
+
+    Args:
+        luigi_version (str): The version of the luigi package from which the feature is available.
+        previous_luigi_version (str): The version of the ``luigi`` package after which the feature
+            is available (use this when the feature is merged into the master branch of the
+            ``luigi`` package but it is not released yet).
+        deprecation_version (str): The version of the ``luigi_tools`` package from which the feature
+            will be removed.
+    """
+    if (luigi_version is None) == (previous_luigi_version is None):
+        raise ValueError(
+            "Either the 'luigi_version' or the 'previous_luigi_version' argument must be not None "
+            "but not both of them"
+        )
+    if luigi_version is not None:
+        msg = (
+            "This feature was moved to the luigi package and is available since version "
+            f"{luigi_version}."
+        )
+    else:
+        msg = (
+            "This feature was moved to the luigi package and will be available after version "
+            f"{previous_luigi_version}."
+        )
+
+    if deprecation_version is not None:
+        msg += f" It will be deprecated in version {deprecation_version}."
+    warnings.warn(
+        msg,
+        MovedToLuigiWarning,
+    )
