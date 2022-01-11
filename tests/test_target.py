@@ -186,10 +186,10 @@ class TestOutputTarget:
 
     def test_super_prefix(self, tmpdir, reset_prefix):
         class SubOutputLocalTarget(luigi_tools.target.OutputLocalTarget):
-            __prefix = Path("sub_prefix")
+            __prefix = "sub_prefix"  # Use a string
 
         class SubSubOutputLocalTarget(SubOutputLocalTarget):
-            __prefix = Path("sub_sub_prefix")
+            __prefix = Path("sub_sub_prefix")  # Use a pathlib.Path
 
         class NoPrefix(SubSubOutputLocalTarget):
             """Test that a target without prefix in the MRO does not break the feature."""
