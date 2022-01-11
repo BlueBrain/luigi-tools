@@ -129,7 +129,7 @@ class OutputLocalTarget(luigi.LocalTarget):
     @classmethod
     def get_default_prefix(cls):
         """Return the default prefix."""
-        return getattr(cls, cls._mangled_prefix_name(), Path()) or Path()
+        return cls._format_prefix(getattr(cls, cls._mangled_prefix_name(), ""))
 
     @staticmethod
     def _format_prefix(prefix):
@@ -146,7 +146,7 @@ class OutputLocalTarget(luigi.LocalTarget):
 
     def get_prefix(self):
         """Return the default prefix."""
-        return getattr(self, self._mangled_prefix_name(), Path()) or Path()
+        return self._format_prefix(getattr(self, self._mangled_prefix_name(), ""))
 
     def set_prefix(self, prefix):
         """Set the prefix of the current instance."""
