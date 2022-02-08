@@ -104,7 +104,7 @@ class GlobalParamMixin:
             L.debug("Attributes of %s task after global processing:", class_name)
             for name in self.get_param_names():
                 try:
-                    L.debug("Atribute: %s == %s", name, getattr(self, name))
+                    L.debug("Attribute: %s == %s", name, getattr(self, name))
                 except Exception:  # pylint: disable=broad-except; # pragma: no cover
                     L.debug("Can't print '%s' attribute for unknown reason", name)
 

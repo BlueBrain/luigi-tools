@@ -827,7 +827,7 @@ class TestLogTargetMixin:
         res = [i for i in caplog.record_tuples if i[0] == "luigi_tools.task"]
         assert res == [
             ("luigi_tools.task", 10, "Attributes of TaskE task after global processing:"),
-            ("luigi_tools.task", 10, "Atribute: e == e"),
+            ("luigi_tools.task", 10, "Attribute: e == e"),
             ("luigi_tools.task", 10, f"Output of TaskE task: {tmpdir / 'test_e'}"),
         ]
 
