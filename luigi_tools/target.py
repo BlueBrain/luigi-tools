@@ -91,8 +91,7 @@ class OutputLocalTarget(luigi.LocalTarget):
 
     def __init__(self, *args, prefix=None, create_parent=True, **kwargs):
         super().__init__(*args, **kwargs)
-        if prefix is not None:
-            self.set_prefix(prefix)
+        self.set_prefix(prefix)
         if create_parent:
             self.mkdir()
 
@@ -100,6 +99,14 @@ class OutputLocalTarget(luigi.LocalTarget):
     def _mangled_prefix_name(cls):
         attr_name = "_" + cls.__name__ + "__prefix"
         return attr_name
+
+    def __repr__(self):
+        """Custom repr method to include the path."""
+        return f"<{self.__class__.__name__} at 0x{id(self)}; {self.path}>"
+
+    def __str__(self):
+        """Custom str method to return the path of this target."""
+        return self.path
 
     @property
     def path(self):
@@ -126,14 +133,14 @@ class OutputLocalTarget(luigi.LocalTarget):
         """The path stored in this target returned as a :class:`pathlib.Path` object."""
         return (self.super_prefix() / self.get_prefix()) / self._path
 
+    @staticmethod
+    def _format_prefix(prefix):
+        return Path(prefix or "")
+
     @classmethod
     def get_default_prefix(cls):
         """Return the default prefix."""
         return cls._format_prefix(getattr(cls, cls._mangled_prefix_name(), ""))
-
-    @staticmethod
-    def _format_prefix(prefix):
-        return Path(prefix or "")
 
     @classmethod
     def set_default_prefix(cls, prefix):
@@ -146,11 +153,11 @@ class OutputLocalTarget(luigi.LocalTarget):
 
     def get_prefix(self):
         """Return the default prefix."""
-        return self._format_prefix(getattr(self, self._mangled_prefix_name(), ""))
+        return self._format_prefix(self._instance_prefix or self.get_default_prefix())
 
     def set_prefix(self, prefix):
         """Set the prefix of the current instance."""
-        return setattr(self, self._mangled_prefix_name(), self._format_prefix(prefix))
+        self._instance_prefix = prefix
 
     def mkdir(self, is_dir=False, mode=511, parents=True, exist_ok=True):
         """Create the directory of this path.
