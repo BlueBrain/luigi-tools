@@ -22,13 +22,12 @@ import pytest
 from luigi.parameter import _no_value as PARAM_NO_VALUE
 
 import luigi_tools
-import luigi_tools.task
 import luigi_tools.target
+import luigi_tools.task
 import luigi_tools.util
 from luigi_tools.util import set_luigi_config
 
 from .tools import create_not_empty_file
-
 
 DATA = Path(__file__).parent / "data"
 
@@ -178,7 +177,10 @@ def test_dependency_graph(tmpdir, task_collection):
         "style": "setlinewidth(0.5),filled",
         "fillcolor": "white",
     }
-    assert dot_with_attrs.edge_attr == {"arrowsize": "0.75", "style": "setlinewidth(0.5)"}
+    assert dot_with_attrs.edge_attr == {
+        "arrowsize": "0.75",
+        "style": "setlinewidth(0.5)",
+    }
 
     # Test graphviz_dependency_graph() with empty graph
     with pytest.raises(ValueError):

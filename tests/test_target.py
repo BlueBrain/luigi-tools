@@ -39,9 +39,14 @@ class TestOutputTarget:
     def test_get_default_prefix(self, tmpdir, reset_prefix):
         expected = Path()
         assert luigi_tools.target.OutputLocalTarget.get_default_prefix() == expected
-        assert luigi_tools.target.OutputLocalTarget("path").get_default_prefix() == expected
         assert (
-            luigi_tools.target.OutputLocalTarget("path", prefix=tmpdir).get_default_prefix()
+            luigi_tools.target.OutputLocalTarget("path", create_parent=False).get_default_prefix()
+            == expected
+        )
+        assert (
+            luigi_tools.target.OutputLocalTarget(
+                "path", prefix=tmpdir, create_parent=False
+            ).get_default_prefix()
             == expected
         )
 
@@ -49,44 +54,61 @@ class TestOutputTarget:
 
         expected = Path(tmpdir / "subdir")
         assert luigi_tools.target.OutputLocalTarget.get_default_prefix() == expected
-        assert luigi_tools.target.OutputLocalTarget("path").get_default_prefix() == expected
         assert (
-            luigi_tools.target.OutputLocalTarget("path", prefix=tmpdir).get_default_prefix()
+            luigi_tools.target.OutputLocalTarget("path", create_parent=False).get_default_prefix()
+            == expected
+        )
+        assert (
+            luigi_tools.target.OutputLocalTarget(
+                "path", prefix=tmpdir, create_parent=False
+            ).get_default_prefix()
             == expected
         )
 
     def test_prefix(self, tmpdir, reset_prefix):
-        assert luigi_tools.target.OutputLocalTarget("path").get_prefix() == Path()
-        assert luigi_tools.target.OutputLocalTarget("path", prefix=tmpdir).get_prefix() == Path(
-            tmpdir
+        assert (
+            luigi_tools.target.OutputLocalTarget("path", create_parent=False).get_prefix() == Path()
         )
+        assert luigi_tools.target.OutputLocalTarget(
+            "path", prefix=tmpdir, create_parent=False
+        ).get_prefix() == Path(tmpdir)
 
         luigi_tools.target.OutputLocalTarget.set_default_prefix(tmpdir / "subdir")
 
-        assert luigi_tools.target.OutputLocalTarget("path").get_prefix() == Path(tmpdir / "subdir")
+        assert luigi_tools.target.OutputLocalTarget(
+            "path", create_parent=False
+        ).get_prefix() == Path(tmpdir / "subdir")
         assert (
-            luigi_tools.target.OutputLocalTarget("path", prefix=tmpdir / "test_subdir").get_prefix()
+            luigi_tools.target.OutputLocalTarget(
+                "path", prefix=tmpdir / "test_subdir", create_parent=False
+            ).get_prefix()
             == Path(tmpdir) / "test_subdir"
         )
         assert luigi_tools.target.OutputLocalTarget(
-            "path", prefix="test_subdir"
+            "path", prefix="test_subdir", create_parent=False
         ).get_prefix() == Path("test_subdir")
 
     def test_pathlib_path(self, tmpdir, reset_prefix):
         tmpdir = Path(tmpdir)
 
         # No default prefix and no prefix
-        assert luigi_tools.target.OutputLocalTarget("path").pathlib_path == Path("path")
+        assert luigi_tools.target.OutputLocalTarget(
+            "path", create_parent=False
+        ).pathlib_path == Path("path")
 
         # No default prefix and absolute prefix
         assert (
-            luigi_tools.target.OutputLocalTarget("path", prefix=tmpdir).pathlib_path
+            luigi_tools.target.OutputLocalTarget(
+                "path", prefix=tmpdir, create_parent=False
+            ).pathlib_path
             == tmpdir / "path"
         )
 
         # No default prefix and relative prefix
         assert (
-            luigi_tools.target.OutputLocalTarget("path", prefix="test_subdir").pathlib_path
+            luigi_tools.target.OutputLocalTarget(
+                "path", prefix="test_subdir", create_parent=False
+            ).pathlib_path
             == Path("test_subdir") / "path"
         )
 
@@ -95,21 +117,23 @@ class TestOutputTarget:
 
         # Default prefix and no prefix
         assert (
-            luigi_tools.target.OutputLocalTarget("path").pathlib_path
+            luigi_tools.target.OutputLocalTarget("path", create_parent=False).pathlib_path
             == tmpdir / "absolute_default_subdir" / "path"
         )
 
         # Default prefix and absolute prefix
         assert (
             luigi_tools.target.OutputLocalTarget(
-                "path", prefix=tmpdir / "other_subdir"
+                "path", prefix=tmpdir / "other_subdir", create_parent=False
             ).pathlib_path
             == tmpdir / "other_subdir" / "path"
         )
 
         # Default prefix and relative prefix (replace only the default suffix of the current class)
         assert (
-            luigi_tools.target.OutputLocalTarget("path", prefix="test_subdir").pathlib_path
+            luigi_tools.target.OutputLocalTarget(
+                "path", prefix="test_subdir", create_parent=False
+            ).pathlib_path
             == Path("test_subdir") / "path"
         )
 
@@ -118,21 +142,23 @@ class TestOutputTarget:
 
         # Default prefix and no prefix
         assert (
-            luigi_tools.target.OutputLocalTarget("path").pathlib_path
+            luigi_tools.target.OutputLocalTarget("path", create_parent=False).pathlib_path
             == Path("relative_default_subdir") / "path"
         )
 
         # Default prefix and absolute prefix
         assert (
             luigi_tools.target.OutputLocalTarget(
-                "path", prefix=tmpdir / "other_subdir"
+                "path", prefix=tmpdir / "other_subdir", create_parent=False
             ).pathlib_path
             == tmpdir / "other_subdir" / "path"
         )
 
         # Default prefix and relative prefix (replace only the default suffix of the current class)
         assert (
-            luigi_tools.target.OutputLocalTarget("path", prefix="test_subdir").pathlib_path
+            luigi_tools.target.OutputLocalTarget(
+                "path", prefix="test_subdir", create_parent=False
+            ).pathlib_path
             == Path("test_subdir") / "path"
         )
 
@@ -170,17 +196,25 @@ class TestOutputTarget:
 
             def output(self):
                 return [
-                    luigi_tools.target.OutputLocalTarget("output_target.test", prefix=tmpdir),
                     luigi_tools.target.OutputLocalTarget(
-                        tmpdir / "absolute_output_target_no_prefix.test"
+                        "output_target.test", prefix=tmpdir, create_parent=False
                     ),
                     luigi_tools.target.OutputLocalTarget(
-                        "relative_output_target.test", prefix=tmpdir / "test" / ".."
+                        tmpdir / "absolute_output_target_no_prefix.test",
+                        create_parent=False,
                     ),
-                    luigi_tools.target.OutputLocalTarget("output_target_default_prefix.test"),
+                    luigi_tools.target.OutputLocalTarget(
+                        "relative_output_target.test",
+                        prefix=tmpdir / "test" / "..",
+                        create_parent=False,
+                    ),
+                    luigi_tools.target.OutputLocalTarget(
+                        "output_target_default_prefix.test", create_parent=False
+                    ),
                     luigi_tools.target.OutputLocalTarget(
                         tmpdir / "absolute_output_target_prefix.test",
                         prefix=tmpdir / "test",
+                        create_parent=False,
                     ),
                 ]
 
@@ -189,7 +223,7 @@ class TestOutputTarget:
         assert luigi.build([TaskA_OutputLocalTarget()], local_scheduler=True)
 
         luigi_tools.target.OutputLocalTarget.set_default_prefix(None)
-        target = luigi_tools.target.OutputLocalTarget("test", prefix=None)
+        target = luigi_tools.target.OutputLocalTarget("test", prefix=None, create_parent=False)
         assert target.path == "test"
         luigi_tools.target.OutputLocalTarget.set_default_prefix(None)
         assert luigi_tools.target.OutputLocalTarget.get_default_prefix().absolute() == Path(
@@ -198,7 +232,7 @@ class TestOutputTarget:
 
         other_subdir = tmpdir / "other_subdir"
         luigi_tools.target.OutputLocalTarget.set_default_prefix(other_subdir / "test" / "create")
-        target = luigi_tools.target.OutputLocalTarget("test_file", prefix=None)
+        target = luigi_tools.target.OutputLocalTarget("test_file", prefix=None, create_parent=False)
 
         target.mkdir()
         assert target.pathlib_path.parent.is_dir()
@@ -234,18 +268,28 @@ class TestOutputTarget:
         class SubOutputLocalTarget(luigi_tools.target.OutputLocalTarget):
             __prefix = "sub_prefix"  # Use a string
 
+            def __init__(self, *args, prefix=None, create_parent=False, **kwargs):
+                super().__init__(*args, prefix=prefix, create_parent=create_parent, **kwargs)
+
         class SubSubOutputLocalTarget(SubOutputLocalTarget):
             __prefix = Path("sub_sub_prefix")  # Use a pathlib.Path
+
+            def __init__(self, *args, prefix=None, create_parent=False, **kwargs):
+                super().__init__(*args, prefix=prefix, create_parent=create_parent, **kwargs)
 
         class NoPrefix(SubSubOutputLocalTarget):
             """Test that a target without prefix in the MRO does not break the feature."""
 
-            pass
+            def __init__(self, *args, prefix=None, create_parent=False, **kwargs):
+                super().__init__(*args, prefix=prefix, create_parent=create_parent, **kwargs)
 
         class SubSubSubOutputLocalTarget(NoPrefix):
             __prefix = Path("sub_sub_sub_prefix")
 
-        assert luigi_tools.target.OutputLocalTarget("path").path == "path"
+            def __init__(self, *args, prefix=None, create_parent=False, **kwargs):
+                super().__init__(*args, prefix=prefix, create_parent=create_parent, **kwargs)
+
+        assert luigi_tools.target.OutputLocalTarget("path", create_parent=False).path == "path"
 
         # Test with default prefixes
         assert SubOutputLocalTarget("path").path == "sub_prefix/path"
@@ -327,7 +371,8 @@ class TestOutputTarget:
         """Test a child class without any default prefix."""
 
         class TestTarget(luigi_tools.target.OutputLocalTarget):
-            pass
+            def __init__(self, *args, prefix=None, create_parent=False, **kwargs):
+                super().__init__(*args, prefix=prefix, create_parent=create_parent, **kwargs)
 
         test_target = TestTarget("a_path")
         assert test_target.path == "a_path"
@@ -345,10 +390,12 @@ class TestOutputTarget:
         """Test a child class when a default prefix is given to OutputLocalTarget."""
 
         class TestTarget(luigi_tools.target.OutputLocalTarget):
-            pass
+            def __init__(self, *args, prefix=None, create_parent=False, **kwargs):
+                super().__init__(*args, prefix=prefix, create_parent=create_parent, **kwargs)
 
         class TestTargetChild(TestTarget):
-            pass
+            def __init__(self, *args, prefix=None, create_parent=False, **kwargs):
+                super().__init__(*args, prefix=prefix, create_parent=create_parent, **kwargs)
 
         test_target = TestTarget("a_path")
         assert test_target.path == "parent_default_prefix/a_path"
@@ -405,23 +452,31 @@ class TestOutputTarget:
         assert test_target.path == "parent_default_prefix/child_instance_prefix/a_path"
 
     def test_repr_and_str(self):
-        assert str(luigi_tools.target.OutputLocalTarget("path")) == "path"
+        assert str(luigi_tools.target.OutputLocalTarget("path", create_parent=False)) == "path"
         assert (
-            str(luigi_tools.target.OutputLocalTarget("path", prefix="test_prefix"))
+            str(
+                luigi_tools.target.OutputLocalTarget(
+                    "path", prefix="test_prefix", create_parent=False
+                )
+            )
             == "test_prefix/path"
         )
 
         assert (
             re.match(
                 r"<OutputLocalTarget at 0x\S+; path>",
-                repr(luigi_tools.target.OutputLocalTarget("path")),
+                repr(luigi_tools.target.OutputLocalTarget("path", create_parent=False)),
             )
             is not None
         )
         assert (
             re.match(
                 r"<OutputLocalTarget at 0x\S+; test_prefix/path>",
-                repr(luigi_tools.target.OutputLocalTarget("path", prefix="test_prefix")),
+                repr(
+                    luigi_tools.target.OutputLocalTarget(
+                        "path", prefix="test_prefix", create_parent=False
+                    )
+                ),
             )
             is not None
         )
@@ -432,14 +487,18 @@ class TestOutputTarget:
             assert (
                 re.match(
                     r"<OutputLocalTarget at 0x\S+; default_prefix/path>",
-                    repr(luigi_tools.target.OutputLocalTarget("path")),
+                    repr(luigi_tools.target.OutputLocalTarget("path", create_parent=False)),
                 )
                 is not None
             )
             assert (
                 re.match(
                     r"<OutputLocalTarget at 0x\S+; test_prefix/path>",
-                    repr(luigi_tools.target.OutputLocalTarget("path", prefix="test_prefix")),
+                    repr(
+                        luigi_tools.target.OutputLocalTarget(
+                            "path", prefix="test_prefix", create_parent=False
+                        )
+                    ),
                 )
                 is not None
             )

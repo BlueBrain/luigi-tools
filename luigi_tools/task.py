@@ -23,7 +23,6 @@ from luigi_tools.util import apply_over_outputs
 from luigi_tools.util import recursive_check
 from luigi_tools.util import target_remove
 
-
 L = logging.getLogger(__name__)
 
 
@@ -223,7 +222,7 @@ class copy_params:
         @copy_params(another_m=ParamRef(AnotherTask, "m"))
         class MyFirstTask(GlobalParamMixin, luigi.Task):
             def run(self):
-               # this will be defined and print 1 if self.another_m is not explicitely set
+               # this will be defined and print 1 if self.another_m is not explicitly set
                # (this means that self.another_m == luigi_tools.tasks._no_default_value)
                print(self.another_m)
                # ...

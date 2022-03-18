@@ -21,8 +21,8 @@ import pytest
 from luigi.util import inherits
 
 import luigi_tools.parameter
-import luigi_tools.task
 import luigi_tools.target
+import luigi_tools.task
 import luigi_tools.util
 from luigi_tools.task import DuplicatedParameterError
 from luigi_tools.task import GlobalParameterNoValueError
@@ -159,7 +159,13 @@ class TestCopyParams:
             assert luigi.build([TaskCopyListDictParams()], local_scheduler=True)
 
     def type_test(
-        self, cls_param, initial_value, str_initial_value, new_value, str_new_value, **kwargs
+        self,
+        cls_param,
+        initial_value,
+        str_initial_value,
+        new_value,
+        str_new_value,
+        **kwargs,
     ):
 
         # Test with parameters that are serialized to generate the task ID
@@ -208,7 +214,8 @@ class TestCopyParams:
             }
         ):
             assert luigi.build(
-                [TaskWithTypeParams(), TaskCopyTypeParams(with_value=True)], local_scheduler=True
+                [TaskWithTypeParams(), TaskCopyTypeParams(with_value=True)],
+                local_scheduler=True,
             )
 
         with set_luigi_config(
@@ -222,7 +229,8 @@ class TestCopyParams:
             }
         ):
             assert luigi.build(
-                [TaskWithTypeParams(), TaskCopyTypeParams(with_value=False)], local_scheduler=True
+                [TaskWithTypeParams(), TaskCopyTypeParams(with_value=False)],
+                local_scheduler=True,
             )
         print("test end with", cls_param)
 
@@ -237,7 +245,11 @@ class TestCopyParams:
 
     def test_optional_list_param(self, tmp_working_dir):
         self.type_test(
-            luigi_tools.parameter.OptionalListParameter, (1, 2), "[1, 2]", (10, 20), "[10, 20]"
+            luigi_tools.parameter.OptionalListParameter,
+            (1, 2),
+            "[1, 2]",
+            (10, 20),
+            "[10, 20]",
         )
 
 
@@ -526,7 +538,10 @@ class TestCopyParamsWithGlobals:
             }
         ):
             assert luigi.build(
-                [GlobalParamTaskWithListDictParams(), GlobalParamTaskCopyListDictParams()],
+                [
+                    GlobalParamTaskWithListDictParams(),
+                    GlobalParamTaskCopyListDictParams(),
+                ],
                 local_scheduler=True,
             )
 
@@ -809,7 +824,11 @@ class TestLogTargetMixin:
         assert res == []
 
     def test_output_logger_and_global_param(self, tmpdir, caplog):
-        class TaskE(luigi_tools.task.LogTargetMixin, luigi_tools.task.GlobalParamMixin, luigi.Task):
+        class TaskE(
+            luigi_tools.task.LogTargetMixin,
+            luigi_tools.task.GlobalParamMixin,
+            luigi.Task,
+        ):
             """"""
 
             e = luigi.Parameter(default="e")
@@ -826,7 +845,11 @@ class TestLogTargetMixin:
         assert luigi.build([TaskE()], local_scheduler=True)
         res = [i for i in caplog.record_tuples if i[0] == "luigi_tools.task"]
         assert res == [
-            ("luigi_tools.task", 10, "Attributes of TaskE task after global processing:"),
+            (
+                "luigi_tools.task",
+                10,
+                "Attributes of TaskE task after global processing:",
+            ),
             ("luigi_tools.task", 10, "Attribute: e == e"),
             ("luigi_tools.task", 10, f"Output of TaskE task: {tmpdir / 'test_e'}"),
         ]
