@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This module provides some fonctions to work with luigi tasks."""
+"""This module provides some functions to work with luigi tasks."""
 import logging
 import os
 import re
@@ -21,7 +21,6 @@ from pathlib import Path
 
 import luigi
 from luigi.parameter import _no_value as PARAM_NO_VALUE
-
 
 L = logging.getLogger(__name__)
 
@@ -71,7 +70,7 @@ def apply_over_inputs(task, func):
 
     The given function should accept the following arguments:
         * task_output: the output(s) of the required task(s) of the given task
-        * key=None: the key when the iterable is a dictionnary
+        * key=None: the key when the iterable is a dictionary
     """
     inputs = task.input()
     return apply_over_luigi_iterable(inputs, func)
@@ -82,7 +81,7 @@ def apply_over_outputs(task, func):
 
     The given function should accept the following arguments:
         * target: the output target(s) of the given task
-        * key=None: the key when the iterable is a dictionnary
+        * key=None: the key when the iterable is a dictionary
     """
     outputs = task.output()
 
@@ -98,11 +97,11 @@ def get_dependency_graph(task):
     Returns:
         list(luigi.Task): A list of (parent, child) tuples.
     """
-    childs = []
+    children = []
     for t in task.deps():
-        childs.append((task, t))
-        childs.extend(get_dependency_graph(t))
-    return childs
+        children.append((task, t))
+        children.extend(get_dependency_graph(t))
+    return children
 
 
 def _param_repr(description, default):

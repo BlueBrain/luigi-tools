@@ -16,12 +16,12 @@
 import warnings
 
 import luigi
-import pytest
 import mock
+import pytest
 
 import luigi_tools.parameter
-import luigi_tools.task
 import luigi_tools.target
+import luigi_tools.task
 import luigi_tools.util
 from luigi_tools.util import set_luigi_config
 
@@ -443,7 +443,11 @@ class TestOptionalParameter:
     def test_optional_str_parameter(self, tmp_working_dir):
         with set_luigi_config({"TestConfig": {"param": "expected value", "empty_param": ""}}):
             self.actual_test(
-                luigi_tools.parameter.OptionalStrParameter, None, "expected value", "str", 0
+                luigi_tools.parameter.OptionalStrParameter,
+                None,
+                "expected value",
+                "str",
+                0,
             )
             self.actual_test(
                 luigi_tools.parameter.OptionalStrParameter,
@@ -463,19 +467,35 @@ class TestOptionalParameter:
     def test_optional_bool_parameter(self, tmp_working_dir):
         with set_luigi_config({"TestConfig": {"param": "true", "empty_param": ""}}):
             self.actual_test(
-                luigi_tools.parameter.OptionalBoolParameter, None, True, "bool", "bad data"
+                luigi_tools.parameter.OptionalBoolParameter,
+                None,
+                True,
+                "bool",
+                "bad data",
             )
             self.actual_test(
-                luigi_tools.parameter.OptionalBoolParameter, False, True, "bool", "bad data"
+                luigi_tools.parameter.OptionalBoolParameter,
+                False,
+                True,
+                "bool",
+                "bad data",
             )
 
     def test_optional_float_parameter(self, tmp_working_dir):
         with set_luigi_config({"TestConfig": {"param": "10.5", "empty_param": ""}}):
             self.actual_test(
-                luigi_tools.parameter.OptionalFloatParameter, None, 10.5, "float", "bad data"
+                luigi_tools.parameter.OptionalFloatParameter,
+                None,
+                10.5,
+                "float",
+                "bad data",
             )
             self.actual_test(
-                luigi_tools.parameter.OptionalFloatParameter, 1.5, 10.5, "float", "bad data"
+                luigi_tools.parameter.OptionalFloatParameter,
+                1.5,
+                10.5,
+                "float",
+                "bad data",
             )
 
     def test_optional_dict_parameter(self, tmp_working_dir):
@@ -498,19 +518,35 @@ class TestOptionalParameter:
     def test_optional_list_parameter(self, tmp_working_dir):
         with set_luigi_config({"TestConfig": {"param": "[10.5]", "empty_param": ""}}):
             self.actual_test(
-                luigi_tools.parameter.OptionalListParameter, None, (10.5,), "tuple", "bad data"
+                luigi_tools.parameter.OptionalListParameter,
+                None,
+                (10.5,),
+                "tuple",
+                "bad data",
             )
             self.actual_test(
-                luigi_tools.parameter.OptionalListParameter, (1.5,), (10.5,), "tuple", "bad data"
+                luigi_tools.parameter.OptionalListParameter,
+                (1.5,),
+                (10.5,),
+                "tuple",
+                "bad data",
             )
 
     def test_optional_tuple_parameter(self, tmp_working_dir):
         with set_luigi_config({"TestConfig": {"param": "[10.5]", "empty_param": ""}}):
             self.actual_test(
-                luigi_tools.parameter.OptionalTupleParameter, None, (10.5,), "tuple", "bad data"
+                luigi_tools.parameter.OptionalTupleParameter,
+                None,
+                (10.5,),
+                "tuple",
+                "bad data",
             )
             self.actual_test(
-                luigi_tools.parameter.OptionalTupleParameter, (1.5,), (10.5,), "tuple", "bad data"
+                luigi_tools.parameter.OptionalTupleParameter,
+                (1.5,),
+                (10.5,),
+                "tuple",
+                "bad data",
             )
 
     def test_optional_numerical_parameter(self, tmp_working_dir):
