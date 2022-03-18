@@ -7,5 +7,6 @@
     "commitUrl": "https://github.com/BlueBrain/luigi-tools/commit/{id}",
     "issueUrl": "https://github.com/BlueBrain/luigi-tools/issues/{id}",
     "mergeUrl": "https://github.com/BlueBrain/luigi-tools/pull/{id}",
-    "compareUrl": "https://github.com/BlueBrain/luigi-tools/compare/{from}..{to}"
+    "compareUrl": "https://github.com/BlueBrain/luigi-tools/compare/{from}..{to}",
+    "startingVersion": "0.0.17"
 }
