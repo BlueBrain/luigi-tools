@@ -47,7 +47,7 @@ class MovedDirective(SphinxDirective):
         if "deprecation_version" in self.options:
             body.append(f"It will be deprecated in version {self.options['deprecation_version']}.")
         else:
-            body.append(f"It will be deprecated in a future version.")
+            body.append("It will be deprecated in a future version.")
 
         if self.content:
             body.append("")

@@ -21,7 +21,7 @@
 
 > 7 October 2021
 
-- Fix: __prefix attribute is no more mandatory for OutputLocalTarget childs (Adrien Berchet - [#14](https://github.com/BlueBrain/luigi-tools/pull/14))
+- Fix: __prefix attribute is no more mandatory for OutputLocalTarget children (Adrien Berchet - [#14](https://github.com/BlueBrain/luigi-tools/pull/14))
 
 ## [0.0.13](https://github.com/BlueBrain/luigi-tools/compare/0.0.12..0.0.13)
 

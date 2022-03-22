@@ -48,7 +48,17 @@ When you wish to contribute to the code base, please consider the following guid
 
 * Create your patch, **including appropriate test cases** (please note that the coverage must
   always be equal to 100%).
-* Run the full test suite, and ensure that all tests pass.
+* Run the full test suite, and ensure that all tests pass (at least with one of the required
+  python interpreters from py36 to py39):
+  ```shell
+  tox
+  ```
+
+  or
+  ```shell
+  tox -e py36 -e lint -e docs -e check-packaging
+  ```
+
 * Commit your changes using a descriptive commit message.
   ```shell
   git commit -a
@@ -67,9 +77,8 @@ When you wish to contribute to the code base, please consider the following guid
   * Make the required updates.
   * Re-run the test suites to ensure tests are still passing.
   * Rebase your branch and force push to your GitHub repository (this will update your Pull Request):
-
     ```shell
-    git rebase main -i
+    git rebase main
     git push -f
     ```
 
