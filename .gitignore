@@ -13,3 +13,6 @@ reports
 .vscode
 
 luigi_tools/version.py
+
+node_modules
+package-lock.json
