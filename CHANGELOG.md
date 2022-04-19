@@ -1,5 +1,29 @@
 # Changelog
 
+## [Unreleased](https://github.com/BlueBrain/luigi-tools/compare/0.0.17..HEAD)
+
+> 19 April 2022
+
+### CI Improvements
+
+- Move black, codespell, isort, pycodestyle and pydocstyle from tox to pre-commit (Adrien Berchet - [#27](https://github.com/BlueBrain/luigi-tools/pull/27))
+- Setup pre-commit and commitlint (Adrien Berchet - [#26](https://github.com/BlueBrain/luigi-tools/pull/26))
+
+### Uncategorized Changes
+
+- Move black, codespell, isort, pycodestyle and pydocstyle from tox to pre-commit (Adrien Berchet - [#27](https://github.com/BlueBrain/luigi-tools/pull/27))
+- Setup pre-commit and commitlint (Adrien Berchet - [#26](https://github.com/BlueBrain/luigi-tools/pull/26))
+- Add isort and codespell in lint and rework tox jobs (Adrien Berchet - [#25](https://github.com/BlueBrain/luigi-tools/pull/25))
+
+## [0.0.17](https://github.com/BlueBrain/luigi-tools/compare/0.0.16..0.0.17)
+
+> 17 March 2022
+
+### Uncategorized Changes
+
+- Improve the behavior of prefixes in targets and add custom str representations to them (Adrien Berchet - [#23](https://github.com/BlueBrain/luigi-tools/pull/23))
+- Fix typo (Adrien Berchet - [#22](https://github.com/BlueBrain/luigi-tools/pull/22))
+
 <!-- auto-changelog-above -->
 
 ## [0.0.16](https://github.com/BlueBrain/luigi-tools/compare/0.0.15..0.0.16)
