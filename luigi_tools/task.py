@@ -15,10 +15,13 @@
 """This module provides some specific luigi tasks and associated tools."""
 import logging
 import types
+import warnings
 from copy import deepcopy
 
 import luigi
+from luigi import configuration
 
+from luigi_tools.parameter import UnconsumedParameterWarning
 from luigi_tools.util import apply_over_outputs
 from luigi_tools.util import recursive_check
 from luigi_tools.util import target_remove
@@ -307,7 +310,47 @@ class copy_params:
         return task_that_inherits
 
 
-class WorkflowTask(GlobalParamMixin, RerunMixin, luigi.Task):
+class CheckUnconsumedParamsMixin:
+    """Mixin to check that all parameters from the config are consumed by the task."""
+
+    _issued_warnings = set()
+
+    @classmethod
+    def get_param_values(cls, params, args, kwargs):
+        """
+        Get the values of the parameters from the args and kwargs.
+
+        Args:
+            params (list): list of (param_name, Parameter).
+            args (list): positional arguments.
+            kwargs (dict): keyword arguments.
+
+        Returns:
+            list(str, Any): list of `(name, value)` tuples, one for each parameter.
+        """
+        values = super().get_param_values(params, args, kwargs)
+        result = [value[0] for value in values]
+
+        # Check for unconsumed parameters
+        conf = configuration.get_config()
+        task_family = cls.get_task_family()
+        if task_family in conf.sections():
+            for key, value in conf[task_family].items():
+                # Use a composite key because several tasks can have the same unknown parameters
+                composite_key = (task_family, key)
+                if key not in result and composite_key not in cls._issued_warnings:
+                    warnings.warn(
+                        "The configuration contains the parameter "
+                        f"'{key}' with value '{value}' that is not consumed by the task "
+                        f"'{task_family}'.",
+                        UnconsumedParameterWarning,
+                    )
+                    cls._issued_warnings.add(composite_key)
+
+        return values
+
+
+class WorkflowTask(CheckUnconsumedParamsMixin, GlobalParamMixin, RerunMixin, luigi.Task):
     """Default task used in workflows.
 
     This task can be forced running again by setting the 'rerun' parameter to True.
