@@ -15,6 +15,7 @@
 """Tests for luigi-tools tasks."""
 import json
 import logging
+import warnings
 
 import luigi
 import pytest
@@ -900,3 +901,48 @@ def test_remove_corrupted_output(tmpdir, caplog):
     with open(tmpdir / "matrix.dat", "r") as f_handle:
         matrix_values = f_handle.read().splitlines()
         assert len(matrix_values) == 6
+
+
+class TestCheckUnconsumedParamsMixin:
+    def test_unconsumed(self, tmpdir, caplog):
+        class TaskA(luigi_tools.task.WorkflowTask):
+            """"""
+
+            a = luigi.Parameter(default="a")
+
+            def run(self):
+                create_not_empty_file(self.output().path)
+
+            def output(self):
+                return luigi.LocalTarget(tmpdir / f"test_{self.a}")
+
+        with set_luigi_config(
+            {
+                "TaskA": {
+                    "a": "a",
+                    "b": "b",
+                    "c": "c",
+                },
+            }
+        ):
+            with warnings.catch_warnings(record=True) as w:
+                warnings.filterwarnings(
+                    action="ignore",
+                    category=Warning,
+                )
+                warnings.simplefilter(
+                    action="always",
+                    category=luigi_tools.parameter.UnconsumedParameterWarning,
+                )
+                assert luigi.build([TaskA()], local_scheduler=True)
+
+                assert len(w) == 2
+                for i, expected in zip(w, ["b", "c"]):
+                    assert issubclass(i.category, luigi_tools.parameter.UnconsumedParameterWarning)
+                    assert str(i.message) == (
+                        "The configuration contains the parameter "
+                        f"'{expected}' with value '{expected}' that is not consumed by the task "
+                        "'TaskA'."
+                    )
+
+        assert all([check_not_empty_file(i.path) for i in luigi.task.flatten(TaskA().output())])

@@ -29,6 +29,10 @@ class OptionalParameterTypeWarning(UserWarning):
     """
 
 
+class UnconsumedParameterWarning(UserWarning):
+    """Warning class for parameters that are not consumed by the task."""
+
+
 class ExtParameter(luigi.Parameter):
     """Class to parse file extension parameters."""
 
