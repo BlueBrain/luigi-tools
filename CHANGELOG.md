@@ -1,8 +1,8 @@
 # Changelog
 
-## [Unreleased](https://github.com/BlueBrain/luigi-tools/compare/0.0.17..HEAD)
+## [0.18.0](https://github.com/BlueBrain/luigi-tools/compare/0.0.17..0.18.0)
 
-> 19 April 2022
+> 3 June 2022
 
 ### CI Improvements
 
@@ -14,6 +14,10 @@
 - Move black, codespell, isort, pycodestyle and pydocstyle from tox to pre-commit (Adrien Berchet - [#27](https://github.com/BlueBrain/luigi-tools/pull/27))
 - Setup pre-commit and commitlint (Adrien Berchet - [#26](https://github.com/BlueBrain/luigi-tools/pull/26))
 - Add isort and codespell in lint and rework tox jobs (Adrien Berchet - [#25](https://github.com/BlueBrain/luigi-tools/pull/25))
+
+### New Features
+
+- Add warnings for config parameters that are not consumed by a task (#32) (Adrien Berchet - [f0b9fd8](https://github.com/BlueBrain/luigi-tools/commit/f0b9fd83b3a05f180a12013e986c3246b0e7be6b))
 
 ## [0.0.17](https://github.com/BlueBrain/luigi-tools/compare/0.0.16..0.0.17)
 
