@@ -191,7 +191,7 @@ class TestCopyParams:
             with_value = luigi.BoolParameter()
 
             def run(self):
-                if cls_param is luigi_tools.parameter.OptionalListParameter:
+                if cls_param is luigi.parameter.OptionalListParameter:
                     assert self.a == tuple(initial_value)
                 else:
                     assert self.a == initial_value
@@ -246,7 +246,7 @@ class TestCopyParams:
 
     def test_optional_list_param(self, tmp_working_dir):
         self.type_test(
-            luigi_tools.parameter.OptionalListParameter,
+            luigi.parameter.OptionalListParameter,
             (1, 2),
             "[1, 2]",
             (10, 20),
@@ -903,7 +903,7 @@ def test_remove_corrupted_output(tmpdir, caplog):
         assert len(matrix_values) == 6
 
 
-class TestCheckUnconsumedParamsMixin:
+class TestCheckUnconsumedParams:
     def test_unconsumed(self, tmpdir, caplog):
         class TaskA(luigi_tools.task.WorkflowTask):
             """"""
@@ -948,7 +948,7 @@ class TestCheckUnconsumedParamsMixin:
                 )
                 warnings.simplefilter(
                     action="always",
-                    category=luigi_tools.parameter.UnconsumedParameterWarning,
+                    category=luigi.parameter.UnconsumedParameterWarning,
                 )
                 assert luigi.build([TaskA(), TaskB()], local_scheduler=True)
 
@@ -960,7 +960,7 @@ class TestCheckUnconsumedParamsMixin:
                     ("c", "TaskB"),
                 ]
                 for i, (expected_value, task_name) in zip(w, expected):
-                    assert issubclass(i.category, luigi_tools.parameter.UnconsumedParameterWarning)
+                    assert issubclass(i.category, luigi.parameter.UnconsumedParameterWarning)
                     assert str(i.message) == (
                         "The configuration contains the parameter "
                         f"'{expected_value}' with value '{expected_value}' that is not consumed by "
