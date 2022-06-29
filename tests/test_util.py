@@ -119,7 +119,9 @@ def test_dependency_graph(tmpdir, task_collection):
 
     # Test get_dependency_graph() with only one node
     assert luigi_tools.util.get_dependency_graph(task_collection.TaskA()) == []
-    assert luigi_tools.util.get_dependency_graph(task_collection.TaskA(), allow_orphans=True) == [(task_collection.TaskA(), None)]
+    assert luigi_tools.util.get_dependency_graph(task_collection.TaskA(), allow_orphans=True) == [
+        (task_collection.TaskA(), None)
+    ]
 
     # Test graphviz_dependency_graph()
     dot = luigi_tools.util.graphviz_dependency_graph(graph)
@@ -191,7 +193,9 @@ def test_dependency_graph(tmpdir, task_collection):
         luigi_tools.util.graphviz_dependency_graph([])
 
     # Test graphviz_dependency_graph() with only one node
-    dot_one_node_orphan = luigi_tools.util.graphviz_dependency_graph([(task_collection.TaskA(), None)])
+    dot_one_node_orphan = luigi_tools.util.graphviz_dependency_graph(
+        [(task_collection.TaskA(), None)]
+    )
     assert dot_one_node_orphan.source.count("node ") == 1
 
     # Test render_dependency_graph()
