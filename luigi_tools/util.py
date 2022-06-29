@@ -88,11 +88,15 @@ def apply_over_outputs(task, func):
     return apply_over_luigi_iterable(outputs, func)
 
 
-def get_dependency_graph(task):
+def get_dependency_graph(
+    task,
+    allow_orphans=False,
+):
     """Compute dependency graph of a given task.
 
     Args:
         task (luigi.Task): the task from which the dependency graph is computed.
+        allow_orphans (bool): If set to True, orphan nodes are returned with a None child.
 
     Returns:
         list(luigi.Task): A list of (parent, child) tuples.
@@ -101,6 +105,8 @@ def get_dependency_graph(task):
     for t in task.deps():
         children.append((task, t))
         children.extend(get_dependency_graph(t))
+    if not children and allow_orphans:
+        children.append((task, None))
     return children
 
 
@@ -215,6 +221,8 @@ def graphviz_dependency_graph(
     dot.node(task_name, **default_root_attrs)
 
     for parent, child in g:
+        if child is None:
+            continue
         parent_name = task_names.get(parent, parent.__class__.__name__)
         child_name = task_names.get(child, child.__class__.__name__)
         dot.node(child_name, **node_kwargs.get(child, {}))
