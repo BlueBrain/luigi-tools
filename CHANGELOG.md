@@ -1,6 +1,15 @@
 # Changelog
 
-## [0.18.0](https://github.com/BlueBrain/luigi-tools/compare/0.0.17..0.18.0)
+## [0.0.19](https://github.com/BlueBrain/luigi-tools/compare/0.0.18..0.0.19)
+
+> 29 June 2022
+
+### Uncategorized Changes
+
+- Support orphan nodes in dependency graphs (Adrien Berchet - [#37](https://github.com/BlueBrain/luigi-tools/pull/37))
+- Remove deprecated features that were introduced in `luigi == 3.1.0` (Adrien Berchet - [#35](https://github.com/BlueBrain/luigi-tools/pull/35))
+
+## [0.0.18](https://github.com/BlueBrain/luigi-tools/compare/0.0.17..0.0.18)
 
 > 3 June 2022
 
@@ -17,7 +26,7 @@
 
 ### New Features
 
-- Add warnings for config parameters that are not consumed by a task (#32) (Adrien Berchet - [f0b9fd8](https://github.com/BlueBrain/luigi-tools/commit/f0b9fd83b3a05f180a12013e986c3246b0e7be6b))
+- Add warnings for config parameters that are not consumed by a task (#32) (Adrien Berchet - [7c054f7](https://github.com/BlueBrain/luigi-tools/commit/7c054f7a72377cf72b5fcfdd2bf24247508103fb))
 
 ## [0.0.17](https://github.com/BlueBrain/luigi-tools/compare/0.0.16..0.0.17)
 
