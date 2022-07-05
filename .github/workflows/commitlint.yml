@@ -2,6 +2,7 @@ name: Check PR titles using commitlint
 
 on:
   pull_request:
+    types: [edited, opened, reopened, synchronize]
 
 jobs:
   check-pr-title:
