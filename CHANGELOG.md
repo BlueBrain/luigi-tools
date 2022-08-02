@@ -20,8 +20,6 @@
 
 ### Uncategorized Changes
 
-- Move black, codespell, isort, pycodestyle and pydocstyle from tox to pre-commit (Adrien Berchet - [#27](https://github.com/BlueBrain/luigi-tools/pull/27))
-- Setup pre-commit and commitlint (Adrien Berchet - [#26](https://github.com/BlueBrain/luigi-tools/pull/26))
 - Add isort and codespell in lint and rework tox jobs (Adrien Berchet - [#25](https://github.com/BlueBrain/luigi-tools/pull/25))
 
 ### New Features
