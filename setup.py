@@ -25,8 +25,8 @@ reqs = [
 ]
 
 docs_reqs = [
+    "docutils==0.18",  # TODO: Remove this when m2r2>0.3.2 is released
     "m2r2",
-    "mistune<2",
     "sphinx",
     "sphinx-bluebrain-theme",
 ]
