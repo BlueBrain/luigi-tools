@@ -32,6 +32,10 @@ from .tools import create_not_empty_file
 DATA = Path(__file__).parent / "data"
 
 
+def test_failure():
+    raise AttributeError("Testing failure in JUnit")
+
+
 def test_target_remove(tmpdir):
     class TaskA(luigi_tools.task.WorkflowTask):
         """"""
