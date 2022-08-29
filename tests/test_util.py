@@ -13,12 +13,20 @@
 # limitations under the License.
 
 """Tests for luigi-tools utils."""
+
+# pylint: disable=empty-docstring
+# pylint: disable=missing-class-docstring
+# pylint: disable=missing-function-docstring
+# pylint: disable=no-self-use
+# pylint: disable=protected-access
+# pylint: disable=unused-argument
 import copy
 from configparser import ConfigParser
 from pathlib import Path
 
 import luigi
 import pytest
+from graphviz import Digraph
 from luigi.parameter import _no_value as PARAM_NO_VALUE
 
 import luigi_tools
@@ -105,6 +113,7 @@ def test_apply_over_outputs():
 
 
 def test_dependency_graph(tmpdir, task_collection):
+    # pylint: disable=use-implicit-booleaness-not-comparison
     start = task_collection.TaskE()
 
     # Test get_dependency_graph()
@@ -149,8 +158,6 @@ def test_dependency_graph(tmpdir, task_collection):
     assert dot.edge_attr == {"arrowsize": "0.5", "style": "setlinewidth(0.5)"}
 
     # Test graphviz_dependency_graph() with custom attributes
-    from graphviz import Digraph
-
     dot_with_attrs = luigi_tools.util.graphviz_dependency_graph(
         graph,
         graph_attrs={"bgcolor": "red"},
@@ -256,7 +263,7 @@ class TestRegisterTemplates:
         template_dir.mkdir()
         config = ConfigParser()
         config.read_dict({"Task": {"a": "a_from_template"}})
-        with open(template_dir / "template_1.cfg", "w") as f:
+        with open(template_dir / "template_1.cfg", "w", encoding="utf-8") as f:
             config.write(f)
         return str(template_dir)
 
@@ -362,7 +369,7 @@ class TestRegisterTemplates:
         new_directory.mkdir()
         config = ConfigParser()
         config.read_dict({"Task": {"a": "a_from_2nd_template"}})
-        with open(new_directory / "template_2.cfg", "w") as f:
+        with open(new_directory / "template_2.cfg", "w", encoding="utf-8") as f:
             config.write(f)
 
         # Register the new template and the luigi.cfg file

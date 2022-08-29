@@ -13,6 +13,13 @@
 # limitations under the License.
 
 """Tests for luigi-tools targets."""
+
+# pylint: disable=empty-docstring
+# pylint: disable=missing-class-docstring
+# pylint: disable=missing-function-docstring
+# pylint: disable=no-self-use
+# pylint: disable=redefined-outer-name
+# pylint: disable=unused-argument
 import os
 import re
 import shutil
@@ -265,6 +272,7 @@ class TestOutputTarget:
         assert NoPrefix("path").path == other_subdir / "test" / "create" / "path"
 
     def test_super_prefix(self, tmpdir, reset_prefix):
+        # pylint: disable=useless-super-delegation
         class SubOutputLocalTarget(luigi_tools.target.OutputLocalTarget):
             __prefix = "sub_prefix"  # Use a string
 
@@ -388,6 +396,7 @@ class TestOutputTarget:
 
     def test_child_classes_with_parent_prefix(self, reset_target_relative_prefix):
         """Test a child class when a default prefix is given to OutputLocalTarget."""
+        # pylint: disable=useless-super-delegation
 
         class TestTarget(luigi_tools.target.OutputLocalTarget):
             def __init__(self, *args, prefix=None, create_parent=False, **kwargs):

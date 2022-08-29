@@ -13,6 +13,10 @@
 # limitations under the License.
 
 """Fixtures for luigi-tools test suite."""
+
+# pylint: disable=empty-docstring
+# pylint: disable=missing-function-docstring
+# pylint: disable=redefined-outer-name
 import os
 
 import luigi
