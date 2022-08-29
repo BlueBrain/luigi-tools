@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This module contains some generic luigi tools."""
+"""The luigi-tools package.
+
+Extend and add new features to the luigi package.
+"""
 import warnings
 
 from pkg_resources import get_distribution

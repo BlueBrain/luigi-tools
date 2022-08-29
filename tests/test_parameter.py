@@ -13,6 +13,13 @@
 # limitations under the License.
 
 """Tests for luigi-tools parameters."""
+
+# pylint: disable=empty-docstring
+# pylint: disable=missing-class-docstring
+# pylint: disable=missing-function-docstring
+# pylint: disable=no-self-use
+# pylint: disable=redefined-outer-name
+# pylint: disable=unused-argument
 import warnings
 
 import luigi
@@ -84,6 +91,7 @@ def test_ratio_parameter(tmpdir):
 
 class TestOptionalParameter:
     def test_optional_parameter(self, luigi_tools_working_directory):
+        # pylint: disable=too-many-statements
         class TaskFactory:
             def __call__(self):
                 class TaskOptionalParameter(luigi.Task):
@@ -147,6 +155,7 @@ class TestOptionalParameter:
                         create_empty_file(self.output().path)
 
                     def output(self):
+                        # pylint: disable=consider-using-f-string
                         return luigi.LocalTarget(
                             luigi_tools_working_directory
                             / (
@@ -351,7 +360,7 @@ class TestOptionalParameter:
                 """OptionalIntParameter "a" with value "zz" is not of type "int" or None."""
             )
 
-    def test_warning(current_test):
+    def test_warning(self):
         class TestOptionalFloatParameterSingleType(
             luigi.parameter.OptionalParameterMixin, luigi.FloatParameter
         ):
@@ -400,7 +409,7 @@ class TestOptionalParameter:
             """type in ["int", "float"] or None."""
         )
 
-    def actual_test(current_test, cls, default, expected_value, expected_type, bad_data, **kwargs):
+    def actual_test(self, cls, default, expected_value, expected_type, bad_data, **kwargs):
         class TestConfig(luigi.Config):
             param = cls(default=default, **kwargs)
             empty_param = cls(default=default, **kwargs)
@@ -428,6 +437,7 @@ class TestOptionalParameter:
                     warnings.warn.assert_not_called()
                 else:
                     assert warnings.warn.call_count == 1
+                    # pylint: disable=consider-using-f-string
                     warnings.warn.assert_called_with(
                         """{} "param" with value "{}" is not of type "{}" or None.""".format(
                             cls.__name__, bad_data, expected_type
@@ -616,6 +626,7 @@ class TestBoolParameter:
             assert luigi.build([TaskBoolParameter()], local_scheduler=True)
 
     def test_true_implicit_failing(self):
+        # pylint: disable=unused-variable
         with pytest.raises(ValueError):
 
             class TaskBoolParameterFail(luigi.Task):

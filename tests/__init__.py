@@ -12,4 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test suite of luigi-tools."""
+"""Tests suite for the luigi-tools package."""

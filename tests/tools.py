@@ -23,23 +23,23 @@ def check_existing_file(filename):
 
 def create_empty_file(filename):
     """Create an empty file"""
-    with open(filename, "w"):
+    with open(filename, "w", encoding="utf-8"):
         pass
 
 
 def check_empty_file(filename):
     """Checck that a file is empty"""
-    with open(filename) as f:
+    with open(filename, encoding="utf-8") as f:
         return f.read() == ""
 
 
 def create_not_empty_file(filename):
     """Create a not empty file"""
-    with open(filename, "w") as f:
+    with open(filename, "w", encoding="utf-8") as f:
         f.write("NOT EMPTY")
 
 
 def check_not_empty_file(filename):
     """Checck that a file is not empty"""
-    with open(filename) as f:
+    with open(filename, encoding="utf-8") as f:
         return f.read() == "NOT EMPTY"

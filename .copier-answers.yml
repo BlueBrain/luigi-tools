@@ -1,0 +1,24 @@
+# Changes here will be overwritten by Copier
+
+_commit: 0.1.7
+_src_path: git@bbpgitlab.epfl.ch:neuromath/python-template.git
+author_email: ''
+author_name: Blue Brain Project, EPFL
+copyright_license: Apache License 2.0
+copyright_year: '2022'
+download_url: git@github.com:BlueBrain/luigi-tools.git
+init_git: false
+maintainer: Adrien Berchet (@adrien-berchet)
+package_name: luigi_tools
+project_description: Extend and add new features to the luigi package.
+project_name: luigi-tools
+project_url: https://luigi-tools.readthedocs.io
+repository: BlueBrain/luigi-tools
+repository_provider: github
+support_py37: true
+team_name: neuromath
+today: 29 August 2022
+tracker_url: https://github.com/BlueBrain/luigi-tools/issues
+version: 0.0.20.dev0
+
+# End of Copier answers

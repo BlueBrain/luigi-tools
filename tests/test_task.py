@@ -13,6 +13,15 @@
 # limitations under the License.
 
 """Tests for luigi-tools tasks."""
+
+# pylint: disable=empty-docstring
+# pylint: disable=missing-class-docstring
+# pylint: disable=missing-function-docstring
+# pylint: disable=no-member
+# pylint: disable=no-self-use
+# pylint: disable=protected-access
+# pylint: disable=unused-argument
+# pylint: disable=unused-variable
 import json
 import logging
 import warnings
@@ -38,7 +47,7 @@ from .tools import create_not_empty_file
 
 class TestCopyParams:
     @pytest.mark.filterwarnings("ignore::UserWarning:luigi.parameter")
-    def test_copy_params(tmpdir):
+    def test_copy_params(self, tmpdir):
         class TaskA(luigi.Task):
             """"""
 
@@ -624,13 +633,13 @@ class TestForceableTask:
     def test_no_rerun(self, task_collection):
         # Test that everything is run when all rerun are False and targets are missing
         assert all(
-            [not check_existing_file(i.path) for i in luigi.task.flatten(task_collection.targets)]
+            not check_existing_file(i.path) for i in luigi.task.flatten(task_collection.targets)
         )
 
         assert luigi.build([task_collection.TaskE()], local_scheduler=True)
 
         assert all(
-            [check_not_empty_file(i.path) for i in luigi.task.flatten(task_collection.targets)]
+            check_not_empty_file(i.path) for i in luigi.task.flatten(task_collection.targets)
         )
 
     def test_no_rerun_with_complete_targets(self, task_collection):
@@ -640,7 +649,7 @@ class TestForceableTask:
 
         assert luigi.build([task_collection.TaskE()], local_scheduler=True)
 
-        assert all([check_empty_file(i.path) for i in luigi.task.flatten(task_collection.targets)])
+        assert all(check_empty_file(i.path) for i in luigi.task.flatten(task_collection.targets))
 
     def test_rerun_with_complete_targets(self, task_collection):
         # Test that everything is run when rerun = True for the root task and targets are present
@@ -655,7 +664,7 @@ class TestForceableTask:
             assert luigi.build([task_collection.TaskE()], local_scheduler=True)
 
         assert all(
-            [check_not_empty_file(i.path) for i in luigi.task.flatten(task_collection.targets)]
+            check_not_empty_file(i.path) for i in luigi.task.flatten(task_collection.targets)
         )
 
     def test_rerun_parents_only(self, task_collection):
@@ -671,20 +680,16 @@ class TestForceableTask:
             assert luigi.build([task_collection.TaskE()], local_scheduler=True)
 
         assert all(
-            [
-                check_not_empty_file(i.path)
-                for task_name, targets in task_collection.targets.items()
-                for j in luigi.task.flatten(targets)
-                if task_name not in ["TaskA", "TaskC"]
-            ]
+            check_not_empty_file(j.path)
+            for task_name, targets in task_collection.targets.items()
+            for j in luigi.task.flatten(targets)
+            if task_name not in ["TaskA", "TaskC"]
         )
         assert all(
-            [
-                check_empty_file(j.path)
-                for task_name, targets in task_collection.targets.items()
-                for j in luigi.task.flatten(targets)
-                if task_name in ["TaskA", "TaskC"]
-            ]
+            check_empty_file(j.path)
+            for task_name, targets in task_collection.targets.items()
+            for j in luigi.task.flatten(targets)
+            if task_name in ["TaskA", "TaskC"]
         )
 
     def test_no_remove_if_recall(self, task_collection, tmpdir):
@@ -726,20 +731,16 @@ class TestForceableTask:
             assert luigi.build([TaskF()], local_scheduler=True)
 
         assert all(
-            [
-                check_not_empty_file(i.path)
-                for task_name, targets in task_collection.targets.items()
-                for j in luigi.task.flatten(targets)
-                if task_name not in ["TaskA", "TaskC"]
-            ]
+            check_not_empty_file(j.path)
+            for task_name, targets in task_collection.targets.items()
+            for j in luigi.task.flatten(targets)
+            if task_name not in ["TaskA", "TaskC"]
         )
         assert all(
-            [
-                check_empty_file(j.path)
-                for task_name, targets in task_collection.targets.items()
-                for j in luigi.task.flatten(targets)
-                if task_name in ["TaskA", "TaskC"]
-            ]
+            check_empty_file(j.path)
+            for task_name, targets in task_collection.targets.items()
+            for j in luigi.task.flatten(targets)
+            if task_name in ["TaskA", "TaskC"]
         )
 
 
@@ -865,7 +866,7 @@ def test_remove_corrupted_output(tmpdir, caplog):
 
         def run(self):
             f_path = self.output().path
-            with open(f_path, "w") as f_handle:
+            with open(f_path, "w", encoding="utf-8") as f_handle:
                 for idx in range(10):
                     f_handle.write(f"{idx}\n")
                     if idx >= 5:
@@ -898,7 +899,7 @@ def test_remove_corrupted_output(tmpdir, caplog):
     # all targets are produced
     assert task_instance.complete()
 
-    with open(tmpdir / "matrix.dat", "r") as f_handle:
+    with open(tmpdir / "matrix.dat", "r", encoding="utf-8") as f_handle:
         matrix_values = f_handle.read().splitlines()
         assert len(matrix_values) == 6
 
@@ -967,4 +968,4 @@ class TestCheckUnconsumedParams:
                         f"the task '{task_name}'."
                     )
 
-        assert all([check_not_empty_file(i.path) for i in luigi.task.flatten(TaskA().output())])
+        assert all(check_not_empty_file(i.path) for i in luigi.task.flatten(TaskA().output()))

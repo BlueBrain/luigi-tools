@@ -1,10 +1,10 @@
-name: Run all tox python3
+name: Run all tox jobs using Python3
 
 on:
-    pull_request:
-    push:
-      branches:
-        - main
+  pull_request:
+  push:
+    branches:
+      - main
 
 jobs:
   build:
@@ -40,4 +40,4 @@ jobs:
         fail_ci_if_error: false
         files: ./reports/coverage-*.xml
         flags: pytest
-        name: "morphology-workflows-py${{ matrix.python-version }}"
+        name: "luigi-tools-py${{ matrix.python-version }}"
