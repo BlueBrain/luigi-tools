@@ -12,13 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This package provides tools to extend the luigi library."""
+"""Setup for the luigi-tools package."""
+from pathlib import Path
+
 from setuptools import find_packages
 from setuptools import setup
-
-# Read the contents of the README file
-with open("README.md", encoding="utf-8") as f:
-    README = f.read()
 
 reqs = [
     "luigi",
@@ -34,15 +32,15 @@ docs_reqs = [
 setup(
     name="luigi-tools",
     author="Blue Brain Project, EPFL",
-    description="Tools to work with luigi",
-    long_description=README,
+    description="Tools to work with luigi.",
+    long_description=Path("README.md").read_text(encoding="utf-8"),
     long_description_content_type="text/markdown",
-    url="https://luigi-tools.readthedocs.io/en/latest",
+    url="https://luigi-tools.readthedocs.io",
     project_urls={
         "Tracker": "https://github.com/BlueBrain/luigi-tools/issues",
         "Source": "https://github.com/BlueBrain/luigi-tools",
     },
-    license="Apache License, Version 2.0",
+    license="Apache License 2.0",
     packages=find_packages(exclude=["tests"]),
     python_requires=">=3.6",
     install_requires=reqs,

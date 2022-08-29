@@ -1,10 +1,14 @@
-[MASTER]
-ignore=version.py
-
 [MESSAGES CONTROL]
-disable=bad-continuation,fixme,invalid-name,len-as-condition,no-else-return,empty-docstring
+disable=
+	bad-continuation,
+	fixme,
+	invalid-name,
+	len-as-condition,
+	no-else-return
 
 [FORMAT]
+# Regexp for a line that is allowed to be longer than the limit.
+ignore-long-lines=\bhttps?://\S
 # Maximum number of characters on a single line.
 max-line-length=100
 
@@ -31,11 +35,11 @@ min-public-methods=0
 # Maximum number of public methods for a class (see R0904).
 max-public-methods=60
 
+[SIMILARITIES]
 # checks for similarities and duplicated code. This computation may be
 # memory / CPU intensive, so you should disable it if you experiments some
 # problems.
 
-[SIMILARITIES]
 # Minimum lines number of a similarity.
 min-similarity-lines=25
 # Ignore comments when computing similarities.
@@ -47,13 +51,5 @@ ignore-docstrings=yes
 # List of classes names for which member attributes should not be checked
 # (useful for classes with attributes dynamically set).
 
-# as of numpy 1.8.0, name resolution seems to be a problem.  Ignore lookups in numpy
-ignored-classes=numpy,list
-
-# extension-pkg-whitelist=numpy,lxml
-
-# List of module names for which member attributes should not be checked
-# (useful for modules/projects where namespaces are manipulated during runtime
-# and thus existing member attributes cannot be deduced by static analysis. It
-# supports qualified module names, as well as Unix pattern matching.
-# ignored-modules=
+# as of numpy 1.8.0, name resolution seems to be a problem. Ignore lookups in numpy
+# ignored-classes=numpy,list

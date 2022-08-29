@@ -1,15 +1,44 @@
 # pyproject.toml
 [build-system]
-requires = ["setuptools>=42", "wheel", "setuptools_scm[toml]>=3.4"]
+requires = [
+    "setuptools>=42",
+    "wheel",
+    "setuptools_scm[toml]>=3.4",
+]
 
+# SETUPTOOLS_SCM
 [tool.setuptools_scm]
 local_scheme = "no-local-version"
 
+# BLACK
 [tool.black]
 line-length = 100
-target-version = ["py38"]
+target-version = [
+    "py36",
+    "py37",
+    "py38",
+    "py39",
+]
+include = 'luigi_tools\/.*\.py$|tests\/.*\.py$|docs\/source\/conf\.py$|setup\.py$'
 
+# PYDOCSTYLE
+[tool.pydocstyle]
+# ignore the following:
+#   - D107: Missing docstring in __init__
+add-ignore = [
+    "D107",
+]
+convention = "google"
+match = "[luigi_tools, tests, docs/source/conf.py, setup.py]"
+
+# ISORT
 [tool.isort]
-line_length = 100
 profile = "black"
+line_length = 100
 force_single_line = true
+
+# PYTEST
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+]

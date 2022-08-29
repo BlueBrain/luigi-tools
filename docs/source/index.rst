@@ -6,6 +6,6 @@
    :maxdepth: 2
 
    Home <self>
-   api
+   api_ref
    changelog
    contributing

@@ -1,10 +1,8 @@
-Maintainer
-----------
+# Maintainer
 
-Adrien Berchet
+Adrien Berchet (@adrien-berchet)
 
-Contributors
-------------
+# Contributors
 
 Anil Tuncel
 Genrich Ivaska

@@ -31,6 +31,7 @@ repos:
     rev: v2.1.0
     hooks:
       - id: codespell
+        args: ["-x", ".codespellignorelines"]
   - repo: https://github.com/PyCQA/pydocstyle
     rev: 6.1.1
     hooks:
