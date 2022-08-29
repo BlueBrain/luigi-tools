@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Fixtures for luigi-tools test suite."""
+"""Configuration for the pytest test suite."""
 
 # pylint: disable=empty-docstring
 # pylint: disable=missing-function-docstring
