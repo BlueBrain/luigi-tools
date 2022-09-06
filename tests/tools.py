@@ -17,29 +17,29 @@ from pathlib import Path
 
 
 def check_existing_file(filename):
-    """Check if a file exists"""
+    """Check if a file exists."""
     return Path(filename).exists()
 
 
 def create_empty_file(filename):
-    """Create an empty file"""
+    """Create an empty file."""
     with open(filename, "w", encoding="utf-8"):
         pass
 
 
 def check_empty_file(filename):
-    """Checck that a file is empty"""
+    """Checck that a file is empty."""
     with open(filename, encoding="utf-8") as f:
         return f.read() == ""
 
 
 def create_not_empty_file(filename):
-    """Create a not empty file"""
+    """Create a not empty file."""
     with open(filename, "w", encoding="utf-8") as f:
         f.write("NOT EMPTY")
 
 
 def check_not_empty_file(filename):
-    """Checck that a file is not empty"""
+    """Checck that a file is not empty."""
     with open(filename, encoding="utf-8") as f:
         return f.read() == "NOT EMPTY"

@@ -30,7 +30,7 @@ from .tools import create_not_empty_file
 
 @pytest.fixture(scope="function")
 def tmp_working_dir(tmp_path):
-    """Change working directory before a test and change it back when the test is finished"""
+    """Change working directory before a test and change it back when the test is finished."""
     cwd = os.getcwd()
     os.chdir(tmp_path)
     yield tmp_path
@@ -39,20 +39,23 @@ def tmp_working_dir(tmp_path):
 
 @pytest.fixture
 def luigi_tools_params():
+    """Simple luigi parameters for the TaskA task."""
     return {"TaskA": {"a_cfg": "default_value_in_cfg"}}
 
 
 @pytest.fixture
 def luigi_tools_working_directory(tmp_working_dir, luigi_tools_params):
-    # Set config
+    """Set luigi config."""
     with set_luigi_config(luigi_tools_params):
         yield tmp_working_dir
 
 
 @pytest.fixture
 def task_collection(tmpdir):
+    """A collection of test classes."""
+
     class TaskClasses:
-        """Class with some luigi tasks to test"""
+        """Class with some luigi tasks to test."""
 
         def __init__(self):
             self.tmpdir = tmpdir
@@ -62,8 +65,10 @@ def task_collection(tmpdir):
             self.reset_classes()  # Reset again to return classes that are not registered by luigi
 
         def reset_classes(self):
+            """Reset all test classes."""
+
             class TaskA(luigi_tools.task.WorkflowTask):
-                """"""
+                """A simple test task."""
 
                 counter = luigi.IntParameter(default=0)
 
@@ -75,7 +80,7 @@ def task_collection(tmpdir):
                     return luigi.LocalTarget(tmpdir / "TaskA.target")
 
             class TaskB(luigi_tools.task.WorkflowTask):
-                """"""
+                """A simple test task."""
 
                 def requires(self):
                     return TaskA()
@@ -94,7 +99,7 @@ def task_collection(tmpdir):
                     ]
 
             class TaskC(luigi_tools.task.WorkflowTask):
-                """"""
+                """A simple test task."""
 
                 def requires(self):
                     return TaskA()
@@ -110,7 +115,7 @@ def task_collection(tmpdir):
                     }
 
             class TaskD(luigi_tools.task.WorkflowTask):
-                """"""
+                """A simple test task."""
 
                 def requires(self):
                     return [TaskB(), TaskC()]
@@ -126,7 +131,7 @@ def task_collection(tmpdir):
                     ]
 
             class TaskE(luigi_tools.task.WorkflowTask):
-                """"""
+                """A simple test task."""
 
                 def requires(self):
                     return TaskD()

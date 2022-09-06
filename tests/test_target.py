@@ -14,9 +14,6 @@
 
 """Tests for luigi-tools targets."""
 
-# pylint: disable=empty-docstring
-# pylint: disable=missing-class-docstring
-# pylint: disable=missing-function-docstring
 # pylint: disable=no-self-use
 # pylint: disable=redefined-outer-name
 # pylint: disable=unused-argument
@@ -37,13 +34,17 @@ from .tools import create_not_empty_file
 
 @pytest.fixture
 def reset_prefix():
+    """Fixture to reset the prefix of the `luigi_tools.target.OutputLocalTarget` class."""
     assert luigi_tools.target.OutputLocalTarget.get_default_prefix() == Path()
     yield
     luigi_tools.target.OutputLocalTarget.set_default_prefix(None)
 
 
 class TestOutputTarget:
+    """Test the `luigi_tools.target.OutputLocalTarget` class."""
+
     def test_get_default_prefix(self, tmpdir, reset_prefix):
+        """Test the `get_default_prefix` class method."""
         expected = Path()
         assert luigi_tools.target.OutputLocalTarget.get_default_prefix() == expected
         assert (
@@ -73,6 +74,7 @@ class TestOutputTarget:
         )
 
     def test_prefix(self, tmpdir, reset_prefix):
+        """Test the `get_prefix` method."""
         assert (
             luigi_tools.target.OutputLocalTarget("path", create_parent=False).get_prefix() == Path()
         )
@@ -96,6 +98,7 @@ class TestOutputTarget:
         ).get_prefix() == Path("test_subdir")
 
     def test_pathlib_path(self, tmpdir, reset_prefix):
+        """Test the `pathlib_path` property."""
         tmpdir = Path(tmpdir)
 
         # No default prefix and no prefix
@@ -170,20 +173,21 @@ class TestOutputTarget:
         )
 
     def test_in_task(self, tmpdir, reset_prefix):
-        """
+        """Test the `luigi_tools.target.OutputLocalTarget` class used in an actual `luigi.task`.
+
         Several tests for the OutputLocalTarget class:
-            * using explicit prefix, so the default prefix is ignored
-            * using absolute path, so the prefix is ignored
-            * using explicit prefix with relative path, so the default prefix is ignored
-            * using explicit prefix with absolute path, so the prefix is ignored
-            * using default prefix
+
+        * using explicit prefix, so the default prefix is ignored
+        * using absolute path, so the prefix is ignored
+        * using explicit prefix with relative path, so the default prefix is ignored
+        * using explicit prefix with absolute path, so the prefix is ignored
+        * using default prefix
         """
 
         class TaskA_OutputLocalTarget(luigi_tools.task.WorkflowTask):
-            """"""
+            """A simple test task."""
 
             def run(self):
-                """"""
                 expected = [
                     str(tmpdir / "output_target.test"),
                     str(tmpdir / "absolute_output_target_no_prefix.test"),
@@ -267,19 +271,24 @@ class TestOutputTarget:
         assert not not_auto_target.pathlib_path.exists()
 
         class NoPrefix(luigi_tools.target.OutputLocalTarget):
-            pass
+            """A target with no prefix."""
 
         assert NoPrefix("path").path == other_subdir / "test" / "create" / "path"
 
     def test_super_prefix(self, tmpdir, reset_prefix):
+        """Test the super prefix to build a target hierarchy."""
         # pylint: disable=useless-super-delegation
         class SubOutputLocalTarget(luigi_tools.target.OutputLocalTarget):
+            """A simple target with a `str` prefix."""
+
             __prefix = "sub_prefix"  # Use a string
 
             def __init__(self, *args, prefix=None, create_parent=False, **kwargs):
                 super().__init__(*args, prefix=prefix, create_parent=create_parent, **kwargs)
 
         class SubSubOutputLocalTarget(SubOutputLocalTarget):
+            """A simple target with a `pathlib.Path` prefix."""
+
             __prefix = Path("sub_sub_prefix")  # Use a pathlib.Path
 
             def __init__(self, *args, prefix=None, create_parent=False, **kwargs):
@@ -292,6 +301,8 @@ class TestOutputTarget:
                 super().__init__(*args, prefix=prefix, create_parent=create_parent, **kwargs)
 
         class SubSubSubOutputLocalTarget(NoPrefix):
+            """A simple target with another sub-prefix."""
+
             __prefix = Path("sub_sub_sub_prefix")
 
             def __init__(self, *args, prefix=None, create_parent=False, **kwargs):
@@ -371,6 +382,7 @@ class TestOutputTarget:
 
     @pytest.fixture
     def reset_target_no_prefix(self):
+        """Fixture to reset the prefix of the `luigi_tools.target.OutputLocalTarget` class."""
         luigi_tools.target.OutputLocalTarget.set_default_prefix(None)
         yield
         luigi_tools.target.OutputLocalTarget.set_default_prefix(None)
@@ -379,6 +391,8 @@ class TestOutputTarget:
         """Test a child class without any default prefix."""
 
         class TestTarget(luigi_tools.target.OutputLocalTarget):
+            """A simple test task."""
+
             def __init__(self, *args, prefix=None, create_parent=False, **kwargs):
                 super().__init__(*args, prefix=prefix, create_parent=create_parent, **kwargs)
 
@@ -390,6 +404,7 @@ class TestOutputTarget:
 
     @pytest.fixture
     def reset_target_relative_prefix(self):
+        """Fixture to reset the prefix of the `luigi_tools.target.OutputLocalTarget` class."""
         luigi_tools.target.OutputLocalTarget.set_default_prefix("parent_default_prefix")
         yield
         luigi_tools.target.OutputLocalTarget.set_default_prefix(None)
@@ -399,10 +414,14 @@ class TestOutputTarget:
         # pylint: disable=useless-super-delegation
 
         class TestTarget(luigi_tools.target.OutputLocalTarget):
+            """A simple test task."""
+
             def __init__(self, *args, prefix=None, create_parent=False, **kwargs):
                 super().__init__(*args, prefix=prefix, create_parent=create_parent, **kwargs)
 
         class TestTargetChild(TestTarget):
+            """A simple test task."""
+
             def __init__(self, *args, prefix=None, create_parent=False, **kwargs):
                 super().__init__(*args, prefix=prefix, create_parent=create_parent, **kwargs)
 
@@ -461,6 +480,7 @@ class TestOutputTarget:
         assert test_target.path == "parent_default_prefix/child_instance_prefix/a_path"
 
     def test_repr_and_str(self):
+        """Test the __repr__ and __str__ methods."""
         assert str(luigi_tools.target.OutputLocalTarget("path", create_parent=False)) == "path"
         assert (
             str(
