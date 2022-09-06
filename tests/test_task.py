@@ -14,12 +14,10 @@
 
 """Tests for luigi-tools tasks."""
 
-# pylint: disable=empty-docstring
-# pylint: disable=missing-class-docstring
-# pylint: disable=missing-function-docstring
 # pylint: disable=no-member
 # pylint: disable=no-self-use
 # pylint: disable=protected-access
+# pylint: disable=too-many-lines
 # pylint: disable=unused-argument
 # pylint: disable=unused-variable
 import json
@@ -46,10 +44,14 @@ from .tools import create_not_empty_file
 
 
 class TestCopyParams:
+    """Test the `luigi_tools.task.copy_params` decorator."""
+
     @pytest.mark.filterwarnings("ignore::UserWarning:luigi.parameter")
     def test_copy_params(self, tmpdir):
+        """Simple test."""
+
         class TaskA(luigi.Task):
-            """"""
+            """A simple test task."""
 
             a = luigi.Parameter(default="default_value_a")
             b = luigi.Parameter(default="default_value_b")
@@ -68,7 +70,7 @@ class TestCopyParams:
             a_none=luigi_tools.task.ParamRef(TaskA, "a", None),
         )
         class TaskB(luigi.Task):
-            """"""
+            """A simple test task."""
 
             b = luigi.Parameter(default="b")
             b_none = luigi.Parameter(default=None)
@@ -104,7 +106,7 @@ class TestCopyParams:
 
             @luigi_tools.task.copy_params()
             class TaskC(luigi.Task):
-                """"""
+                """A simple test task."""
 
                 a = luigi.Parameter(default="a")
 
@@ -115,13 +117,13 @@ class TestCopyParams:
                 a=luigi_tools.task.ParamRef(TaskA),
             )
             class TaskD(luigi.Task):
-                """"""
+                """A simple test task."""
 
                 a = luigi.Parameter(default="a")
 
         # Test with parameters that are serialized to generate the task ID
         class TaskWithListDictParams(luigi.Task):
-            """"""
+            """A simple test task."""
 
             a = luigi.ListParameter(description="a in TaskWithListDictParams")
             b = luigi.DictParameter(description="b in TaskWithListDictParams")
@@ -138,7 +140,7 @@ class TestCopyParams:
             b_copy=luigi_tools.task.ParamRef(TaskWithListDictParams, "b"),
         )
         class TaskCopyListDictParams(luigi.Task):
-            """"""
+            """A simple test task."""
 
             a = luigi.ListParameter(description="a in TaskCopyListDictParams")
             b = luigi.DictParameter(description="b in TaskCopyListDictParams")
@@ -177,10 +179,10 @@ class TestCopyParams:
         str_new_value,
         **kwargs,
     ):
+        """Test function used for different types."""
 
-        # Test with parameters that are serialized to generate the task ID
         class TaskWithTypeParams(luigi_tools.task.GlobalParamMixin, luigi.Task):
-            """"""
+            """A task with some parameters of given type."""
 
             a = cls_param(description="a in TaskWithTypeParams")
 
@@ -194,7 +196,7 @@ class TestCopyParams:
             a_copy=luigi_tools.task.ParamRef(TaskWithTypeParams, "a"),
         )
         class TaskCopyTypeParams(luigi_tools.task.GlobalParamMixin, luigi.Task):
-            """"""
+            """A task that copies some parameters of given type."""
 
             a = cls_param(description="a in TaskCopyTypeParams")
             with_value = luigi.BoolParameter()
@@ -245,15 +247,19 @@ class TestCopyParams:
         print("test end with", cls_param)
 
     def test_int_param(self, tmp_working_dir):
+        """Test with int parameters."""
         self.type_test(luigi.parameter.IntParameter, 1, "1", 2, "2")
 
     def test_float_param(self, tmp_working_dir):
+        """Test with float parameters."""
         self.type_test(luigi.parameter.FloatParameter, 1.5, "1.5", 2.5, "2.5")
 
     def test_bool_param(self, tmp_working_dir):
+        """Test with bool parameters."""
         self.type_test(luigi_tools.parameter.BoolParameter, True, "true", False, "false")
 
     def test_optional_list_param(self, tmp_working_dir):
+        """Test with optional list parameters."""
         self.type_test(
             luigi.parameter.OptionalListParameter,
             (1, 2),
@@ -264,11 +270,15 @@ class TestCopyParams:
 
 
 class TestCopyParamsWithGlobals:
+    """Test the `luigi_tools.task.copy_params` decorator with global parameters."""
+
     @pytest.mark.filterwarnings("ignore::UserWarning:luigi.parameter")
     @pytest.fixture
     def TaskA(self):
+        """A simple test task."""
+
         class TaskA(luigi_tools.task.GlobalParamMixin, luigi.Task):
-            """"""
+            """A simple test task."""
 
             a = luigi.Parameter(default="a")
             a_cfg = luigi.Parameter(default="a_cfg")
@@ -284,13 +294,15 @@ class TestCopyParamsWithGlobals:
 
     @pytest.mark.filterwarnings("ignore::UserWarning:luigi.parameter")
     def test_defaults(self, luigi_tools_working_directory, TaskA):
+        """Test with default usage."""
+
         @luigi_tools.task.copy_params(
             aa=luigi_tools.task.ParamRef(TaskA, "a_cfg"),
             a_default=luigi_tools.task.ParamRef(TaskA, "a", "given_default_value"),
             a_none=luigi_tools.task.ParamRef(TaskA, "a", None),
         )
         class TaskB(luigi_tools.task.GlobalParamMixin, luigi.Task):
-            """"""
+            """A simple test task."""
 
             b = luigi.Parameter(default="b")
             b_none = luigi.Parameter(default=None)
@@ -339,32 +351,42 @@ class TestCopyParamsWithGlobals:
         )
 
     def test_empty(self):
-        # Empty copy_params arguments should raise a ValueError
+        """Test with empty params.
+
+        Empty copy_params arguments should raise a ValueError.
+        """
         with pytest.raises(ValueError):
 
             @luigi_tools.task.copy_params()
             class TaskC(luigi.Task):
-                """"""
+                """A simple test task."""
 
                 a = luigi.Parameter(default="a")
 
     def test_duplicated(self, TaskA):
-        # Duplicated parameters should raise a DuplicatedParameterError
+        """Test with duplicated params.
+
+        Duplicated parameters should raise a DuplicatedParameterError.
+        """
         with pytest.raises(DuplicatedParameterError):
 
             @luigi_tools.task.copy_params(
                 a=luigi_tools.task.ParamRef(TaskA),
             )
             class TaskD(luigi_tools.task.GlobalParamMixin, luigi.Task):
-                """"""
+                """A simple test task."""
 
                 a = luigi.Parameter(default="a")
 
     @pytest.mark.filterwarnings("ignore::UserWarning:luigi.parameter")
     def test_no_default_value(self):
-        # Global parameter with _no_default_value should raise GlobalParameterNoValueError
+        """Test without default value.
+
+        Global parameter with _no_default_value should raise GlobalParameterNoValueError.
+        """
+
         class TaskE(luigi_tools.task.GlobalParamMixin, luigi.Task):
-            """"""
+            """A simple test task."""
 
             e = luigi.Parameter(default=luigi_tools.task._no_default_value)
 
@@ -379,12 +401,16 @@ class TestCopyParamsWithGlobals:
 
     @pytest.mark.filterwarnings("ignore::UserWarning:luigi.parameter")
     def test_copy_params_no_default_value(self, TaskA):
-        # Global parameter with _no_default_value should raise GlobalParameterNoValueError
+        """Test copied param without default value.
+
+        Global parameter with _no_default_value should raise GlobalParameterNoValueError.
+        """
+
         @luigi_tools.task.copy_params(
             a=luigi_tools.task.ParamRef(TaskA),
         )
         class TaskF(luigi_tools.task.GlobalParamMixin, luigi.Task):
-            """"""
+            """A simple test task."""
 
             f = luigi.Parameter(default=luigi_tools.task._no_default_value)
 
@@ -399,9 +425,10 @@ class TestCopyParamsWithGlobals:
             luigi.build([TaskF()], local_scheduler=True)
 
     def test_inherits(self):
-        # Compare with luigi.util.inherits
+        """Compare with luigi.util.inherits."""
+
         class TaskG(luigi.Task):
-            """"""
+            """A simple test task."""
 
             g = luigi.Parameter(default="default_value_g")
 
@@ -413,7 +440,7 @@ class TestCopyParamsWithGlobals:
 
         @inherits(TaskG)
         class TaskH(luigi.Task):
-            """"""
+            """A simple test task."""
 
             h = luigi.Parameter()
 
@@ -455,9 +482,10 @@ class TestCopyParamsWithGlobals:
             ]
 
     def test_compare_inherits(self, luigi_tools_working_directory):
-        # Compare with luigi.util.inherits
+        """Compare with luigi.util.inherits."""
+
         class TaskI(luigi.Task):
-            """"""
+            """A simple test task."""
 
             i = luigi.Parameter(default="default_value_i")
 
@@ -472,7 +500,7 @@ class TestCopyParamsWithGlobals:
             i=luigi_tools.task.ParamRef(TaskI),
         )
         class TaskJ(luigi.Task):
-            """"""
+            """A simple test task."""
 
             j = luigi.Parameter()
 
@@ -502,9 +530,10 @@ class TestCopyParamsWithGlobals:
             assert luigi.build([TaskJ()], local_scheduler=True)
 
     def test_serialized_parameters(self):
-        # Test with parameters that are serialized to generate the task ID
+        """Test with parameters that are serialized to generate the task ID."""
+
         class GlobalParamTaskWithListDictParams(luigi_tools.task.GlobalParamMixin, luigi.Task):
-            """"""
+            """A simple test task."""
 
             a = luigi.ListParameter(default="a in GlobalParamTaskWithListDictParams")
             b = luigi.DictParameter(default="b in GlobalParamTaskWithListDictParams")
@@ -521,7 +550,7 @@ class TestCopyParamsWithGlobals:
             b_copy=luigi_tools.task.ParamRef(GlobalParamTaskWithListDictParams, "b"),
         )
         class GlobalParamTaskCopyListDictParams(luigi_tools.task.GlobalParamMixin, luigi.Task):
-            """"""
+            """A simple test task."""
 
             a_new = luigi.ListParameter(default="a in GlobalParamTaskCopyListDictParams")
             b_new = luigi.DictParameter(default="b in GlobalParamTaskCopyListDictParams")
@@ -556,11 +585,17 @@ class TestCopyParamsWithGlobals:
             )
 
     def test_not_comparable_attribute(self):
+        """Test with params that can't be compared."""
+
         class NotComparable:
+            """A class that always raises an exception when __eq__ is called."""
+
             def __eq__(self, other):
                 raise TypeError(f"Can't compare {self.__class__} with {type(other)}")
 
         class GlobalParamTaskSetGetAttr(luigi_tools.task.GlobalParamMixin, luigi.Task):
+            """A simple test task."""
+
             a = luigi.ListParameter(default="a in GlobalParamTaskSetGetAttr")
             b = None
             c = 1
@@ -599,7 +634,7 @@ class TestCopyParamsWithGlobals:
         """
 
         class TaskListParameter(luigi_tools.task.GlobalParamMixin, luigi.Task):
-            """"""
+            """A simple test task."""
 
             a = luigi.parameter.ListParameter(default=(1, 2))
             b = luigi.parameter.ListParameter()
@@ -616,7 +651,7 @@ class TestCopyParamsWithGlobals:
             b=luigi_tools.task.ParamRef(TaskListParameter),
         )
         class TaskCopyListParameter(luigi_tools.task.GlobalParamMixin, luigi.Task):
-            """"""
+            """A simple test task."""
 
             def run(self):
                 assert self.a == (1, 2)
@@ -630,8 +665,10 @@ class TestCopyParamsWithGlobals:
 
 
 class TestForceableTask:
+    """Test the rerun feature."""
+
     def test_no_rerun(self, task_collection):
-        # Test that everything is run when all rerun are False and targets are missing
+        """Test that everything is run when all rerun are False and targets are missing."""
         assert all(
             not check_existing_file(i.path) for i in luigi.task.flatten(task_collection.targets)
         )
@@ -643,7 +680,7 @@ class TestForceableTask:
         )
 
     def test_no_rerun_with_complete_targets(self, task_collection):
-        # Test that nothing is run when all rerun are False and targets are present
+        """Test that nothing is run when all rerun are False and targets are present."""
         for i in luigi.task.flatten(task_collection.targets):
             create_empty_file(i.path)
 
@@ -652,7 +689,11 @@ class TestForceableTask:
         assert all(check_empty_file(i.path) for i in luigi.task.flatten(task_collection.targets))
 
     def test_rerun_with_complete_targets(self, task_collection):
-        # Test that everything is run when rerun = True for the root task and targets are present
+        """Test that everything is run when rerun = True for the root task.
+
+        The targets of all tasks are present and should thus be automatically removed before running
+        the workflow.
+        """
         for i in luigi.task.flatten(task_collection.targets):
             create_empty_file(i.path)
 
@@ -668,7 +709,7 @@ class TestForceableTask:
         )
 
     def test_rerun_parents_only(self, task_collection):
-        # Test that only the parents of the task with rerun = True are run
+        """Test that only the parents of the task with rerun = True are run."""
         for i in luigi.task.flatten(task_collection.targets):
             create_empty_file(i.path)
 
@@ -693,10 +734,10 @@ class TestForceableTask:
         )
 
     def test_no_remove_if_recall(self, task_collection, tmpdir):
-        # Test that calling a task inside another one does not remove its targets
+        """Test that calling a task inside another one does not remove its targets."""
 
         class TaskF(luigi_tools.task.WorkflowTask):
-            """"""
+            """A simple test task."""
 
             counter = luigi.IntParameter(default=0)
             rerun = luigi.BoolParameter()
@@ -745,9 +786,13 @@ class TestForceableTask:
 
 
 class TestLogTargetMixin:
+    """Test the `luigi_tools.task.LogTargetMixin` class."""
+
     def test_output_logger(self, tmpdir, caplog):
+        """Test the logger outputs with one target."""
+
         class TaskA(luigi_tools.task.LogTargetMixin, luigi.Task):
-            """"""
+            """A simple test task."""
 
             a = luigi.Parameter(default="a")
 
@@ -764,12 +809,16 @@ class TestLogTargetMixin:
         assert res == [("luigi_tools.task", 10, f"Output of TaskA task: {tmpdir / 'test_a'}")]
 
     def test_output_logger_with_dict(self, tmpdir, caplog):
+        """Test the logger outputs with a dict target."""
+
         class AlwaysExistingTarget(luigi.Target):
+            """A target that is always considered as existing."""
+
             def exists(self):
                 return True
 
         class TaskB(luigi_tools.task.LogTargetMixin, luigi.Task):
-            """"""
+            """A simple test task."""
 
             b = luigi.Parameter(default="b")
 
@@ -789,7 +838,7 @@ class TestLogTargetMixin:
         assert res == [("luigi_tools.task", 10, f"Output b of TaskB task: {tmpdir / 'test_b'}")]
 
         class TaskC(luigi.Task):
-            """"""
+            """A simple test task."""
 
             c = luigi.Parameter(default="c")
 
@@ -807,8 +856,10 @@ class TestLogTargetMixin:
         assert res == []
 
     def test_output_logger_ignored(self, tmpdir, caplog):
+        """Test that there is no logger output when the mixin is located after `luigi.Task`."""
+
         class TaskD(luigi.Task, luigi_tools.task.LogTargetMixin):
-            """"""
+            """A simple test task."""
 
             d = luigi.Parameter(default="d")
 
@@ -826,12 +877,14 @@ class TestLogTargetMixin:
         assert res == []
 
     def test_output_logger_and_global_param(self, tmpdir, caplog):
+        """Test logger outputs when interacting with `luigi_tools.task.GlobalParamMixin`."""
+
         class TaskE(
             luigi_tools.task.LogTargetMixin,
             luigi_tools.task.GlobalParamMixin,
             luigi.Task,
         ):
-            """"""
+            """A simple test task."""
 
             e = luigi.Parameter(default="e")
 
@@ -858,6 +911,8 @@ class TestLogTargetMixin:
 
 
 def test_remove_corrupted_output(tmpdir, caplog):
+    """Test the `luigi_tools.task.RemoveCorruptedOutputMixin` mixin."""
+
     class TaskToFail(luigi_tools.task.RemoveCorruptedOutputMixin, luigi.Task):
         """A Task that's expected to fail and create incomplete/wrong output."""
 
@@ -905,9 +960,13 @@ def test_remove_corrupted_output(tmpdir, caplog):
 
 
 class TestCheckUnconsumedParams:
+    """Check that warnings are properly emitted when a parameter is not consumed by a task."""
+
     def test_unconsumed(self, tmpdir, caplog):
+        """Simple test with unconsumed parameters."""
+
         class TaskA(luigi_tools.task.WorkflowTask):
-            """"""
+            """A simple test task."""
 
             a = luigi.Parameter(default="a")
 
@@ -918,7 +977,7 @@ class TestCheckUnconsumedParams:
                 return luigi.LocalTarget(tmpdir / f"test_TaskA_{self.a}")
 
         class TaskB(luigi_tools.task.WorkflowTask):
-            """"""
+            """A simple test task."""
 
             a = luigi.Parameter(default="a")
 

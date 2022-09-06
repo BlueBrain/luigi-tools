@@ -15,8 +15,6 @@
 """Tests for luigi-tools utils."""
 
 # pylint: disable=empty-docstring
-# pylint: disable=missing-class-docstring
-# pylint: disable=missing-function-docstring
 # pylint: disable=no-self-use
 # pylint: disable=protected-access
 # pylint: disable=unused-argument
@@ -41,8 +39,10 @@ DATA = Path(__file__).parent / "data"
 
 
 def test_target_remove(tmpdir):
+    """Test the `luigi_tools.util.target_remove` function."""
+
     class TaskA(luigi_tools.task.WorkflowTask):
-        """"""
+        """A simple test task."""
 
         def run(self):
             for i in luigi.task.flatten(self.output()):
@@ -67,13 +67,19 @@ def test_target_remove(tmpdir):
 
 
 def test_apply_over_inputs():
+    """Test the `luigi_tools.util.apply_over_inputs` function."""
+
     class TaskA(luigi.Task):
+        """A simple test task."""
+
         a = luigi.Parameter(default="a")
 
         def output(self):
             return self.a
 
     class TaskB(luigi.Task):
+        """A simple test task."""
+
         def requires(self):
             return {
                 "a": TaskA(),
@@ -90,7 +96,11 @@ def test_apply_over_inputs():
 
 
 def test_apply_over_outputs():
+    """Test the `luigi_tools.util.apply_over_outputs` function."""
+
     class TaskA(luigi.Task):
+        """A simple test task."""
+
         a = luigi.Parameter(default="a")
 
         def output(self):
@@ -113,6 +123,7 @@ def test_apply_over_outputs():
 
 
 def test_dependency_graph(tmpdir, task_collection):
+    """Test dependency graph."""
     # pylint: disable=use-implicit-booleaness-not-comparison
     start = task_collection.TaskE()
 
@@ -227,6 +238,7 @@ def test_dependency_graph(tmpdir, task_collection):
 
 
 def test_param_repr():
+    """Test the `luigi_tools.util._param_repr` function."""
     assert luigi_tools.util._param_repr(None, PARAM_NO_VALUE) == ""
     assert luigi_tools.util._param_repr(None, None) == "(None)"
     assert luigi_tools.util._param_repr("description", None) == "description(None)"
@@ -234,8 +246,11 @@ def test_param_repr():
 
 
 class TestRegisterTemplates:
+    """Test the configuration template mechanism."""
+
     @pytest.fixture
     def config_reseter(self):
+        """Fixture to reset the luigi configuration."""
         cfg_cls = luigi.configuration.cfg_parser.LuigiConfigParser
         current_config = copy.deepcopy(cfg_cls._config_paths)
         yield
@@ -245,7 +260,11 @@ class TestRegisterTemplates:
 
     @pytest.fixture
     def Task(self, tmpdir):
+        """A simple test task."""
+
         class Task(luigi.Task):
+            """A simple test task."""
+
             a = luigi.Parameter(default="a")
             expected_a = luigi.Parameter(default="a")
 
@@ -259,6 +278,7 @@ class TestRegisterTemplates:
 
     @pytest.fixture
     def template_dir(self, tmpdir):
+        """Create a dummy template directory."""
         template_dir = tmpdir / "templates"
         template_dir.mkdir()
         config = ConfigParser()
@@ -268,6 +288,7 @@ class TestRegisterTemplates:
         return str(template_dir)
 
     def test_cfg_only(self, Task, template_dir, config_reseter):
+        """Test with only a config file."""
         with set_luigi_config(
             {
                 "Task": {"a": "a_from_cfg"},
@@ -277,6 +298,7 @@ class TestRegisterTemplates:
             assert luigi.build([Task(expected_a="a_from_cfg")], local_scheduler=True)
 
     def test_template_only(self, Task, template_dir, config_reseter):
+        """Test with only a template."""
         with set_luigi_config(
             {
                 "Template": {"name": "template_1"},
@@ -286,6 +308,7 @@ class TestRegisterTemplates:
             assert luigi.build([Task(expected_a="a_from_template")], local_scheduler=True)
 
     def test_template_and_cfg(self, Task, template_dir, config_reseter):
+        """Test with both a config file and a template."""
         with set_luigi_config(
             {
                 "Template": {"name": "template_1"},
@@ -296,6 +319,7 @@ class TestRegisterTemplates:
             assert luigi.build([Task(expected_a="a_from_cfg")], local_scheduler=True)
 
     def test_missing_template(self, Task, template_dir, config_reseter):
+        """Test with a missing template."""
         with set_luigi_config(
             {
                 "Template": {"name": "missing_template"},
@@ -306,6 +330,7 @@ class TestRegisterTemplates:
                 luigi_tools.util.register_templates(template_dir)
 
     def test_template_directory_in_cfg(self, Task, template_dir, config_reseter):
+        """Test with a template directory defined in the luigi config file."""
         with set_luigi_config(
             {
                 "Template": {
@@ -319,6 +344,7 @@ class TestRegisterTemplates:
             assert luigi.build([Task(expected_a="a_from_cfg")], local_scheduler=True)
 
     def test_template_directory_override(self, Task, template_dir, config_reseter):
+        """Test with a template directory defined in luigi.cfg but overridden in the task ctor."""
         directory = Path(template_dir)
         new_directory = directory.with_name("new_templates")
         directory.rename(new_directory)
@@ -334,6 +360,7 @@ class TestRegisterTemplates:
             assert luigi.build([Task(expected_a="a_from_template")], local_scheduler=True)
 
     def test_no_directory(self, Task, config_reseter):
+        """Test without template directory given to the template registering function."""
         with set_luigi_config(
             {
                 "Template": {"name": "template_name"},
@@ -347,6 +374,7 @@ class TestRegisterTemplates:
                 luigi_tools.util.register_templates()
 
     def test_no_name(self, Task, config_reseter):
+        """Test with no template name given."""
         with set_luigi_config(
             {
                 "Template": {"directory": "any directory"},
@@ -360,6 +388,7 @@ class TestRegisterTemplates:
                 luigi_tools.util.register_templates()
 
     def test_no_hierarchy_end(self, Task, template_dir, config_reseter):
+        """Test the hierarchy_end parameter."""
         # Register the template only
         luigi_tools.util.register_templates(template_dir, "template_1", hierarchy_end=False)
 
@@ -378,9 +407,15 @@ class TestRegisterTemplates:
 
 
 class TestSetLuigiConfig:
+    """Test the `luigi_tools.util.set_luigi_config` function."""
+
     @pytest.fixture
     def Task(self, tmpdir):
+        """A simple test task."""
+
         class Task(luigi.Task):
+            """A simple test task."""
+
             a = luigi.Parameter(default="a")
             expected_a = luigi.Parameter(default="a")
 
@@ -393,12 +428,14 @@ class TestSetLuigiConfig:
         return Task
 
     def test_defaults(self, Task):
+        """Test with empty config."""
         assert luigi.build([Task()], local_scheduler=True)
 
         with set_luigi_config():
             assert luigi.build([Task()], local_scheduler=True)
 
     def test_new_config(self, Task):
+        """Test with new config."""
         with set_luigi_config(
             {
                 "Task": {"a": "a_from_cfg"},
@@ -427,6 +464,7 @@ class TestSetLuigiConfig:
         ]
 
     def test_config_file(self, Task):
+        """Test with a new config and a config file."""
         filename = "test_config_file.cfg"
         with set_luigi_config(
             {
@@ -439,6 +477,7 @@ class TestSetLuigiConfig:
         assert not Path(filename).exists()
 
     def test_params_ConfigParser(self, Task):
+        """Test using an `ConfigParser` instead of a `dict`.."""
         params = {
             "Task": {"a": "a_from_cfg"},
         }
@@ -449,6 +488,7 @@ class TestSetLuigiConfig:
 
 
 def test_deprecation_warning():
+    """Test the deprecation warnings."""
     with pytest.warns(
         luigi_tools.MovedToLuigiWarning,
         match="This feature was moved to the luigi package and is available since version 1.2.3.",

@@ -1,3 +1,4 @@
+"""Extension to define a new Sphinx directive for objects moved to the `luigi` package."""
 from docutils import nodes
 from docutils.parsers.rst import directives
 from docutils.statemachine import StringList
@@ -6,18 +7,22 @@ from sphinx.util.docutils import SphinxDirective
 
 
 class luigi_moved(nodes.Admonition, nodes.Element):
-    pass
+    """Base node for objects moved to the `luigi` package."""
 
 
-def visit_todo_node(self, node):
+def visit_moved_node(self, node):
+    """Visit node."""
     self.visit_admonition(node)
 
 
-def depart_todo_node(self, node):
+def depart_moved_node(self, node):
+    """Depart node."""
     self.depart_admonition(node)
 
 
 class MovedDirective(SphinxDirective):
+    """New Sphinx directive for objects moved to the `luigi` package."""
+
     has_content = True
     option_spec = {
         "luigi_version": directives.unchanged,
@@ -26,6 +31,7 @@ class MovedDirective(SphinxDirective):
     }
 
     def run(self):
+        """Actual run method."""
         targetid = "luigi_moved-%d" % self.env.new_serialno("luigi_moved")
         targetnode = nodes.target("", "", ids=[targetid])
 
@@ -60,11 +66,12 @@ class MovedDirective(SphinxDirective):
 
 
 def setup(app):
+    """Connect to Sphinx setup."""
     app.add_node(
         luigi_moved,
-        html=(visit_todo_node, depart_todo_node),
-        latex=(visit_todo_node, depart_todo_node),
-        text=(visit_todo_node, depart_todo_node),
+        html=(visit_moved_node, depart_moved_node),
+        latex=(visit_moved_node, depart_moved_node),
+        text=(visit_moved_node, depart_moved_node),
     )
     app.add_directive("moved_to_luigi", MovedDirective)
     return {

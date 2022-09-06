@@ -36,8 +36,10 @@ from .tools import create_empty_file
 
 
 def test_ext_parameter(luigi_tools_working_directory):
+    """Test the `luigi_tools.parameter.ExtParameter` class."""
+
     class TaskExtParameter(luigi.Task):
-        """"""
+        """A simple test task."""
 
         a = luigi_tools.parameter.ExtParameter(default=".ext_from_default")
         test_type = luigi.Parameter(default="default")
@@ -64,8 +66,10 @@ def test_ext_parameter(luigi_tools_working_directory):
 
 
 def test_ratio_parameter(tmpdir):
+    """Test the `luigi_tools.parameter.RatioParameter` class."""
+
     class TaskRatioParameter(luigi.Task):
-        """"""
+        """A simple test task."""
 
         a = luigi_tools.parameter.RatioParameter(default=0.5)
         b = luigi.FloatParameter(default=0.5)
@@ -90,12 +94,23 @@ def test_ratio_parameter(tmpdir):
 
 
 class TestOptionalParameter:
+    """Test the `luigi_tools.parameter.Optional*` classes.
+
+    .. note::
+
+        These classes were ported to the luigi package but the tests were kept here for example
+        purpose.
+    """
+
     def test_optional_parameter(self, luigi_tools_working_directory):
+        """Simple test for optional parameters."""
         # pylint: disable=too-many-statements
         class TaskFactory:
+            """A class factory."""
+
             def __call__(self):
                 class TaskOptionalParameter(luigi.Task):
-                    """"""
+                    """A simple test task."""
 
                     a = luigi.parameter.OptionalIntParameter(default=1)
                     b = luigi.parameter.OptionalFloatParameter(default=1.5)
@@ -325,7 +340,7 @@ class TestOptionalParameter:
                 assert luigi.build([task()], local_scheduler=True)
 
         class TaskOptionalParameterWarning(luigi.Task):
-            """"""
+            """A simple test task."""
 
             a = luigi.parameter.OptionalIntParameter(default=1)
             expected_a = luigi.IntParameter(default=1)
@@ -361,6 +376,8 @@ class TestOptionalParameter:
             )
 
     def test_warning(self):
+        """Test that warnings are properly emitted."""
+
         class TestOptionalFloatParameterSingleType(
             luigi.parameter.OptionalParameterMixin, luigi.FloatParameter
         ):
@@ -376,6 +393,8 @@ class TestOptionalParameter:
             expected_type = (int, float)
 
         class TestConfig(luigi.Config):
+            """A simple config task."""
+
             param_single = TestOptionalFloatParameterSingleType()
             param_multi = TestOptionalFloatParameterMultiTypes()
 
@@ -410,7 +429,11 @@ class TestOptionalParameter:
         )
 
     def actual_test(self, cls, default, expected_value, expected_type, bad_data, **kwargs):
+        """A test function used for several parameter types."""
+
         class TestConfig(luigi.Config):
+            """A simple config task."""
+
             param = cls(default=default, **kwargs)
             empty_param = cls(default=default, **kwargs)
 
@@ -449,6 +472,7 @@ class TestOptionalParameter:
         assert luigi.build([TestConfig()], local_scheduler=True)
 
     def test_optional_str_parameter(self, tmp_working_dir):
+        """Test the `luigi.parameter.OptionalStrParameter` class."""
         with set_luigi_config({"TestConfig": {"param": "expected value", "empty_param": ""}}):
             self.actual_test(
                 luigi.parameter.OptionalStrParameter,
@@ -466,11 +490,13 @@ class TestOptionalParameter:
             )
 
     def test_optional_int_parameter(self, tmp_working_dir):
+        """Test the `luigi.parameter.OptionalIntParameter` class."""
         with set_luigi_config({"TestConfig": {"param": "10", "empty_param": ""}}):
             self.actual_test(luigi.parameter.OptionalIntParameter, None, 10, "int", "bad data")
             self.actual_test(luigi.parameter.OptionalIntParameter, 1, 10, "int", "bad data")
 
     def test_optional_bool_parameter(self, tmp_working_dir):
+        """Test the `luigi.parameter.OptionalBoolParameter` class."""
         with set_luigi_config({"TestConfig": {"param": "true", "empty_param": ""}}):
             self.actual_test(
                 luigi_tools.parameter.OptionalBoolParameter,
@@ -488,6 +514,7 @@ class TestOptionalParameter:
             )
 
     def test_optional_float_parameter(self, tmp_working_dir):
+        """Test the `luigi.parameter.OptionalFloatParameter` class."""
         with set_luigi_config({"TestConfig": {"param": "10.5", "empty_param": ""}}):
             self.actual_test(
                 luigi.parameter.OptionalFloatParameter,
@@ -505,6 +532,7 @@ class TestOptionalParameter:
             )
 
     def test_optional_dict_parameter(self, tmp_working_dir):
+        """Test the `luigi.parameter.OptionalDictParameter` class."""
         with set_luigi_config({"TestConfig": {"param": '{"a": 10}', "empty_param": ""}}):
             self.actual_test(
                 luigi.parameter.OptionalDictParameter,
@@ -522,6 +550,7 @@ class TestOptionalParameter:
             )
 
     def test_optional_list_parameter(self, tmp_working_dir):
+        """Test the `luigi.parameter.OptionalListParameter` class."""
         with set_luigi_config({"TestConfig": {"param": "[10.5]", "empty_param": ""}}):
             self.actual_test(
                 luigi.parameter.OptionalListParameter,
@@ -539,6 +568,7 @@ class TestOptionalParameter:
             )
 
     def test_optional_tuple_parameter(self, tmp_working_dir):
+        """Test the `luigi.parameter.OptionalTupleParameter` class."""
         with set_luigi_config({"TestConfig": {"param": "[10.5]", "empty_param": ""}}):
             self.actual_test(
                 luigi.parameter.OptionalTupleParameter,
@@ -556,6 +586,7 @@ class TestOptionalParameter:
             )
 
     def test_optional_numerical_parameter(self, tmp_working_dir):
+        """Test the `luigi.parameter.OptionalNumericalParameter` class."""
         with set_luigi_config({"TestConfig": {"param": "10.5", "empty_param": ""}}):
             self.actual_test(
                 luigi.parameter.OptionalNumericalParameter,
@@ -579,6 +610,7 @@ class TestOptionalParameter:
             )
 
     def test_optional_choice_parameter(self, tmp_working_dir):
+        """Test the `luigi.parameter.OptionalChoiceParameter` class."""
         with set_luigi_config({"TestConfig": {"param": "expected value", "empty_param": ""}}):
             choices = ["default value", "expected value", "null"]
             self.actual_test(
@@ -600,9 +632,13 @@ class TestOptionalParameter:
 
 
 class TestBoolParameter:
+    """Test the `luigi_tools.parameter.BoolParameter` class."""
+
     def test_auto_set_parsing(self):
+        """Test that parsing is properly fixed according to the default value."""
+
         class TaskBoolParameter(luigi.Task):
-            """"""
+            """A simple test task."""
 
             a = luigi_tools.parameter.BoolParameter(default=True)
             b = luigi_tools.parameter.BoolParameter(default=False)
@@ -626,11 +662,12 @@ class TestBoolParameter:
             assert luigi.build([TaskBoolParameter()], local_scheduler=True)
 
     def test_true_implicit_failing(self):
+        """Test that setting `default=True` and `parsing="implicit"` raises an exception."""
         # pylint: disable=unused-variable
         with pytest.raises(ValueError):
 
             class TaskBoolParameterFail(luigi.Task):
-                """"""
+                """A simple test task."""
 
                 a = luigi_tools.parameter.BoolParameter(default=True, parsing="implicit")
 
@@ -639,7 +676,10 @@ class TestBoolParameter:
 @pytest.mark.parametrize("absolute", [True, False])
 @pytest.mark.parametrize("exists", [True, False])
 def test_path_parameter(tmpdir, default, absolute, exists):
+    """Test the `luigi.parameter.PathParameter` class."""
+
     class TaskPathParameter(luigi.Task):
+        """A simple test task."""
 
         a = luigi.parameter.PathParameter(
             default=str(tmpdir / default) if default is not None else str(tmpdir),
