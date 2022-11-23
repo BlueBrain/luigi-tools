@@ -13,13 +13,13 @@
 # limitations under the License.
 
 """This module provides some specific luigi parameters."""
-import dataclasses
 import collections.abc
+import dataclasses
 import typing
 
 import luigi
-from luigi.parameter import OptionalParameterMixin
 from luigi.freezing import FrozenOrderedDict
+from luigi.parameter import OptionalParameterMixin
 
 
 class ExtParameter(luigi.Parameter):

@@ -14,15 +14,16 @@
 
 """Tests for luigi-tools parameters."""
 
+import collections
+import dataclasses
+import typing
+
 # pylint: disable=empty-docstring
 # pylint: disable=missing-class-docstring
 # pylint: disable=missing-function-docstring
 # pylint: disable=redefined-outer-name
 # pylint: disable=unused-argument
 import warnings
-import dataclasses
-import typing
-import collections
 
 import luigi
 import mock
@@ -739,6 +740,7 @@ def test_path_parameter(tmpdir, default, absolute, exists):
                 luigi.build([TaskPathParameter()], local_scheduler=True)
         else:
             assert luigi.build([TaskPathParameter()], local_scheduler=True)
+
 
 def test_DataclassParameter__primitives():
     @dataclasses.dataclass
