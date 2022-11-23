@@ -32,7 +32,7 @@ pip install luigi-tools
 
 The [Luigi][luigi_url] package describes itself as follow:
 
-> Luigi is a Python (2.7, 3.6, 3.7 tested) package that helps you build complex pipelines of batch
+> Luigi is a Python package that helps you build complex pipelines of batch
 > jobs. It handles dependency resolution, workflow management, visualization, handling failures,
 > command line integration, and much more.
 
