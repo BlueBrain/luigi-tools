@@ -20,13 +20,13 @@ from setuptools import setup
 
 reqs = [
     "luigi",
+    "typing-extensions",
 ]
 
 doc_reqs = [
     "m2r2",
     "sphinx",
     "sphinx-bluebrain-theme",
-    "typing-extensions",
 ]
 
 test_reqs = [
