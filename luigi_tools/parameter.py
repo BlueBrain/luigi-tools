@@ -13,9 +13,13 @@
 # limitations under the License.
 
 """This module provides some specific luigi parameters."""
+import dataclasses
+import collections.abc
+import typing
 
 import luigi
 from luigi.parameter import OptionalParameterMixin
+from luigi.freezing import FrozenOrderedDict
 
 
 class ExtParameter(luigi.Parameter):
@@ -89,3 +93,66 @@ class OptionalRatioParameter(OptionalParameterMixin, RatioParameter):
     """Class to parse optional ratio parameters."""
 
     expected_type = float
+
+
+class DataclassParameter(luigi.DictParameter):
+    def __init__(self, cls_type, *args, **kwargs):
+        self._cls_type = cls_type
+        super().__init__(*args, **kwargs)
+
+    def normalize(self, value):
+        """Normalize the given value to a dataclass initialized object."""
+        if isinstance(value, self._cls_type):
+            value = dataclasses.asdict(value)
+        return _instantiate(self._cls_type, value)
+
+    def serialize(self, x):
+        """Serialize a dataclass object."""
+        data = dataclasses.asdict(x)
+        return super().serialize(data)
+
+
+def _instantiate(cls, data):
+
+    origin_type = typing.get_origin(cls)
+
+    if origin_type:  # typing type
+
+        if origin_type in {tuple, list}:
+            return _instantiate(origin_type, data)
+
+        if issubclass(origin_type, collections.abc.Mapping):
+            k_type, v_type = typing.get_args(cls)
+            return FrozenOrderedDict(
+                (
+                    (
+                        _instantiate(k_type, k),
+                        _instantiate(v_type, v),
+                    )
+                    for k, v in data.items()
+                )
+            )
+
+        if origin_type is typing.Union:
+            args = typing.get_args(cls)
+            if type(None) in args:  # optional
+                return _instantiate(args[0], data)
+            raise NotImplementedError
+
+    if dataclasses.is_dataclass(cls):
+        args = {f.name: _instantiate(f.type, data[f.name]) for f in dataclasses.fields(cls)}
+        return cls(**args)
+
+    if cls in {list, tuple}:
+        return tuple(_instantiate(type(v), v) for v in data)
+
+    if issubclass(cls, collections.abc.Mapping):
+        return FrozenOrderedDict(
+            (
+                _instantiate(type(k), k),
+                _instantiate(type(v), v),
+            )
+            for k, v in data.items()
+        )
+
+    return cls(data)

@@ -20,6 +20,9 @@
 # pylint: disable=redefined-outer-name
 # pylint: disable=unused-argument
 import warnings
+import dataclasses
+import typing
+import collections
 
 import luigi
 import mock
@@ -736,3 +739,189 @@ def test_path_parameter(tmpdir, default, absolute, exists):
                 luigi.build([TaskPathParameter()], local_scheduler=True)
         else:
             assert luigi.build([TaskPathParameter()], local_scheduler=True)
+
+def test_DataclassParameter__primitives():
+    @dataclasses.dataclass
+    class MyClass:
+        a: str
+        b: int
+        c: float
+        d: bool
+
+    instance = MyClass(a="1", b=2, c=3.0, d=False)
+
+    p = luigi_tools.parameter.DataclassParameter(cls_type=MyClass)
+
+    string = p.serialize(instance)
+    assert string == '{"a": "1", "b": 2, "c": 3.0, "d": false}'
+
+    deserialized_dict = p.parse(string)
+    assert deserialized_dict == {"a": "1", "b": 2, "c": 3.0, "d": False}
+
+    normalized_instance = p.normalize(instance)
+    assert normalized_instance == instance
+
+    normalized_instance = p.normalize(deserialized_dict)
+    assert normalized_instance == instance
+
+
+def test_DataclassParameter__primitives__ordering():
+    @dataclasses.dataclass(frozen=True, eq=True)
+    class A:
+        a: str
+        b: int
+        c: float
+        d: bool
+
+    @dataclasses.dataclass(frozen=True, eq=True)
+    class B:
+        b: int
+        a: str
+        d: bool
+        c: float
+
+    a = A(a="1", b=2, c=3.0, d=False)
+    b = B(a="1", b=2, c=3.0, d=False)
+
+    pA = luigi_tools.parameter.DataclassParameter(cls_type=A)
+    pB = luigi_tools.parameter.DataclassParameter(cls_type=B)
+
+    # ordering affects serialization
+    sA = pA.serialize(a)
+    sB = pB.serialize(b)
+    assert sA != sB
+
+    # but not dictionary comparison
+    dA = pA.parse(sA)
+    dB = pB.parse(sB)
+    assert dA == dB
+
+    # ordering also affects deserialization and hashes
+    nA = pA.normalize(a)
+    nB = pB.normalize(b)
+    assert nA != nB
+    assert hash(nA) != hash(nB)
+
+    # ordering also affects deserialization and hashes
+    nA = pA.normalize(dA)
+    nB = pB.normalize(dB)
+    assert nA != nB
+    assert hash(nA) != hash(nB)
+
+
+def test_DataclassParameter__sequences():
+    @dataclasses.dataclass(frozen=True, eq=True)
+    class A:
+        a: list
+        b: tuple
+        c: typing.List[str]
+        d: typing.List[int]
+        e: typing.Tuple[float]
+
+    a = A(a=[1, "1"], b=(2.0, "2"), c=["a", "b"], d=[3, 4], e=(5.0, 6.0))
+
+    p = luigi_tools.parameter.DataclassParameter(cls_type=A)
+
+    # Note how the e tuple has been converted to a list with json serialization
+    string = p.serialize(a)
+    assert (
+        string == '{"a": [1, "1"], "b": [2.0, "2"], "c": ["a", "b"], "d": [3, 4], "e": [5.0, 6.0]}'
+    )
+
+    # Note how the e tuple has been converted to a list because of the json serialization
+    a_dict = p.parse(string)
+    assert a_dict == {"a": [1, "1"], "b": [2.0, "2"], "c": ["a", "b"], "d": [3, 4], "e": [5.0, 6.0]}
+
+    a_obj = p.normalize(a_dict)
+    assert type(a_obj.a) == tuple and a_obj.a == tuple(a.a)
+    assert type(a_obj.b) == tuple and a_obj.b == a.b
+    assert type(a_obj.c) == tuple and a_obj.c == tuple(a.c)
+    assert type(a_obj.d) == tuple and a_obj.d == tuple(a.d)
+    assert type(a_obj.e) == tuple and a_obj.e == a.e
+
+    a_obj = p.normalize(a)
+    assert type(a_obj.a) == tuple and a_obj.a == tuple(a.a)
+    assert type(a_obj.b) == tuple and a_obj.b == a.b
+    assert type(a_obj.c) == tuple and a_obj.c == tuple(a.c)
+    assert type(a_obj.d) == tuple and a_obj.d == tuple(a.d)
+    assert type(a_obj.e) == tuple and a_obj.e == a.e
+
+
+def test_DataclassParameter__mappings():
+    @dataclasses.dataclass(frozen=True, eq=True)
+    class A:
+        a: dict
+        b: collections.OrderedDict
+        c: typing.Dict[str, int]
+        d: typing.Dict[int, float]
+
+    a = A(
+        a={"a": 1, "b": "2"},
+        b=collections.OrderedDict([("c", 3.0), ("d", 4)]),
+        c={"e": 5, "f": 6},
+        d={7: 8.0, 9: 10.0},
+    )
+
+    p = luigi_tools.parameter.DataclassParameter(cls_type=A)
+
+    # Note how json serialization converts d keys into strings
+    string = p.serialize(a)
+    assert (
+        string
+        == '{"a": {"a": 1, "b": "2"}, "b": {"c": 3.0, "d": 4}, "c": {"e": 5, "f": 6}, "d": {"7": 8.0, "9": 10.0}}'
+    )
+
+    a_dict = p.parse(string)
+    assert {
+        "a": {"a": 1, "b": "2"},
+        "b": {"c": 3.0, "d": 4},
+        "c": {"e": 5, "f": 6},
+        "d": {"7": 8.0, "9": 10.0},
+    }
+
+    for obj in (a_dict, a):
+        a_obj = p.normalize(obj)
+        for f in dataclasses.fields(a_obj):
+
+            actual = getattr(a_obj, f.name)
+            expected = getattr(a, f.name)
+
+            # all dicts are converted to frozen ordered dicts
+            assert isinstance(actual, luigi.freezing.FrozenOrderedDict)
+
+            # check that dataclass is hashable
+            assert hash(actual)
+            assert dict(actual) == dict(expected)
+
+
+def test_DataclassParameter__nesting():
+    @dataclasses.dataclass(frozen=True, eq=True)
+    class A:
+        a: str
+        b: float
+
+    @dataclasses.dataclass(frozen=True, eq=True)
+    class B:
+        c: A
+        d: float
+
+    @dataclasses.dataclass(frozen=True, eq=True)
+    class C:
+        e: A
+        f: B
+
+    c = C(e=A(a="1", b=2.0), f=B(c=A(a="2", b=3.0), d=4.0))
+
+    p = luigi_tools.parameter.DataclassParameter(cls_type=C)
+
+    string = p.serialize(c)
+    assert string == '{"e": {"a": "1", "b": 2.0}, "f": {"c": {"a": "2", "b": 3.0}, "d": 4.0}}'
+
+    c_dict = p.parse(string)
+    assert c_dict == {"e": {"a": "1", "b": 2.0}, "f": {"c": {"a": "2", "b": 3.0}, "d": 4.0}}
+
+    c_obj = p.normalize(c_dict)
+    assert c_obj == c
+
+    c_obj = p.normalize(c)
+    assert c_obj == c
