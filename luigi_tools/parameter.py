@@ -18,6 +18,7 @@ import dataclasses
 import typing
 
 import luigi
+import typing_extensions
 from luigi.freezing import FrozenOrderedDict
 from luigi.parameter import OptionalParameterMixin
 
@@ -114,7 +115,7 @@ class DataclassParameter(luigi.DictParameter):
 
 def _instantiate(cls, data):
 
-    origin_type = typing.get_origin(cls)
+    origin_type = typing_extensions.get_origin(cls)
 
     if origin_type:  # typing type
 
@@ -122,7 +123,7 @@ def _instantiate(cls, data):
             return _instantiate(origin_type, data)
 
         if issubclass(origin_type, collections.abc.Mapping):
-            k_type, v_type = typing.get_args(cls)
+            k_type, v_type = typing_extensions.get_args(cls)
             return FrozenOrderedDict(
                 (
                     (
@@ -134,7 +135,7 @@ def _instantiate(cls, data):
             )
 
         if origin_type is typing.Union:
-            args = typing.get_args(cls)
+            args = typing_extensions.get_args(cls)
             if type(None) in args:  # optional
                 return _instantiate(args[0], data)
             raise NotImplementedError

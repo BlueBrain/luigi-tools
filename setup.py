@@ -26,6 +26,7 @@ doc_reqs = [
     "m2r2",
     "sphinx",
     "sphinx-bluebrain-theme",
+    "typing-extensions",
 ]
 
 test_reqs = [
