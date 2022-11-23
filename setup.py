@@ -15,18 +15,24 @@
 """Setup for the luigi-tools package."""
 from pathlib import Path
 
-from setuptools import find_packages
+from setuptools import find_namespace_packages
 from setuptools import setup
 
 reqs = [
     "luigi",
 ]
 
-docs_reqs = [
-    "docutils==0.18",  # TODO: Remove this when m2r2>0.3.2 is released
+doc_reqs = [
     "m2r2",
     "sphinx",
     "sphinx-bluebrain-theme",
+]
+
+test_reqs = [
+    "mock",
+    "pytest",
+    "pytest-cov",
+    "pytest-html",
 ]
 
 setup(
@@ -41,13 +47,15 @@ setup(
         "Source": "https://github.com/BlueBrain/luigi-tools",
     },
     license="Apache License 2.0",
-    packages=find_packages(exclude=["tests"]),
+    packages=find_namespace_packages(include=["luigi_tools*"]),
     python_requires=">=3.7",
     install_requires=reqs,
     extras_require={
+        "docs": doc_reqs,
         "graphviz": ["graphviz"],
-        "docs": docs_reqs,
+        "test": test_reqs,
     },
+    include_package_data=True,
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
@@ -61,5 +69,4 @@ setup(
         "Programming Language :: Python :: 3.10",
         "Topic :: Scientific/Engineering",
     ],
-    include_package_data=True,
 )
