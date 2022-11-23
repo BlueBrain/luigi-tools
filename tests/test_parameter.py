@@ -973,3 +973,67 @@ def test_DataclassParameter__Optional():
     n2 = p.normalize(d2)
     assert n1 == a1
     assert n2 == a2
+
+
+def test_DataclassParameter__Any():
+    @dataclasses.dataclass(frozen=True, eq=True)
+    class A:
+        a: typing.Any
+        b: typing.List[typing.Any]
+        c: typing.Dict[str, typing.Any]
+        d: typing.Optional[typing.Dict[int, typing.Any]]
+
+    a = A(a="1", b=[1, "2", 3.0], c={"4": 5.0, "5": "6"}, d={6: 7, 8: "9"})
+
+    p = luigi_tools.parameter.DataclassParameter(cls_type=A)
+
+    s = p.serialize(a)
+    assert s == '{"a": "1", "b": [1, "2", 3.0], "c": {"4": 5.0, "5": "6"}, "d": {"6": 7, "8": "9"}}'
+
+    d = p.parse(s)
+    assert d == {"a": "1", "b": [1, "2", 3.0], "c": {"4": 5.0, "5": "6"}, "d": {"6": 7, "8": "9"}}
+
+    n = p.normalize(d)
+    assert n.a == a.a
+    assert n.b == tuple(a.b)
+    assert n.c == luigi.freezing.FrozenOrderedDict(a.c)
+    assert n.d == luigi.freezing.FrozenOrderedDict(a.d)
+
+
+def test_DataclassParameter__raises():
+    @dataclasses.dataclass(frozen=True, eq=True)
+    class A:
+        a: typing.Callable
+
+    p = luigi_tools.parameter.DataclassParameter(cls_type=A)
+
+    a = A(a=lambda x: x)
+
+    with pytest.raises(TypeError):
+        string = p.serialize(a)
+        d = p.parse(string)
+        p.normalize(d)
+
+    @dataclasses.dataclass(frozen=True, eq=True)
+    class A:
+        a: complex
+
+    p = luigi_tools.parameter.DataclassParameter(cls_type=A)
+    a = A(a=complex(1, 2))
+
+    with pytest.raises(TypeError):
+        string = p.serialize(a)
+        d = p.parse(string)
+        p.normalize(d)
+
+    @dataclasses.dataclass(frozen=True, eq=True)
+    class A:
+        a: typing.Union[str, int]
+
+    p = luigi_tools.parameter.DataclassParameter(cls_type=A)
+    a = A(a=2)
+
+    with pytest.raises(TypeError):
+        string = p.serialize(a)
+        d = p.parse(string)
+        p.normalize(d)
