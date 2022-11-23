@@ -14,7 +14,6 @@
 
 """Tests for luigi-tools targets."""
 
-# pylint: disable=no-self-use
 # pylint: disable=redefined-outer-name
 # pylint: disable=unused-argument
 import os

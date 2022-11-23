@@ -1,6 +1,5 @@
 [MESSAGES CONTROL]
 disable=
-	bad-continuation,
 	fixme,
 	invalid-name,
 	len-as-condition,

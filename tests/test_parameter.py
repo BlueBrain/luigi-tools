@@ -17,7 +17,6 @@
 # pylint: disable=empty-docstring
 # pylint: disable=missing-class-docstring
 # pylint: disable=missing-function-docstring
-# pylint: disable=no-self-use
 # pylint: disable=redefined-outer-name
 # pylint: disable=unused-argument
 import warnings
