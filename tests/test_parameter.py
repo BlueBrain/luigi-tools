@@ -743,6 +743,8 @@ def test_path_parameter(tmpdir, default, absolute, exists):
 
 
 def test_DataclassParameter__primitives():
+    """Test the DataclassParameter with primitive types."""
+
     @dataclasses.dataclass
     class MyClass:
         a: str
@@ -768,6 +770,8 @@ def test_DataclassParameter__primitives():
 
 
 def test_DataclassParameter__primitives__ordering():
+    """Test the DataclassParameter with differing primitive ordering."""
+
     @dataclasses.dataclass(frozen=True, eq=True)
     class A:
         a: str
@@ -812,6 +816,8 @@ def test_DataclassParameter__primitives__ordering():
 
 
 def test_DataclassParameter__sequences():
+    """Test the DataclassParameter with sequence types."""
+
     @dataclasses.dataclass(frozen=True, eq=True)
     class A:
         a: list
@@ -850,6 +856,8 @@ def test_DataclassParameter__sequences():
 
 
 def test_DataclassParameter__mappings():
+    """Test the DataclassParameter with mapping types."""
+
     @dataclasses.dataclass(frozen=True, eq=True)
     class A:
         a: dict
@@ -868,9 +876,11 @@ def test_DataclassParameter__mappings():
 
     # Note how json serialization converts d keys into strings
     string = p.serialize(a)
-    assert (
-        string
-        == '{"a": {"a": 1, "b": "2"}, "b": {"c": 3.0, "d": 4}, "c": {"e": 5, "f": 6}, "d": {"7": 8.0, "9": 10.0}}'
+    assert string == (
+        '{"a": {"a": 1, "b": "2"}, '
+        '"b": {"c": 3.0, "d": 4}, '
+        '"c": {"e": 5, "f": 6}, '
+        '"d": {"7": 8.0, "9": 10.0}}'
     )
 
     a_dict = p.parse(string)
@@ -897,6 +907,8 @@ def test_DataclassParameter__mappings():
 
 
 def test_DataclassParameter__nesting():
+    """Test the DataclassParameter with nested dataclass objects."""
+
     @dataclasses.dataclass(frozen=True, eq=True)
     class A:
         a: str
@@ -927,3 +939,37 @@ def test_DataclassParameter__nesting():
 
     c_obj = p.normalize(c)
     assert c_obj == c
+
+
+def test_DataclassParameter__Optional():
+    """Test the DataclassParameter with Optional attributes."""
+
+    @dataclasses.dataclass(frozen=True, eq=True)
+    class A:
+        a: int
+        b: typing.Optional[float] = None
+
+    a1 = A(a=1, b=2.0)
+    a2 = A(a=1)
+
+    p = luigi_tools.parameter.DataclassParameter(cls_type=A)
+
+    s1 = p.serialize(a1)
+    assert s1 == '{"a": 1, "b": 2.0}'
+    s2 = p.serialize(a2)
+    assert s2 == '{"a": 1, "b": null}'
+
+    d1 = p.parse(s1)
+    assert d1 == {"a": 1, "b": 2.0}
+    d2 = p.parse(s2)
+    assert d2 == {"a": 1, "b": None}
+
+    n1 = p.normalize(a1)
+    n2 = p.normalize(a2)
+    assert n1 == a1
+    assert n2 == a2
+
+    n1 = p.normalize(d1)
+    n2 = p.normalize(d2)
+    assert n1 == a1
+    assert n2 == a2

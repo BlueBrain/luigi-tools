@@ -97,6 +97,8 @@ class OptionalRatioParameter(OptionalParameterMixin, RatioParameter):
 
 
 class DataclassParameter(luigi.DictParameter):
+    """Class to parse, serialize, and normalize nested dataclasses."""
+
     def __init__(self, cls_type, *args, **kwargs):
         self._cls_type = cls_type
         super().__init__(*args, **kwargs)
@@ -122,23 +124,24 @@ def _instantiate(cls, data):
         if origin_type in {tuple, list}:
             return _instantiate(origin_type, data)
 
-        if issubclass(origin_type, collections.abc.Mapping):
-            k_type, v_type = typing_extensions.get_args(cls)
-            return FrozenOrderedDict(
-                (
+        try:
+            if issubclass(origin_type, collections.abc.Mapping):
+                k_type, v_type = typing_extensions.get_args(cls)
+                return FrozenOrderedDict(
                     (
-                        _instantiate(k_type, k),
-                        _instantiate(v_type, v),
+                        (
+                            _instantiate(k_type, k),
+                            _instantiate(v_type, v),
+                        )
+                        for k, v in data.items()
                     )
-                    for k, v in data.items()
                 )
-            )
-
-        if origin_type is typing.Union:
-            args = typing_extensions.get_args(cls)
-            if type(None) in args:  # optional
-                return _instantiate(args[0], data)
-            raise NotImplementedError
+        except TypeError:
+            if origin_type is typing.Union:
+                args = typing_extensions.get_args(cls)
+                if type(None) in args:  # optional
+                    return _instantiate(args[0], data) if data else None
+                raise NotImplementedError
 
     if dataclasses.is_dataclass(cls):
         args = {f.name: _instantiate(f.type, data[f.name]) for f in dataclasses.fields(cls)}
