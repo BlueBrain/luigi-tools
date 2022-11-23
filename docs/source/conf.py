@@ -25,7 +25,7 @@ sys.path.insert(0, os.path.abspath("_ext"))
 project = "luigi-tools"
 
 # The short X.Y version
-version = get_distribution("luigi_tools").version
+version = get_distribution("luigi-tools").version
 
 # The full version, including alpha/beta/rc tags
 release = version
@@ -40,8 +40,8 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx.ext.graphviz",
-    "sphinx.ext.napoleon",
     "sphinx.ext.intersphinx",
+    "sphinx.ext.napoleon",
     "m2r2",
     "luigi_move",
 ]
