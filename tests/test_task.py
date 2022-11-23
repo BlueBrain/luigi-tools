@@ -15,7 +15,6 @@
 """Tests for luigi-tools tasks."""
 
 # pylint: disable=no-member
-# pylint: disable=no-self-use
 # pylint: disable=protected-access
 # pylint: disable=too-many-lines
 # pylint: disable=unused-argument

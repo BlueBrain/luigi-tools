@@ -15,7 +15,6 @@
 """Tests for luigi-tools utils."""
 
 # pylint: disable=empty-docstring
-# pylint: disable=no-self-use
 # pylint: disable=protected-access
 # pylint: disable=unused-argument
 import copy
