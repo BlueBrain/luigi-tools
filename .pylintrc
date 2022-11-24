@@ -33,6 +33,8 @@ max-attributes=40
 min-public-methods=0
 # Maximum number of public methods for a class (see R0904).
 max-public-methods=60
+# Maximum number of lines in a module (see C0302)
+max-module-lines=2000
 
 [SIMILARITIES]
 # checks for similarities and duplicated code. This computation may be

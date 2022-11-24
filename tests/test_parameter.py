@@ -742,6 +742,21 @@ def test_path_parameter(tmpdir, default, absolute, exists):
             assert luigi.build([TaskPathParameter()], local_scheduler=True)
 
 
+def _check_parameter(obj, parameter, serialized, parsed):
+    """Check DataclassParameter for simple objects."""
+    string = parameter.serialize(obj)
+    assert string == serialized
+
+    dictionary = parameter.parse(string)
+    assert dictionary == parsed
+
+    new_obj1 = parameter.normalize(dictionary)
+    assert new_obj1 == obj
+
+    new_obj2 = parameter.normalize(obj)
+    assert new_obj2 == obj
+
+
 def test_DataclassParameter__primitives():
     """Test the DataclassParameter with primitive types."""
 
@@ -756,17 +771,12 @@ def test_DataclassParameter__primitives():
 
     p = luigi_tools.parameter.DataclassParameter(cls_type=MyClass)
 
-    string = p.serialize(instance)
-    assert string == '{"a": "1", "b": 2, "c": 3.0, "d": false}'
-
-    deserialized_dict = p.parse(string)
-    assert deserialized_dict == {"a": "1", "b": 2, "c": 3.0, "d": False}
-
-    normalized_instance = p.normalize(instance)
-    assert normalized_instance == instance
-
-    normalized_instance = p.normalize(deserialized_dict)
-    assert normalized_instance == instance
+    _check_parameter(
+        obj=instance,
+        parameter=p,
+        serialized='{"a": "1", "b": 2, "c": 3.0, "d": false}',
+        parsed={"a": "1", "b": 2, "c": 3.0, "d": False},
+    )
 
 
 def test_DataclassParameter__primitives__ordering():
@@ -936,6 +946,81 @@ def test_DataclassParameter__nesting():
     assert c_obj == c
 
 
+def test_DataclassParameter__nesting__2():
+    """Test the DataclassParameter with nested dataclass objects."""
+
+    @dataclasses.dataclass(frozen=True, eq=True)
+    class A:
+        a: str
+        b: float
+
+    @dataclasses.dataclass(frozen=True, eq=True)
+    class B:
+        c: A
+        d: float
+
+    @dataclasses.dataclass(frozen=True, eq=True)
+    class C:
+        e: typing.List[A]
+        f: typing.Dict[str, B]
+
+    p = luigi_tools.parameter.DataclassParameter(cls_type=C)
+
+    obj = C(
+        e=[A(a="1", b=2.0), A(a="2", b=3.0)],
+        f={
+            "4": B(c=A(a="5", b=6.0), d=7.0),
+            "5": B(c=A(a="8", b=9.0), d=10.0),
+        },
+    )
+
+    string = p.serialize(obj)
+
+    assert string == (
+        "{"
+        '"e": [{"a": "1", "b": 2.0}, {"a": "2", "b": 3.0}], '
+        '"f": {'
+        '"4": {"c": {"a": "5", "b": 6.0}, "d": 7.0}, '
+        '"5": {"c": {"a": "8", "b": 9.0}, "d": 10.0}'
+        "}"
+        "}"
+    )
+
+    dictionary = p.parse(string)
+    assert dictionary == {
+        "e": [{"a": "1", "b": 2.0}, {"a": "2", "b": 3.0}],
+        "f": {
+            "4": {"c": {"a": "5", "b": 6.0}, "d": 7.0},
+            "5": {"c": {"a": "8", "b": 9.0}, "d": 10.0},
+        },
+    }
+
+    new_obj1 = p.normalize(obj)
+    new_obj2 = p.normalize(obj)
+
+    for new_obj in (new_obj1, new_obj2):
+
+        assert isinstance(new_obj, C)
+
+        e = new_obj.e
+        assert isinstance(e, tuple)
+
+        e1, e2 = e
+        assert isinstance(e1, A)
+        assert isinstance(e2, A)
+        assert e1 == A(a="1", b=2.0)
+        assert e2 == A(a="2", b=3.0)
+
+        f = new_obj.f
+        assert isinstance(f, luigi.freezing.FrozenOrderedDict)
+
+        f1, f2 = f["4"], f["5"]
+        assert isinstance(f1, B)
+        assert isinstance(f2, B)
+        assert f1 == B(c=A(a="5", b=6.0), d=7.0)
+        assert f2 == B(c=A(a="8", b=9.0), d=10.0)
+
+
 def test_DataclassParameter__Optional__Union():
     """Test the DataclassParameter with Optional attributes."""
 
@@ -950,25 +1035,18 @@ def test_DataclassParameter__Optional__Union():
 
     p = luigi_tools.parameter.DataclassParameter(cls_type=A)
 
-    s1 = p.serialize(a1)
-    assert s1 == '{"a": 1, "b": 2.0, "c": 3.0}'
-    s2 = p.serialize(a2)
-    assert s2 == '{"a": 1, "b": 2.0, "c": null}'
-
-    d1 = p.parse(s1)
-    assert d1 == {"a": 1, "b": 2.0, "c": 3.0}
-    d2 = p.parse(s2)
-    assert d2 == {"a": 1, "b": 2.0, "c": None}
-
-    n1 = p.normalize(a1)
-    n2 = p.normalize(a2)
-    assert n1 == a1
-    assert n2 == a2
-
-    n1 = p.normalize(d1)
-    n2 = p.normalize(d2)
-    assert n1 == a1
-    assert n2 == a2
+    _check_parameter(
+        obj=a1,
+        parameter=p,
+        serialized='{"a": 1, "b": 2.0, "c": 3.0}',
+        parsed={"a": 1, "b": 2.0, "c": 3.0},
+    )
+    _check_parameter(
+        obj=a2,
+        parameter=p,
+        serialized='{"a": 1, "b": 2.0, "c": null}',
+        parsed={"a": 1, "b": 2.0, "c": None},
+    )
 
 
 def test_DataclassParameter__Any():

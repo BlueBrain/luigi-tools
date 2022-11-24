@@ -142,9 +142,9 @@ def _instantiate(cls, data):  # pylint: disable=too-many-return-statements
 
         # Returns either the type's origin (e.g. list, dict) or None
         origin_type = typing_extensions.get_origin(cls)
+        args = typing_extensions.get_args(cls)
 
         if origin_type is typing.Union:
-            args = typing_extensions.get_args(cls)
 
             # Optional[X]. Propagate the non NoneType arguments.
             if type(None) in args:
@@ -154,16 +154,15 @@ def _instantiate(cls, data):  # pylint: disable=too-many-return-statements
             return _instantiate(type(data), data)
 
         if origin_type in {tuple, list}:
-            return _instantiate(origin_type, data)
+            return tuple(_instantiate(args[0], v) for v in data)
 
         # Mapping Types, e.g. Dict, DefaultDict, OrderedDict, etc.
         if isinstance(origin_type, type) and issubclass(origin_type, collections.abc.Mapping):
-            k_type, v_type = typing_extensions.get_args(cls)
             return FrozenOrderedDict(
                 (
                     (
-                        _instantiate(k_type, k),
-                        _instantiate(v_type, v),
+                        _instantiate(args[0], k),
+                        _instantiate(args[1], v),
                     )
                     for k, v in data.items()
                 )
