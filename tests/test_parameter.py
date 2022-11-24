@@ -840,19 +840,14 @@ def test_DataclassParameter__sequences():
     a_dict = p.parse(string)
     assert a_dict == {"a": [1, "1"], "b": [2.0, "2"], "c": ["a", "b"], "d": [3, 4], "e": [5.0, 6.0]}
 
-    a_obj = p.normalize(a_dict)
-    assert type(a_obj.a) == tuple and a_obj.a == tuple(a.a)
-    assert type(a_obj.b) == tuple and a_obj.b == a.b
-    assert type(a_obj.c) == tuple and a_obj.c == tuple(a.c)
-    assert type(a_obj.d) == tuple and a_obj.d == tuple(a.d)
-    assert type(a_obj.e) == tuple and a_obj.e == a.e
-
-    a_obj = p.normalize(a)
-    assert type(a_obj.a) == tuple and a_obj.a == tuple(a.a)
-    assert type(a_obj.b) == tuple and a_obj.b == a.b
-    assert type(a_obj.c) == tuple and a_obj.c == tuple(a.c)
-    assert type(a_obj.d) == tuple and a_obj.d == tuple(a.d)
-    assert type(a_obj.e) == tuple and a_obj.e == a.e
+    a_obj1 = p.normalize(a_dict)
+    a_obj2 = p.normalize(a)
+    for obj in (a_obj1, a_obj2):
+        for field in dataclasses.fields(a):
+            actual_value = getattr(obj, field.name)
+            expected_value = getattr(a, field.name)
+            assert isinstance(actual_value, tuple)
+            assert actual_value == tuple(expected_value)
 
 
 def test_DataclassParameter__mappings():

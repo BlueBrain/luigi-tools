@@ -115,7 +115,7 @@ class DataclassParameter(luigi.DictParameter):
         return super().serialize(data)
 
 
-def _instantiate(cls, data):
+def _instantiate(cls, data):  # pylint: disable=too-many-return-statements
 
     if isinstance(cls, type):
 
