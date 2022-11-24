@@ -941,28 +941,29 @@ def test_DataclassParameter__nesting():
     assert c_obj == c
 
 
-def test_DataclassParameter__Optional():
+def test_DataclassParameter__Optional__Union():
     """Test the DataclassParameter with Optional attributes."""
 
     @dataclasses.dataclass(frozen=True, eq=True)
     class A:
         a: int
-        b: typing.Optional[float] = None
+        b: typing.Union[int, str]
+        c: typing.Optional[float] = None
 
-    a1 = A(a=1, b=2.0)
-    a2 = A(a=1)
+    a1 = A(a=1, b=2.0, c=3.0)
+    a2 = A(a=1, b=2.0)
 
     p = luigi_tools.parameter.DataclassParameter(cls_type=A)
 
     s1 = p.serialize(a1)
-    assert s1 == '{"a": 1, "b": 2.0}'
+    assert s1 == '{"a": 1, "b": 2.0, "c": 3.0}'
     s2 = p.serialize(a2)
-    assert s2 == '{"a": 1, "b": null}'
+    assert s2 == '{"a": 1, "b": 2.0, "c": null}'
 
     d1 = p.parse(s1)
-    assert d1 == {"a": 1, "b": 2.0}
+    assert d1 == {"a": 1, "b": 2.0, "c": 3.0}
     d2 = p.parse(s2)
-    assert d2 == {"a": 1, "b": None}
+    assert d2 == {"a": 1, "b": 2.0, "c": None}
 
     n1 = p.normalize(a1)
     n2 = p.normalize(a2)
@@ -976,6 +977,8 @@ def test_DataclassParameter__Optional():
 
 
 def test_DataclassParameter__Any():
+    """Test the DataclassParameter with typing.Any attributes."""
+
     @dataclasses.dataclass(frozen=True, eq=True)
     class A:
         a: typing.Any
@@ -1001,39 +1004,16 @@ def test_DataclassParameter__Any():
 
 
 def test_DataclassParameter__raises():
-    @dataclasses.dataclass(frozen=True, eq=True)
-    class A:
-        a: typing.Callable
-
-    p = luigi_tools.parameter.DataclassParameter(cls_type=A)
-
-    a = A(a=lambda x: x)
-
-    with pytest.raises(TypeError):
-        string = p.serialize(a)
-        d = p.parse(string)
-        p.normalize(d)
+    """Test the DataclassParameter raising with unsupported types."""
 
     @dataclasses.dataclass(frozen=True, eq=True)
     class A:
-        a: complex
+        a: typing.Literal["Paul"]
 
     p = luigi_tools.parameter.DataclassParameter(cls_type=A)
-    a = A(a=complex(1, 2))
+    a = A(a="Paul")
 
-    with pytest.raises(TypeError):
-        string = p.serialize(a)
-        d = p.parse(string)
-        p.normalize(d)
-
-    @dataclasses.dataclass(frozen=True, eq=True)
-    class A:
-        a: typing.Union[str, int]
-
-    p = luigi_tools.parameter.DataclassParameter(cls_type=A)
-    a = A(a=2)
-
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match=r"Unsupported type typing.Literal\[\'Paul\'\]"):
         string = p.serialize(a)
         d = p.parse(string)
         p.normalize(d)

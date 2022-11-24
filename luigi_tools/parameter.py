@@ -120,32 +120,35 @@ def _instantiate(cls, data):
 
     origin_type = typing_extensions.get_origin(cls)
 
-    if origin_type:  # typing type
+    # typing types with an origin ref to a type
+    if origin_type:
 
         if inspect.isclass(origin_type):
 
             if origin_type in {tuple, list}:
                 return _instantiate(origin_type, data)
 
-            if issubclass(origin_type, collections.abc.Mapping):
-                k_type, v_type = typing_extensions.get_args(cls)
-                return FrozenOrderedDict(
+            # Mapping Types, e.g. typing.Dict
+            k_type, v_type = typing_extensions.get_args(cls)
+            return FrozenOrderedDict(
+                (
                     (
-                        (
-                            _instantiate(k_type, k),
-                            _instantiate(v_type, v),
-                        )
-                        for k, v in data.items()
+                        _instantiate(k_type, k),
+                        _instantiate(v_type, v),
                     )
+                    for k, v in data.items()
                 )
-
-           raise TypeError(f"Unsupported type {cls}")
+            )
 
         if origin_type is typing.Union:
             args = typing_extensions.get_args(cls)
-            if type(None) in args:  # optional
+
+            # Optional[X]. Propagate the non NoneType arguments.
+            if type(None) in args:
                 return _instantiate(args[0], data) if data else None
-            raise TypeError(f"Unsupported type {cls}")
+
+            # Union[X, Y]. Propagate the type of the data.
+            return _instantiate(type(data), data)
 
         raise TypeError(f"Unsupported type {cls}")
 
