@@ -1001,19 +1001,3 @@ def test_DataclassParameter__Any():
     assert n.b == tuple(a.b)
     assert n.c == luigi.freezing.FrozenOrderedDict(a.c)
     assert n.d == luigi.freezing.FrozenOrderedDict(a.d)
-
-
-def test_DataclassParameter__raises():
-    """Test the DataclassParameter raising with unsupported types."""
-
-    @dataclasses.dataclass(frozen=True, eq=True)
-    class A:
-        a: typing.Literal["Paul"]
-
-    p = luigi_tools.parameter.DataclassParameter(cls_type=A)
-    a = A(a="Paul")
-
-    with pytest.raises(TypeError, match=r"Unsupported type typing.Literal\[\'Paul\'\]"):
-        string = p.serialize(a)
-        d = p.parse(string)
-        p.normalize(d)

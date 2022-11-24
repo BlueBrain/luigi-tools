@@ -15,7 +15,6 @@
 """This module provides some specific luigi parameters."""
 import collections.abc
 import dataclasses
-import inspect
 import typing
 
 import luigi
@@ -118,27 +117,31 @@ class DataclassParameter(luigi.DictParameter):
 
 def _instantiate(cls, data):
 
-    origin_type = typing_extensions.get_origin(cls)
+    if isinstance(cls, type):
 
-    # typing types with an origin ref to a type
-    if origin_type:
+        if dataclasses.is_dataclass(cls):
+            args = {f.name: _instantiate(f.type, data[f.name]) for f in dataclasses.fields(cls)}
+            return cls(**args)
 
-        if inspect.isclass(origin_type):
+        if cls in {tuple, list}:
+            return tuple(_instantiate(type(v), v) for v in data)
 
-            if origin_type in {tuple, list}:
-                return _instantiate(origin_type, data)
-
-            # Mapping Types, e.g. typing.Dict
-            k_type, v_type = typing_extensions.get_args(cls)
+        if issubclass(cls, collections.abc.Mapping):
             return FrozenOrderedDict(
                 (
-                    (
-                        _instantiate(k_type, k),
-                        _instantiate(v_type, v),
-                    )
-                    for k, v in data.items()
+                    _instantiate(type(k), k),
+                    _instantiate(type(v), v),
                 )
+                for k, v in data.items()
             )
+
+        return cls(data)
+
+    # type annotations
+    else:
+
+        # Returns either the type's origin (e.g. list, dict) or None
+        origin_type = typing_extensions.get_origin(cls)
 
         if origin_type is typing.Union:
             args = typing_extensions.get_args(cls)
@@ -150,25 +153,21 @@ def _instantiate(cls, data):
             # Union[X, Y]. Propagate the type of the data.
             return _instantiate(type(data), data)
 
-        raise TypeError(f"Unsupported type {cls}")
+        if origin_type in {tuple, list}:
+            return _instantiate(origin_type, data)
 
-    if cls is typing.Any:
-        return _instantiate(type(data), data)
-
-    if dataclasses.is_dataclass(cls):
-        args = {f.name: _instantiate(f.type, data[f.name]) for f in dataclasses.fields(cls)}
-        return cls(**args)
-
-    if cls in {tuple, list}:
-        return tuple(_instantiate(type(v), v) for v in data)
-
-    if issubclass(cls, collections.abc.Mapping):
-        return FrozenOrderedDict(
-            (
-                _instantiate(type(k), k),
-                _instantiate(type(v), v),
+        # Mapping Types, e.g. Dict, DefaultDict, OrderedDict, etc.
+        if isinstance(origin_type, type) and issubclass(origin_type, collections.abc.Mapping):
+            k_type, v_type = typing_extensions.get_args(cls)
+            return FrozenOrderedDict(
+                (
+                    (
+                        _instantiate(k_type, k),
+                        _instantiate(v_type, v),
+                    )
+                    for k, v in data.items()
+                )
             )
-            for k, v in data.items()
-        )
 
-    return cls(data)
+        # Deduce type from the data. Covers typing.Any
+        return _instantiate(type(data), data)
