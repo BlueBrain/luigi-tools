@@ -18,6 +18,7 @@ target-version = [
     "py38",
     "py39",
     "py310",
+    "py311",
 ]
 
 # PYDOCSTYLE
