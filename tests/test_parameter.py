@@ -918,7 +918,7 @@ def test_DataclassParameter__mappings():
     )
 
     a_dict = p.parse(string)
-    assert {
+    assert  a_dict == {
         "a": {"a": 1, "b": "2"},
         "b": {"c": 3.0, "d": 4},
         "c": {"e": 5, "f": 6},
