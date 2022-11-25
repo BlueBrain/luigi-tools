@@ -789,6 +789,16 @@ def _compare(actual, expected):
         assert actual == expected
 
 
+def test_DataclassParameter__raises_no_dataclass():
+    """Test guard against passing non dataclasses."""
+
+    class A:
+        a: int
+
+    with pytest.raises(TypeError, match=r"Class type \'A\' is not a dataclass."):
+        luigi_tools.parameter.DataclassParameter(cls_type=A)
+
+
 def test_DataclassParameter__primitives():
     """Test the DataclassParameter with primitive types."""
 

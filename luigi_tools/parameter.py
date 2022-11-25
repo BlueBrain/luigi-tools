@@ -100,6 +100,10 @@ class DataclassParameter(luigi.DictParameter):
     """Class to parse, serialize, and normalize nested dataclasses."""
 
     def __init__(self, cls_type, *args, **kwargs):
+
+        if not _is_dataclass(cls_type):
+            raise TypeError(f"Class type {cls_type.__name__!r} is not a dataclass.")
+
         self._cls_type = cls_type
         super().__init__(*args, **kwargs)
 
