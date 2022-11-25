@@ -129,31 +129,33 @@ def _instantiate(cls, data):
     try:
         return cls(data)
     except TypeError:
+        # e.g typing.Any
         return data
 
 
 def _is_dataclass(cls):
-    """Returns True if cls is a dataclass."""
     return isinstance(cls, type) and dataclasses.is_dataclass(cls)
 
 
 def _instantiate_dataclass(cls, data, func):
-    """Instantiates a dataclass from the given data using the instantiation func for recursion."""
+    """Instantiate a dataclass from the given data using the instantiation func for recursion."""
     args = {f.name: func(f.type, data[f.name]) for f in dataclasses.fields(cls)}
     return cls(**args)
 
 
 def _is_sequence(data):
-    """Returns True if argument is a sequence and not a string-like object."""
     return isinstance(data, collections.abc.Sequence) and not isinstance(data, str)
 
 
 def _get_type_args(cls):
-
     args = typing_extensions.get_args(cls)
 
     if args:
         origin = typing_extensions.get_origin(cls)
+
+        # Optional types have Union as origin and args of thr form [Type, NoneType].
+        # In that case the arguments of the Type are returned, if any.
+
         if origin is typing.Union and type(None) in args:
             return _get_type_args(args[0])
         return args
@@ -164,21 +166,22 @@ def _instantiate_sequence(cls, data, func):
 
     args = _get_type_args(cls)
 
+    # Use type annotation to cast the sequence values
     if args:
         return tuple(func(args[0], v) for v in data)
 
+    # Otherwise the types from the data
     return tuple(func(type(v), v) for v in data)
 
 
 def _is_mapping(data):
-    """Returns True if argument is a mapping object."""
     return isinstance(data, collections.abc.Mapping)
 
 
 def _instantiate_mapping(cls, data, func):
-
     args = _get_type_args(cls)
 
+    # Use key, value type annotations for casting
     if args:
 
         assert len(args) == 2, args
@@ -189,6 +192,7 @@ def _instantiate_mapping(cls, data, func):
             )
             for k, v in data.items()
         )
+    # Otherwise use the types from the data
     else:
         arguments_generator = (
             (
