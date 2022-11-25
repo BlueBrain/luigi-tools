@@ -16,6 +16,7 @@
 
 import collections
 import dataclasses
+import json
 import typing
 
 # pylint: disable=empty-docstring
@@ -28,6 +29,7 @@ import warnings
 import luigi
 import mock
 import pytest
+from luigi.freezing import FrozenOrderedDict
 
 import luigi_tools.parameter
 import luigi_tools.target
@@ -742,19 +744,49 @@ def test_path_parameter(tmpdir, default, absolute, exists):
             assert luigi.build([TaskPathParameter()], local_scheduler=True)
 
 
-def _check_parameter(obj, parameter, serialized, parsed):
+def _check_parameter(*, obj, parameter, expected_dict, override_comparison_fields=None):
     """Check DataclassParameter for simple objects."""
     string = parameter.serialize(obj)
-    assert string == serialized
+    assert string == json.dumps(expected_dict)
 
     dictionary = parameter.parse(string)
-    assert dictionary == parsed
+    assert dictionary == expected_dict
 
     new_obj1 = parameter.normalize(dictionary)
-    assert new_obj1 == obj
-
     new_obj2 = parameter.normalize(obj)
-    assert new_obj2 == obj
+
+    for new_obj in (new_obj1, new_obj2):
+        # manually compare the attributes for expected differences with origin obj
+        if override_comparison_fields:
+            for attribute_name, attribute_value in override_comparison_fields.items():
+
+                actual_value = getattr(new_obj, attribute_name)
+                assert actual_value == attribute_value
+        else:
+            # compare recursively
+            _compare(new_obj, obj)
+
+
+def _compare(actual, expected):
+    """Recursively compare the two objects."""
+    if dataclasses.is_dataclass(expected):
+        assert type(actual) is type(expected), (
+            f"Actual Class {type(actual)}. " f"Expected Class {type(expected)}."
+        )
+        for f in dataclasses.fields(expected):
+            actual_value = getattr(actual, f.name)
+            expected_value = getattr(expected, f.name)
+            _compare(actual_value, expected_value)
+    elif isinstance(expected, collections.abc.Mapping):
+        assert isinstance(actual, FrozenOrderedDict)
+        for key in expected:
+            _compare(actual[key], expected[key])
+    elif isinstance(expected, collections.abc.Sequence) and not isinstance(expected, str):
+        assert isinstance(actual, tuple)
+        for i, value in enumerate(expected):
+            _compare(actual[i], value)
+    else:
+        assert actual == expected
 
 
 def test_DataclassParameter__primitives():
@@ -767,16 +799,13 @@ def test_DataclassParameter__primitives():
         c: float
         d: bool
 
-    instance = MyClass(a="1", b=2, c=3.0, d=False)
+    parameter = luigi_tools.parameter.DataclassParameter(cls_type=MyClass)
 
-    p = luigi_tools.parameter.DataclassParameter(cls_type=MyClass)
+    data = {"a": "1", "b": 2, "c": 3.0, "d": False}
 
-    _check_parameter(
-        obj=instance,
-        parameter=p,
-        serialized='{"a": "1", "b": 2, "c": 3.0, "d": false}',
-        parsed={"a": "1", "b": 2, "c": 3.0, "d": False},
-    )
+    instance = MyClass(**data)
+
+    _check_parameter(obj=instance, parameter=parameter, expected_dict=data)
 
 
 def test_DataclassParameter__primitives__ordering():
@@ -904,7 +933,7 @@ def test_DataclassParameter__mappings():
             expected = getattr(a, f.name)
 
             # all dicts are converted to frozen ordered dicts
-            assert isinstance(actual, luigi.freezing.FrozenOrderedDict)
+            assert isinstance(actual, FrozenOrderedDict)
 
             # check that dataclass is hashable
             assert hash(actual)
@@ -933,17 +962,13 @@ def test_DataclassParameter__nesting():
 
     p = luigi_tools.parameter.DataclassParameter(cls_type=C)
 
-    string = p.serialize(c)
-    assert string == '{"e": {"a": "1", "b": 2.0}, "f": {"c": {"a": "2", "b": 3.0}, "d": 4.0}}'
+    expected_dict = {"e": {"a": "1", "b": 2.0}, "f": {"c": {"a": "2", "b": 3.0}, "d": 4.0}}
 
-    c_dict = p.parse(string)
-    assert c_dict == {"e": {"a": "1", "b": 2.0}, "f": {"c": {"a": "2", "b": 3.0}, "d": 4.0}}
-
-    c_obj = p.normalize(c_dict)
-    assert c_obj == c
-
-    c_obj = p.normalize(c)
-    assert c_obj == c
+    _check_parameter(
+        obj=c,
+        parameter=p,
+        expected_dict=expected_dict,
+    )
 
 
 def test_DataclassParameter__nesting__2():
@@ -974,51 +999,20 @@ def test_DataclassParameter__nesting__2():
         },
     )
 
-    string = p.serialize(obj)
-
-    assert string == (
-        "{"
-        '"e": [{"a": "1", "b": 2.0}, {"a": "2", "b": 3.0}], '
-        '"f": {'
-        '"4": {"c": {"a": "5", "b": 6.0}, "d": 7.0}, '
-        '"5": {"c": {"a": "8", "b": 9.0}, "d": 10.0}'
-        "}"
-        "}"
-    )
-
-    dictionary = p.parse(string)
-    assert dictionary == {
-        "e": [{"a": "1", "b": 2.0}, {"a": "2", "b": 3.0}],
-        "f": {
-            "4": {"c": {"a": "5", "b": 6.0}, "d": 7.0},
-            "5": {"c": {"a": "8", "b": 9.0}, "d": 10.0},
+    _check_parameter(
+        obj=obj,
+        parameter=p,
+        expected_dict={
+            "e": [
+                {"a": "1", "b": 2.0},
+                {"a": "2", "b": 3.0},
+            ],
+            "f": {
+                "4": {"c": {"a": "5", "b": 6.0}, "d": 7.0},
+                "5": {"c": {"a": "8", "b": 9.0}, "d": 10.0},
+            },
         },
-    }
-
-    new_obj1 = p.normalize(obj)
-    new_obj2 = p.normalize(obj)
-
-    for new_obj in (new_obj1, new_obj2):
-
-        assert isinstance(new_obj, C)
-
-        e = new_obj.e
-        assert isinstance(e, tuple)
-
-        e1, e2 = e
-        assert isinstance(e1, A)
-        assert isinstance(e2, A)
-        assert e1 == A(a="1", b=2.0)
-        assert e2 == A(a="2", b=3.0)
-
-        f = new_obj.f
-        assert isinstance(f, luigi.freezing.FrozenOrderedDict)
-
-        f1, f2 = f["4"], f["5"]
-        assert isinstance(f1, B)
-        assert isinstance(f2, B)
-        assert f1 == B(c=A(a="5", b=6.0), d=7.0)
-        assert f2 == B(c=A(a="8", b=9.0), d=10.0)
+    )
 
 
 def test_DataclassParameter__Optional__Union():
@@ -1029,23 +1023,23 @@ def test_DataclassParameter__Optional__Union():
         a: int
         b: typing.Union[int, str]
         c: typing.Optional[float] = None
+        d: typing.Optional[typing.List[int]] = None
+        e: typing.Optional[typing.Dict[str, float]] = None
 
-    a1 = A(a=1, b=2.0, c=3.0)
-    a2 = A(a=1, b=2.0)
+    a1 = A(a=1, b=2, c=3.0, d=[4, 5], e={"6": 7.0, "8": 9.0})
+    a2 = A(a=1, b="2")
 
     p = luigi_tools.parameter.DataclassParameter(cls_type=A)
 
     _check_parameter(
         obj=a1,
         parameter=p,
-        serialized='{"a": 1, "b": 2.0, "c": 3.0}',
-        parsed={"a": 1, "b": 2.0, "c": 3.0},
+        expected_dict={"a": 1, "b": 2, "c": 3.0, "d": [4, 5], "e": {"6": 7.0, "8": 9.0}},
     )
     _check_parameter(
         obj=a2,
         parameter=p,
-        serialized='{"a": 1, "b": 2.0, "c": null}',
-        parsed={"a": 1, "b": 2.0, "c": None},
+        expected_dict={"a": 1, "b": "2", "c": None, "d": None, "e": None},
     )
 
 
@@ -1053,24 +1047,52 @@ def test_DataclassParameter__Any():
     """Test the DataclassParameter with typing.Any attributes."""
 
     @dataclasses.dataclass(frozen=True, eq=True)
+    class D:
+        a: int
+
+    @dataclasses.dataclass(frozen=True, eq=True)
     class A:
         a: typing.Any
-        b: typing.List[typing.Any]
-        c: typing.Dict[str, typing.Any]
-        d: typing.Optional[typing.Dict[int, typing.Any]]
+        b: typing.Any
+        c: typing.List[typing.Any]
+        d: typing.Dict[str, typing.Any]
+        e: typing.Optional[typing.Dict[int, typing.Any]]
 
-    a = A(a="1", b=[1, "2", 3.0], c={"4": 5.0, "5": "6"}, d={6: 7, 8: "9"})
+    a = A(
+        a="1",
+        b=["1", 2, 3.0, [D(a=4)]],
+        c=[5, "6", 7.0, [D(a=8)]],
+        d={"9": 10.0, "11": "12"},
+        e={13: 14, 15: "16", 17: {"a": D(a=18)}},
+    )
 
     p = luigi_tools.parameter.DataclassParameter(cls_type=A)
 
-    s = p.serialize(a)
-    assert s == '{"a": "1", "b": [1, "2", 3.0], "c": {"4": 5.0, "5": "6"}, "d": {"6": 7, "8": "9"}}'
+    expected_dict = {
+        "a": "1",
+        "b": ["1", 2, 3.0, [{"a": 4}]],
+        "c": [5, "6", 7.0, [{"a": 8}]],
+        "d": {"9": 10.0, "11": "12"},
+        "e": {"13": 14, "15": "16", "17": {"a": {"a": 18}}},
+    }
 
-    d = p.parse(s)
-    assert d == {"a": "1", "b": [1, "2", 3.0], "c": {"4": 5.0, "5": "6"}, "d": {"6": 7, "8": "9"}}
+    string = p.serialize(a)
+    assert string == json.dumps(expected_dict)
 
-    n = p.normalize(d)
-    assert n.a == a.a
-    assert n.b == tuple(a.b)
-    assert n.c == luigi.freezing.FrozenOrderedDict(a.c)
-    assert n.d == luigi.freezing.FrozenOrderedDict(a.d)
+    dictionary = p.parse(string)
+    assert dictionary == expected_dict
+
+    obj = p.normalize(dictionary)
+    assert obj.a == "1"
+
+    # Note: It is not possible to reconstruct the D dataclass if the type is Any
+    assert obj.b == ("1", 2, 3.0, (FrozenOrderedDict([("a", 4)]),))
+    assert obj.c == (5, "6", 7.0, (FrozenOrderedDict([("a", 8)]),))
+    assert obj.d == FrozenOrderedDict(a.d)
+    assert obj.e == FrozenOrderedDict(
+        [
+            (13, 14),
+            (15, "16"),
+            (17, FrozenOrderedDict([("a", FrozenOrderedDict([("a", 18)]))])),
+        ]
+    )

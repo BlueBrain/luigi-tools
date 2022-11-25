@@ -115,58 +115,86 @@ class DataclassParameter(luigi.DictParameter):
         return super().serialize(data)
 
 
-def _instantiate(cls, data):  # pylint: disable=too-many-return-statements
+def _instantiate(cls, data):
 
-    if isinstance(cls, type):
+    if _is_dataclass(cls):
+        return _instantiate_dataclass(cls, data, _instantiate)
 
-        if dataclasses.is_dataclass(cls):
-            args = {f.name: _instantiate(f.type, data[f.name]) for f in dataclasses.fields(cls)}
-            return cls(**args)
+    if _is_sequence(data):
+        return _instantiate_sequence(cls, data, _instantiate)
 
-        if cls in {tuple, list}:
-            return tuple(_instantiate(type(v), v) for v in data)
+    if _is_mapping(data):
+        return _instantiate_mapping(cls, data, _instantiate)
 
-        if issubclass(cls, collections.abc.Mapping):
-            return FrozenOrderedDict(
-                (
-                    _instantiate(type(k), k),
-                    _instantiate(type(v), v),
-                )
-                for k, v in data.items()
-            )
-
+    try:
         return cls(data)
+    except TypeError:
+        return data
 
-    # type annotations
-    else:
 
-        # Returns either the type's origin (e.g. list, dict) or None
-        origin_type = typing_extensions.get_origin(cls)
-        args = typing_extensions.get_args(cls)
+def _is_dataclass(cls):
+    """Returns True if cls is a dataclass."""
+    return isinstance(cls, type) and dataclasses.is_dataclass(cls)
 
-        if origin_type is typing.Union:
 
-            # Optional[X]. Propagate the non NoneType arguments.
-            if type(None) in args:
-                return _instantiate(args[0], data) if data else None
+def _instantiate_dataclass(cls, data, func):
+    """Instantiates a dataclass from the given data using the instantiation func for recursion."""
+    args = {f.name: func(f.type, data[f.name]) for f in dataclasses.fields(cls)}
+    return cls(**args)
 
-            # Union[X, Y]. Propagate the type of the data.
-            return _instantiate(type(data), data)
 
-        if origin_type in {tuple, list}:
-            return tuple(_instantiate(args[0], v) for v in data)
+def _is_sequence(data):
+    """Returns True if argument is a sequence and not a string-like object."""
+    return isinstance(data, collections.abc.Sequence) and not isinstance(data, str)
 
-        # Mapping Types, e.g. Dict, DefaultDict, OrderedDict, etc.
-        if isinstance(origin_type, type) and issubclass(origin_type, collections.abc.Mapping):
-            return FrozenOrderedDict(
-                (
-                    (
-                        _instantiate(args[0], k),
-                        _instantiate(args[1], v),
-                    )
-                    for k, v in data.items()
-                )
+
+def _get_type_args(cls):
+
+    args = typing_extensions.get_args(cls)
+
+    if args:
+        origin = typing_extensions.get_origin(cls)
+        if origin is typing.Union and type(None) in args:
+            return _get_type_args(args[0])
+        return args
+    return []
+
+
+def _instantiate_sequence(cls, data, func):
+
+    args = _get_type_args(cls)
+
+    if args:
+        return tuple(func(args[0], v) for v in data)
+
+    return tuple(func(type(v), v) for v in data)
+
+
+def _is_mapping(data):
+    """Returns True if argument is a mapping object."""
+    return isinstance(data, collections.abc.Mapping)
+
+
+def _instantiate_mapping(cls, data, func):
+
+    args = _get_type_args(cls)
+
+    if args:
+
+        assert len(args) == 2, args
+        arguments_generator = (
+            (
+                func(args[0], k),
+                func(args[1], v),
             )
-
-        # Deduce type from the data. Covers typing.Any
-        return _instantiate(type(data), data)
+            for k, v in data.items()
+        )
+    else:
+        arguments_generator = (
+            (
+                func(type(k), k),
+                func(type(v), v),
+            )
+            for k, v in data.items()
+        )
+    return FrozenOrderedDict(arguments_generator)
