@@ -880,23 +880,9 @@ def test_DataclassParameter__sequences():
     p = luigi_tools.parameter.DataclassParameter(cls_type=A)
 
     # Note how the e tuple has been converted to a list with json serialization
-    string = p.serialize(a)
-    assert (
-        string == '{"a": [1, "1"], "b": [2.0, "2"], "c": ["a", "b"], "d": [3, 4], "e": [5.0, 6.0]}'
-    )
+    expected_dict = {"a": [1, "1"], "b": [2.0, "2"], "c": ["a", "b"], "d": [3, 4], "e": [5.0, 6.0]}
 
-    # Note how the e tuple has been converted to a list because of the json serialization
-    a_dict = p.parse(string)
-    assert a_dict == {"a": [1, "1"], "b": [2.0, "2"], "c": ["a", "b"], "d": [3, 4], "e": [5.0, 6.0]}
-
-    a_obj1 = p.normalize(a_dict)
-    a_obj2 = p.normalize(a)
-    for obj in (a_obj1, a_obj2):
-        for field in dataclasses.fields(a):
-            actual_value = getattr(obj, field.name)
-            expected_value = getattr(a, field.name)
-            assert isinstance(actual_value, tuple)
-            assert actual_value == tuple(expected_value)
+    _check_parameter(obj=a, parameter=p, expected_dict=expected_dict)
 
 
 def test_DataclassParameter__mappings():
@@ -919,35 +905,13 @@ def test_DataclassParameter__mappings():
     p = luigi_tools.parameter.DataclassParameter(cls_type=A)
 
     # Note how json serialization converts d keys into strings
-    string = p.serialize(a)
-    assert string == (
-        '{"a": {"a": 1, "b": "2"}, '
-        '"b": {"c": 3.0, "d": 4}, '
-        '"c": {"e": 5, "f": 6}, '
-        '"d": {"7": 8.0, "9": 10.0}}'
-    )
-
-    a_dict = p.parse(string)
-    assert a_dict == {
+    expected_dict = {
         "a": {"a": 1, "b": "2"},
         "b": {"c": 3.0, "d": 4},
         "c": {"e": 5, "f": 6},
         "d": {"7": 8.0, "9": 10.0},
     }
-
-    for obj in (a_dict, a):
-        a_obj = p.normalize(obj)
-        for f in dataclasses.fields(a_obj):
-
-            actual = getattr(a_obj, f.name)
-            expected = getattr(a, f.name)
-
-            # all dicts are converted to frozen ordered dicts
-            assert isinstance(actual, FrozenOrderedDict)
-
-            # check that dataclass is hashable
-            assert hash(actual)
-            assert dict(actual) == dict(expected)
+    _check_parameter(obj=a, parameter=p, expected_dict=expected_dict)
 
 
 def test_DataclassParameter__nesting():
@@ -974,11 +938,7 @@ def test_DataclassParameter__nesting():
 
     expected_dict = {"e": {"a": "1", "b": 2.0}, "f": {"c": {"a": "2", "b": 3.0}, "d": 4.0}}
 
-    _check_parameter(
-        obj=c,
-        parameter=p,
-        expected_dict=expected_dict,
-    )
+    _check_parameter(obj=c, parameter=p, expected_dict=expected_dict)
 
 
 def test_DataclassParameter__nesting__2():
@@ -1008,7 +968,6 @@ def test_DataclassParameter__nesting__2():
             "5": B(c=A(a="8", b=9.0), d=10.0),
         },
     )
-
     _check_parameter(
         obj=obj,
         parameter=p,
