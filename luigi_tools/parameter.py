@@ -97,7 +97,12 @@ class OptionalRatioParameter(OptionalParameterMixin, RatioParameter):
 
 
 class DataclassParameter(luigi.DictParameter):
-    """Class to parse, serialize, and normalize nested dataclasses."""
+    """Class to parse, serialize, and normalize nested dataclasses.
+
+    Note: Similar to DictParameter, json serialization transforms int keys of dicts into str. The
+    dataclass however transforms the keys into their correct type if the respective annotation is
+    available.
+    """
 
     def __init__(self, cls_type, *args, **kwargs):
 
