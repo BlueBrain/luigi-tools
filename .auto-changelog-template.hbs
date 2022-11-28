@@ -81,12 +81,12 @@ Example Definitions
     - {{#if commit.breaking}}**Breaking change:** {{/if}}{{commit.subject}}{{#each fixes}} ({{author}}{{#if href}} - [#{{id}}]({{href}}){{/if}}){{/each}}
   {{/each}}
 
-  {{! List commits with 'breaking:' or 'Breaking change:' anywhere in the message under a heading}}
+  {{! List merge commits with 'breaking:' or 'Breaking change:' anywhere in the message under a heading}}
   {{#commit-list merges heading='### Breaking Changes :warning:' message='[bB]reaking [cC]hange:|[bB]reaking:' exclude='\[skip-changelog\]'}}
     - {{message}} @{{author}}  <!--[`#{{id}}`]({{href}}) -->
   {{/commit-list}}
 
-  {{! List commits organised under a heading, but not those already listed in the breaking section }}
+  {{! List merge commits organised under a heading, but not those already listed in the breaking section }}
       {{#commit-list merges heading='### New Features' message='^[fF]eat:|[fF]eat\(' exclude='[bB]reaking [cC]hange:|[bB]reaking:|\[skip-changelog\]'}}
         - {{message}} ({{author}}{{#if href}} - [#{{id}}]({{href}}){{/if}})
       {{/commit-list}}

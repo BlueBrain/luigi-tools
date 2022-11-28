@@ -1,5 +1,37 @@
 # Changelog
 
+## [0.1.0](https://github.com/BlueBrain/luigi-tools/compare/0.0.19..0.1.0)
+
+> 28 November 2022
+
+### New Features
+
+- Add support for Python 3.11 (Adrien Berchet - [#56](https://github.com/BlueBrain/luigi-tools/pull/56))
+
+### Chores And Housekeeping
+
+- Deprecate Python 3.6 (Adrien Berchet - [#54](https://github.com/BlueBrain/luigi-tools/pull/54))
+
+### Documentation Changes
+
+- Fix pydocstyle paths and fix docstrings accordingly (Adrien Berchet - [#50](https://github.com/BlueBrain/luigi-tools/pull/50))
+- Fix requirements for doc generation (Adrien Berchet - [#42](https://github.com/BlueBrain/luigi-tools/pull/42))
+
+### Tidying of Code eg Whitespace
+
+- Fix changelog generation (Adrien Berchet - [#43](https://github.com/BlueBrain/luigi-tools/pull/43))
+
+### CI Improvements
+
+- Apply Copier template (Adrien Berchet - [#55](https://github.com/BlueBrain/luigi-tools/pull/55))
+- Apply Copier template (Adrien Berchet - [#48](https://github.com/BlueBrain/luigi-tools/pull/48))
+- Export pytest and coverage reports (Adrien Berchet - [#45](https://github.com/BlueBrain/luigi-tools/pull/45))
+- Use commitlint to check PR titles (Adrien Berchet - [#40](https://github.com/BlueBrain/luigi-tools/pull/40))
+
+### Uncategorized Changes
+
+- Add DataclassParameter (Eleftherios Zisis - [#53](https://github.com/BlueBrain/luigi-tools/pull/53))
+
 ## [0.0.19](https://github.com/BlueBrain/luigi-tools/compare/0.0.18..0.0.19)
 
 > 29 June 2022
