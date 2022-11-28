@@ -1068,6 +1068,8 @@ def test_DataclassParameter__Any():
 
 
 def test_DataclassParameter__build():
+    """Test DataclassParameter using a config and luigi build."""
+
     @dataclasses.dataclass(frozen=True, eq=True)
     class ParamA:
         a: dict
@@ -1081,6 +1083,7 @@ def test_DataclassParameter__build():
         a = luigi_tools.parameter.DataclassParameter(cls_type=ParamA)
 
         def run(self):
+            # pylint: disable=no-member
             assert self.a.a == {"a": 1, "b": "2"}
             assert self.a.b == {"c": 3.0, "d": 4}
             assert self.a.c == {"e": 5, "f": 6}
