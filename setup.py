@@ -20,6 +20,7 @@ from setuptools import setup
 
 reqs = [
     "luigi",
+    "typing-extensions",
 ]
 
 doc_reqs = [

@@ -13,8 +13,13 @@
 # limitations under the License.
 
 """This module provides some specific luigi parameters."""
+import collections.abc
+import dataclasses
+import typing
 
 import luigi
+import typing_extensions
+from luigi.freezing import FrozenOrderedDict
 from luigi.parameter import OptionalParameterMixin
 
 
@@ -89,3 +94,120 @@ class OptionalRatioParameter(OptionalParameterMixin, RatioParameter):
     """Class to parse optional ratio parameters."""
 
     expected_type = float
+
+
+class DataclassParameter(luigi.DictParameter):
+    """Class to parse, serialize, and normalize nested dataclasses.
+
+    Note: Similar to DictParameter, json serialization transforms int keys of dicts into str. The
+    dataclass however transforms the keys into their correct type if the respective annotation is
+    available.
+    """
+
+    def __init__(self, cls_type, *args, **kwargs):
+
+        if not _is_dataclass(cls_type):
+            raise TypeError(f"Class type {cls_type.__name__!r} is not a dataclass.")
+
+        self._cls_type = cls_type
+        super().__init__(*args, **kwargs)
+
+    def normalize(self, value):
+        """Normalize the given value to a dataclass initialized object."""
+        if isinstance(value, self._cls_type):
+            value = dataclasses.asdict(value)
+        return _instantiate(self._cls_type, value)
+
+    def serialize(self, x):
+        """Serialize a dataclass object."""
+        data = dataclasses.asdict(x)
+        return super().serialize(data)
+
+
+def _instantiate(cls, data):
+
+    if _is_dataclass(cls):
+        return _instantiate_dataclass(cls, data, _instantiate)
+
+    if _is_sequence(data):
+        return _instantiate_sequence(cls, data, _instantiate)
+
+    if _is_mapping(data):
+        return _instantiate_mapping(cls, data, _instantiate)
+
+    try:
+        return cls(data)
+    except TypeError:
+        # e.g typing.Any
+        return data
+
+
+def _is_dataclass(cls):
+    return isinstance(cls, type) and dataclasses.is_dataclass(cls)
+
+
+def _instantiate_dataclass(cls, data, func):
+    """Instantiate a dataclass from the given data using the instantiation func for recursion."""
+    args = {f.name: func(f.type, data[f.name]) for f in dataclasses.fields(cls)}
+    return cls(**args)
+
+
+def _is_sequence(data):
+    return isinstance(data, collections.abc.Sequence) and not isinstance(data, str)
+
+
+def _get_type_args(cls):
+    args = typing_extensions.get_args(cls)
+
+    if args:
+        origin = typing_extensions.get_origin(cls)
+
+        # Optional types have Union as origin and args of thr form [Type, NoneType].
+        # In that case the arguments of the Type are returned, if any.
+
+        if origin is typing.Union and type(None) in args:
+            return _get_type_args(args[0])
+        return args
+    return []
+
+
+def _instantiate_sequence(cls, data, func):
+
+    args = _get_type_args(cls)
+
+    # Use type annotation to cast the sequence values
+    if args:
+        return tuple(func(args[0], v) for v in data)
+
+    # Otherwise the types from the data
+    return tuple(func(type(v), v) for v in data)
+
+
+def _is_mapping(data):
+    return isinstance(data, collections.abc.Mapping)
+
+
+def _instantiate_mapping(cls, data, func):
+    args = _get_type_args(cls)
+
+    # Use key, value type annotations for casting
+    if args:
+
+        assert len(args) == 2, args
+        arguments_generator = (
+            (
+                func(args[0], k),
+                func(args[1], v),
+            )
+            for k, v in data.items()
+        )
+    # Otherwise use the types from the data
+    else:
+        arguments_generator = (
+            (
+                func(type(k), k),
+                func(type(v), v),
+            )
+            for k, v in data.items()
+        )
+    return FrozenOrderedDict(arguments_generator)

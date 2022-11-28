@@ -14,6 +14,11 @@
 
 """Tests for luigi-tools parameters."""
 
+import collections
+import dataclasses
+import json
+import typing
+
 # pylint: disable=empty-docstring
 # pylint: disable=missing-class-docstring
 # pylint: disable=missing-function-docstring
@@ -24,6 +29,7 @@ import warnings
 import luigi
 import mock
 import pytest
+from luigi.freezing import FrozenOrderedDict
 
 import luigi_tools.parameter
 import luigi_tools.target
@@ -736,3 +742,412 @@ def test_path_parameter(tmpdir, default, absolute, exists):
                 luigi.build([TaskPathParameter()], local_scheduler=True)
         else:
             assert luigi.build([TaskPathParameter()], local_scheduler=True)
+
+
+def _check_parameter(*, obj, parameter, expected_dict, override_comparison_fields=None):
+    """Check DataclassParameter for simple objects."""
+    string = parameter.serialize(obj)
+    assert string == json.dumps(expected_dict)
+
+    dictionary = parameter.parse(string)
+    assert dictionary == expected_dict
+
+    new_obj1 = parameter.normalize(dictionary)
+    new_obj2 = parameter.normalize(obj)
+
+    for new_obj in (new_obj1, new_obj2):
+        # manually compare the attributes for expected differences with origin obj
+        if override_comparison_fields:
+            for attribute_name, attribute_value in override_comparison_fields.items():
+
+                actual_value = getattr(new_obj, attribute_name)
+                assert actual_value == attribute_value
+        else:
+            # compare recursively
+            _compare(new_obj, obj)
+
+
+def _compare(actual, expected):
+    """Recursively compare the two objects."""
+    if dataclasses.is_dataclass(expected):
+        assert type(actual) is type(expected), (
+            f"Actual Class {type(actual)}. " f"Expected Class {type(expected)}."
+        )
+        for f in dataclasses.fields(expected):
+            actual_value = getattr(actual, f.name)
+            expected_value = getattr(expected, f.name)
+            _compare(actual_value, expected_value)
+    elif isinstance(expected, collections.abc.Mapping):
+        assert isinstance(actual, FrozenOrderedDict)
+        for key in expected:
+            _compare(actual[key], expected[key])
+    elif isinstance(expected, collections.abc.Sequence) and not isinstance(expected, str):
+        assert isinstance(actual, tuple)
+        for i, value in enumerate(expected):
+            _compare(actual[i], value)
+    else:
+        assert actual == expected
+
+
+def test_DataclassParameter__raises_no_dataclass():
+    """Test guard against passing non dataclasses."""
+
+    class A:
+        a: int
+
+    with pytest.raises(TypeError, match=r"Class type \'A\' is not a dataclass."):
+        luigi_tools.parameter.DataclassParameter(cls_type=A)
+
+
+def test_DataclassParameter__primitives():
+    """Test the DataclassParameter with primitive types."""
+
+    @dataclasses.dataclass
+    class MyClass:
+        a: str
+        b: int
+        c: float
+        d: bool
+
+    parameter = luigi_tools.parameter.DataclassParameter(cls_type=MyClass)
+
+    data = {"a": "1", "b": 2, "c": 3.0, "d": False}
+
+    instance = MyClass(**data)
+
+    _check_parameter(obj=instance, parameter=parameter, expected_dict=data)
+
+
+def test_DataclassParameter__primitives__ordering():
+    """Test the DataclassParameter with differing primitive ordering."""
+
+    @dataclasses.dataclass(frozen=True, eq=True)
+    class A:
+        a: str
+        b: int
+        c: float
+        d: bool
+
+    @dataclasses.dataclass(frozen=True, eq=True)
+    class B:
+        b: int
+        a: str
+        d: bool
+        c: float
+
+    a = A(a="1", b=2, c=3.0, d=False)
+    b = B(a="1", b=2, c=3.0, d=False)
+
+    pA = luigi_tools.parameter.DataclassParameter(cls_type=A)
+    pB = luigi_tools.parameter.DataclassParameter(cls_type=B)
+
+    # ordering affects serialization
+    sA = pA.serialize(a)
+    sB = pB.serialize(b)
+    assert sA != sB
+
+    # but not dictionary comparison
+    dA = pA.parse(sA)
+    dB = pB.parse(sB)
+    assert dA == dB
+
+    # ordering also affects deserialization and hashes
+    nA = pA.normalize(a)
+    nB = pB.normalize(b)
+    assert nA != nB
+    assert hash(nA) != hash(nB)
+
+    # ordering also affects deserialization and hashes
+    nA = pA.normalize(dA)
+    nB = pB.normalize(dB)
+    assert nA != nB
+    assert hash(nA) != hash(nB)
+
+
+def test_DataclassParameter__sequences():
+    """Test the DataclassParameter with sequence types."""
+
+    @dataclasses.dataclass(frozen=True, eq=True)
+    class A:
+        a: list
+        b: tuple
+        c: typing.List[str]
+        d: typing.List[int]
+        e: typing.Tuple[float]
+
+    a = A(a=[1, "1"], b=(2.0, "2"), c=["a", "b"], d=[3, 4], e=(5.0, 6.0))
+
+    p = luigi_tools.parameter.DataclassParameter(cls_type=A)
+
+    # Note how the e tuple has been converted to a list with json serialization
+    expected_dict = {"a": [1, "1"], "b": [2.0, "2"], "c": ["a", "b"], "d": [3, 4], "e": [5.0, 6.0]}
+
+    _check_parameter(obj=a, parameter=p, expected_dict=expected_dict)
+
+
+def test_DataclassParameter__mappings():
+    """Test the DataclassParameter with mapping types."""
+
+    @dataclasses.dataclass(frozen=True, eq=True)
+    class A:
+        a: dict
+        b: collections.OrderedDict
+        c: typing.Dict[str, int]
+        d: typing.Dict[int, float]
+
+    a = A(
+        a={"a": 1, "b": "2"},
+        b=collections.OrderedDict([("c", 3.0), ("d", 4)]),
+        c={"e": 5, "f": 6},
+        d={7: 8.0, 9: 10.0},
+    )
+
+    p = luigi_tools.parameter.DataclassParameter(cls_type=A)
+
+    # Note how json serialization converts d keys into strings
+    expected_dict = {
+        "a": {"a": 1, "b": "2"},
+        "b": {"c": 3.0, "d": 4},
+        "c": {"e": 5, "f": 6},
+        "d": {"7": 8.0, "9": 10.0},
+    }
+    _check_parameter(obj=a, parameter=p, expected_dict=expected_dict)
+
+
+def test_DataclassParameter__nesting():
+    """Test the DataclassParameter with nested dataclass objects."""
+
+    @dataclasses.dataclass(frozen=True, eq=True)
+    class A:
+        a: str
+        b: float
+
+    @dataclasses.dataclass(frozen=True, eq=True)
+    class B:
+        c: A
+        d: float
+
+    @dataclasses.dataclass(frozen=True, eq=True)
+    class C:
+        e: A
+        f: B
+
+    c = C(e=A(a="1", b=2.0), f=B(c=A(a="2", b=3.0), d=4.0))
+
+    p = luigi_tools.parameter.DataclassParameter(cls_type=C)
+
+    expected_dict = {"e": {"a": "1", "b": 2.0}, "f": {"c": {"a": "2", "b": 3.0}, "d": 4.0}}
+
+    _check_parameter(obj=c, parameter=p, expected_dict=expected_dict)
+
+
+def test_DataclassParameter__nesting__2():
+    """Test the DataclassParameter with nested dataclass objects."""
+
+    @dataclasses.dataclass(frozen=True, eq=True)
+    class A:
+        a: str
+        b: float
+
+    @dataclasses.dataclass(frozen=True, eq=True)
+    class B:
+        c: A
+        d: float
+
+    @dataclasses.dataclass(frozen=True, eq=True)
+    class C:
+        e: typing.List[A]
+        f: typing.Dict[str, B]
+
+    p = luigi_tools.parameter.DataclassParameter(cls_type=C)
+
+    obj = C(
+        e=[A(a="1", b=2.0), A(a="2", b=3.0)],
+        f={
+            "4": B(c=A(a="5", b=6.0), d=7.0),
+            "5": B(c=A(a="8", b=9.0), d=10.0),
+        },
+    )
+    _check_parameter(
+        obj=obj,
+        parameter=p,
+        expected_dict={
+            "e": [
+                {"a": "1", "b": 2.0},
+                {"a": "2", "b": 3.0},
+            ],
+            "f": {
+                "4": {"c": {"a": "5", "b": 6.0}, "d": 7.0},
+                "5": {"c": {"a": "8", "b": 9.0}, "d": 10.0},
+            },
+        },
+    )
+
+
+def test_DataclassParameter__Optional__Union():
+    """Test the DataclassParameter with Optional attributes."""
+
+    @dataclasses.dataclass(frozen=True, eq=True)
+    class A:
+        a: int
+        b: typing.Union[int, str]
+        c: typing.Optional[float] = None
+        d: typing.Optional[typing.List[int]] = None
+        e: typing.Optional[typing.Dict[str, float]] = None
+
+    a1 = A(a=1, b=2, c=3.0, d=[4, 5], e={"6": 7.0, "8": 9.0})
+    a2 = A(a=1, b="2")
+
+    p = luigi_tools.parameter.DataclassParameter(cls_type=A)
+
+    _check_parameter(
+        obj=a1,
+        parameter=p,
+        expected_dict={"a": 1, "b": 2, "c": 3.0, "d": [4, 5], "e": {"6": 7.0, "8": 9.0}},
+    )
+    _check_parameter(
+        obj=a2,
+        parameter=p,
+        expected_dict={"a": 1, "b": "2", "c": None, "d": None, "e": None},
+    )
+
+
+def test_DataclassParameter__Any():
+    """Test the DataclassParameter with typing.Any attributes."""
+
+    @dataclasses.dataclass(frozen=True, eq=True)
+    class D:
+        a: int
+
+    @dataclasses.dataclass(frozen=True, eq=True)
+    class A:
+        a: typing.Any
+        b: typing.Any
+        c: typing.List[typing.Any]
+        d: typing.Dict[str, typing.Any]
+        e: typing.Optional[typing.Dict[int, typing.Any]]
+
+    a = A(
+        a="1",
+        b=["1", 2, 3.0, [D(a=4)]],
+        c=[5, "6", 7.0, [D(a=8)]],
+        d={"9": 10.0, "11": "12"},
+        e={13: 14, 15: "16", 17: {"a": D(a=18)}},
+    )
+
+    p = luigi_tools.parameter.DataclassParameter(cls_type=A)
+
+    expected_dict = {
+        "a": "1",
+        "b": ["1", 2, 3.0, [{"a": 4}]],
+        "c": [5, "6", 7.0, [{"a": 8}]],
+        "d": {"9": 10.0, "11": "12"},
+        "e": {"13": 14, "15": "16", "17": {"a": {"a": 18}}},
+    }
+
+    string = p.serialize(a)
+    assert string == json.dumps(expected_dict)
+
+    dictionary = p.parse(string)
+    assert dictionary == expected_dict
+
+    obj = p.normalize(dictionary)
+    assert obj.a == "1"
+
+    # Note: It is not possible to reconstruct the D dataclass if the type is Any
+    assert obj.b == ("1", 2, 3.0, (FrozenOrderedDict([("a", 4)]),))
+    assert obj.c == (5, "6", 7.0, (FrozenOrderedDict([("a", 8)]),))
+    assert obj.d == FrozenOrderedDict(a.d)
+    assert obj.e == FrozenOrderedDict(
+        [
+            (13, 14),
+            (15, "16"),
+            (17, FrozenOrderedDict([("a", FrozenOrderedDict([("a", 18)]))])),
+        ]
+    )
+
+
+def test_DataclassParameter__build():
+    """Test DataclassParameter using a config and luigi build."""
+
+    @dataclasses.dataclass(frozen=True, eq=True)
+    class ParamA:
+        a: dict
+        b: collections.OrderedDict
+        c: typing.Dict[str, int]
+        d: typing.Dict[int, float]
+
+    class TaskDataClassParameter(luigi.Task):
+        """A simple test task."""
+
+        a = luigi_tools.parameter.DataclassParameter(cls_type=ParamA)
+
+        def run(self):
+            # pylint: disable=no-member
+            assert self.a.a == {"a": 1, "b": "2"}
+            assert self.a.b == {"c": 3.0, "d": 4}
+            assert self.a.c == {"e": 5, "f": 6}
+            assert self.a.d == {7: 8.0, 9: 10.0}
+
+        def output(self):
+            return luigi.LocalTarget("not_existing_file")
+
+    # Test with values from config
+    with set_luigi_config(
+        {
+            "TaskDataClassParameter": {
+                "a": """{
+                    "a": {"a": 1, "b": "2"},
+                    "b": {"c": 3.0, "d": 4},
+                    "c": {"e": 5, "f": 6},
+                    "d": {"7": 8.0, "9": 10.0}
+                }"""
+            }
+        }
+    ):
+        assert luigi.build([TaskDataClassParameter()], local_scheduler=True)
+
+    # Parsing fails with integer keys
+    with set_luigi_config(
+        {
+            "TaskDataClassParameter": {
+                "a": """{
+                    "a": {"a": 1, "b": "2"},
+                    "b": {"c": 3.0, "d": 4},
+                    "c": {"e": 5, "f": 6},
+                    "d": {7: 8.0, 9: 10.0}
+                }"""
+            }
+        }
+    ):
+        with pytest.raises(ValueError):
+            luigi.build([TaskDataClassParameter()], local_scheduler=True)
+
+    # But the constructor works with either integers and strings as keys
+    assert luigi.build(
+        [
+            TaskDataClassParameter(
+                {
+                    "a": {"a": 1, "b": "2"},
+                    "b": {"c": 3.0, "d": 4},
+                    "c": {"e": 5, "f": 6},
+                    "d": {7: 8.0, 9: 10.0},
+                }
+            )
+        ],
+        local_scheduler=True,
+    )
+
+    assert luigi.build(
+        [
+            TaskDataClassParameter(
+                {
+                    "a": {"a": 1, "b": "2"},
+                    "b": {"c": 3.0, "d": 4},
+                    "c": {"e": 5, "f": 6},
+                    "d": {"7": 8.0, "9": 10.0},
+                }
+            )
+        ],
+        local_scheduler=True,
+    )
