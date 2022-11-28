@@ -1065,3 +1065,87 @@ def test_DataclassParameter__Any():
             (17, FrozenOrderedDict([("a", FrozenOrderedDict([("a", 18)]))])),
         ]
     )
+
+
+def test_DataclassParameter__build():
+    @dataclasses.dataclass(frozen=True, eq=True)
+    class ParamA:
+        a: dict
+        b: collections.OrderedDict
+        c: typing.Dict[str, int]
+        d: typing.Dict[int, float]
+
+    class TaskDataClassParameter(luigi.Task):
+        """A simple test task."""
+
+        a = luigi_tools.parameter.DataclassParameter(cls_type=ParamA)
+
+        def run(self):
+            assert self.a.a == {"a": 1, "b": "2"}
+            assert self.a.b == {"c": 3.0, "d": 4}
+            assert self.a.c == {"e": 5, "f": 6}
+            assert self.a.d == {7: 8.0, 9: 10.0}
+
+        def output(self):
+            return luigi.LocalTarget("not_existing_file")
+
+    # Test with values from config
+    with set_luigi_config(
+        {
+            "TaskDataClassParameter": {
+                "a": """{
+                    "a": {"a": 1, "b": "2"},
+                    "b": {"c": 3.0, "d": 4},
+                    "c": {"e": 5, "f": 6},
+                    "d": {"7": 8.0, "9": 10.0}
+                }"""
+            }
+        }
+    ):
+        assert luigi.build([TaskDataClassParameter()], local_scheduler=True)
+
+    # Parsing fails with integer keys
+    with set_luigi_config(
+        {
+            "TaskDataClassParameter": {
+                "a": """{
+                    "a": {"a": 1, "b": "2"},
+                    "b": {"c": 3.0, "d": 4},
+                    "c": {"e": 5, "f": 6},
+                    "d": {7: 8.0, 9: 10.0}
+                }"""
+            }
+        }
+    ):
+        with pytest.raises(ValueError):
+            luigi.build([TaskDataClassParameter()], local_scheduler=True)
+
+    # But the constructor works with either integers and strings as keys
+    assert luigi.build(
+        [
+            TaskDataClassParameter(
+                {
+                    "a": {"a": 1, "b": "2"},
+                    "b": {"c": 3.0, "d": 4},
+                    "c": {"e": 5, "f": 6},
+                    "d": {7: 8.0, 9: 10.0},
+                }
+            )
+        ],
+        local_scheduler=True,
+    )
+
+    assert luigi.build(
+        [
+            TaskDataClassParameter(
+                {
+                    "a": {"a": 1, "b": "2"},
+                    "b": {"c": 3.0, "d": 4},
+                    "c": {"e": 5, "f": 6},
+                    "d": {"7": 8.0, "9": 10.0},
+                }
+            )
+        ],
+        local_scheduler=True,
+    )
+
