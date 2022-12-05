@@ -126,11 +126,14 @@ class DataclassParameter(luigi.DictParameter):
 
 def _instantiate(cls, data):
 
-    if type(data) in {type(None), typing.Any, str, int, float}:
+    if data is None:
         return None
 
+    if cls in {str, int, float, bool}:
+        return cls(data)
+
     if _is_optional(cls):
-        return _instantiate(type(data), data)
+        return _instantiate(typing_extensions.get_args(cls)[0], data)
 
     if _is_dataclass(cls):
         return _instantiate_dataclass(cls, data, _instantiate)
@@ -141,7 +144,7 @@ def _instantiate(cls, data):
     if _is_mapping(data):
         return _instantiate_mapping(cls, data, _instantiate)
 
-    raise TypeError(f"Unsupported type {type(data)} encountered.")
+    return data
 
 
 def _is_dataclass(cls):

@@ -1013,6 +1013,7 @@ def test_DataclassParameter__Optional__Union():
 
 
 def test_DataclassParameter__Optional_dataclasses():
+    """Test DataclassParameter with optional dataclass attributes."""
 
     @dataclasses.dataclass
     class A:
@@ -1020,7 +1021,7 @@ def test_DataclassParameter__Optional_dataclasses():
 
     @dataclasses.dataclass
     class B:
-        b: typing.Optional[A]
+        b: typing.Optional[A] = None
 
     obj = B(b=A(a=1))
 
@@ -1036,6 +1037,21 @@ def test_DataclassParameter__Optional_dataclasses():
 
     obj = p.normalize(dictionary)
     assert isinstance(obj.b, A), type(obj.b)
+
+    obj = B()
+
+    p = luigi_tools.parameter.DataclassParameter(cls_type=B)
+
+    expected_dict = {"b": None}
+
+    string = p.serialize(obj)
+    assert string == json.dumps(expected_dict)
+
+    dictionary = p.parse(string)
+    assert dictionary == expected_dict
+
+    obj = p.normalize(dictionary)
+    assert obj.b is None
 
 
 def test_DataclassParameter__Any():
