@@ -126,6 +126,8 @@ class DataclassParameter(luigi.DictParameter):
 
 def _instantiate(cls, data):
 
+    # pylint: disable=too-many-return-statements
+
     if data is None:
         return None
 
@@ -162,22 +164,17 @@ def _is_sequence(data):
 
 
 def _is_optional(cls):
-    return typing_extensions.get_origin(cls) is typing.Union and type(None) in typing.get_args(cls)
+    """Optional types have Union as origin and args of the form [Type, NoneType].
+
+    In that case the arguments of the Type are returned, if any.
+    """
+    return typing_extensions.get_origin(cls) is typing.Union and type(
+        None
+    ) in typing_extensions.get_args(cls)
 
 
 def _get_type_args(cls):
-    args = typing_extensions.get_args(cls)
-
-    if args:
-        origin = typing_extensions.get_origin(cls)
-
-        # Optional types have Union as origin and args of the form [Type, NoneType].
-        # In that case the arguments of the Type are returned, if any.
-
-        if origin is typing.Union and type(None) in args:
-            return _get_type_args(args[0])
-        return args
-    return []
+    return typing_extensions.get_args(cls) or []
 
 
 def _instantiate_sequence(cls, data, func):
