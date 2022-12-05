@@ -126,6 +126,12 @@ class DataclassParameter(luigi.DictParameter):
 
 def _instantiate(cls, data):
 
+    if type(data) in {type(None), typing.Any, str, int, float}:
+        return None
+
+    if _is_optional(cls):
+        return _instantiate(type(data), data)
+
     if _is_dataclass(cls):
         return _instantiate_dataclass(cls, data, _instantiate)
 
@@ -135,11 +141,7 @@ def _instantiate(cls, data):
     if _is_mapping(data):
         return _instantiate_mapping(cls, data, _instantiate)
 
-    try:
-        return cls(data)
-    except TypeError:
-        # e.g typing.Any
-        return data
+    raise TypeError(f"Unsupported type {type(data)} encountered.")
 
 
 def _is_dataclass(cls):
@@ -156,13 +158,17 @@ def _is_sequence(data):
     return isinstance(data, collections.abc.Sequence) and not isinstance(data, str)
 
 
+def _is_optional(cls):
+    return typing_extensions.get_origin(cls) is typing.Union and type(None) in typing.get_args(cls)
+
+
 def _get_type_args(cls):
     args = typing_extensions.get_args(cls)
 
     if args:
         origin = typing_extensions.get_origin(cls)
 
-        # Optional types have Union as origin and args of thr form [Type, NoneType].
+        # Optional types have Union as origin and args of the form [Type, NoneType].
         # In that case the arguments of the Type are returned, if any.
 
         if origin is typing.Union and type(None) in args:

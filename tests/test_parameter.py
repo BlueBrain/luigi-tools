@@ -1012,6 +1012,32 @@ def test_DataclassParameter__Optional__Union():
     )
 
 
+def test_DataclassParameter__Optional_dataclasses():
+
+    @dataclasses.dataclass
+    class A:
+        a: int
+
+    @dataclasses.dataclass
+    class B:
+        b: typing.Optional[A]
+
+    obj = B(b=A(a=1))
+
+    p = luigi_tools.parameter.DataclassParameter(cls_type=B)
+
+    expected_dict = {"b": {"a": 1}}
+
+    string = p.serialize(obj)
+    assert string == json.dumps(expected_dict)
+
+    dictionary = p.parse(string)
+    assert dictionary == expected_dict
+
+    obj = p.normalize(dictionary)
+    assert isinstance(obj.b, A), type(obj.b)
+
+
 def test_DataclassParameter__Any():
     """Test the DataclassParameter with typing.Any attributes."""
 
