@@ -20,12 +20,30 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
+    - name: Get current date
+      id: date
+      run: echo "date=$(date +'%Y-%m')" >> $GITHUB_OUTPUT
+    - name: Cache APT Packages
+      uses: awalsh128/cache-apt-pkgs-action@latest
+      with:
+        packages: graphviz
+        version: 1.0
+        execute_install_scripts: true
+    - name: Cache tox environments
+      uses: actions/cache@v3
+      with:
+        path: |
+          .tox
+          ~/.cache/pre-commit
+        key: ${{ runner.os }}-${{ matrix.python-version }}-${{ env.cache-name }}-${{ steps.date.outputs.date }}-${{ hashFiles('setup.py') }}
+    - name: Install dependencies and register dot plugin
       run: |
-        sudo apt-get update
-        sudo apt-get install graphviz
+        sudo dot -c
         python -m pip install --upgrade pip setuptools
         pip install tox-gh-actions
+    - name: Clear results in tox environments
+      run: |
+        rm -rf .tox/*/tmp
     - name: Run tox
       run: |
         tox
