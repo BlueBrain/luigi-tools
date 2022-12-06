@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.1.1](https://github.com/BlueBrain/luigi-tools/compare/0.1.0..0.1.1)
+
+> 6 December 2022
+
+### CI Improvements
+
+- Add cache for APT, precommit and tox environments (Adrien Berchet - [#62](https://github.com/BlueBrain/luigi-tools/pull/62))
+- Setup CodeQL (Adrien Berchet - [#59](https://github.com/BlueBrain/luigi-tools/pull/59))
+- Setup Dependabot (Adrien Berchet - [#58](https://github.com/BlueBrain/luigi-tools/pull/58))
+
+### Fixes
+
+- Dataclass issue with optional dataclass attributes (Eleftherios Zisis - [#60](https://github.com/BlueBrain/luigi-tools/pull/60))
+
+<!-- auto-changelog-above -->
+
 ## [0.1.0](https://github.com/BlueBrain/luigi-tools/compare/0.0.19..0.1.0)
 
 > 28 November 2022
@@ -7,6 +23,7 @@
 ### New Features
 
 - Add support for Python 3.11 (Adrien Berchet - [#56](https://github.com/BlueBrain/luigi-tools/pull/56))
+- Add DataclassParameter (Eleftherios Zisis - [#53](https://github.com/BlueBrain/luigi-tools/pull/53))
 
 ### Chores And Housekeeping
 
@@ -16,29 +33,24 @@
 
 - Fix pydocstyle paths and fix docstrings accordingly (Adrien Berchet - [#50](https://github.com/BlueBrain/luigi-tools/pull/50))
 - Fix requirements for doc generation (Adrien Berchet - [#42](https://github.com/BlueBrain/luigi-tools/pull/42))
-
-### Tidying of Code eg Whitespace
-
 - Fix changelog generation (Adrien Berchet - [#43](https://github.com/BlueBrain/luigi-tools/pull/43))
 
 ### CI Improvements
 
 - Apply Copier template (Adrien Berchet - [#55](https://github.com/BlueBrain/luigi-tools/pull/55))
-- Apply Copier template (Adrien Berchet - [#48](https://github.com/BlueBrain/luigi-tools/pull/48))
 - Export pytest and coverage reports (Adrien Berchet - [#45](https://github.com/BlueBrain/luigi-tools/pull/45))
 - Use commitlint to check PR titles (Adrien Berchet - [#40](https://github.com/BlueBrain/luigi-tools/pull/40))
-
-### Uncategorized Changes
-
-- Add DataclassParameter (Eleftherios Zisis - [#53](https://github.com/BlueBrain/luigi-tools/pull/53))
 
 ## [0.0.19](https://github.com/BlueBrain/luigi-tools/compare/0.0.18..0.0.19)
 
 > 29 June 2022
 
-### Uncategorized Changes
+### New Features
 
 - Support orphan nodes in dependency graphs (Adrien Berchet - [#37](https://github.com/BlueBrain/luigi-tools/pull/37))
+
+### Chores And Housekeeping
+
 - Remove deprecated features that were introduced in `luigi == 3.1.0` (Adrien Berchet - [#35](https://github.com/BlueBrain/luigi-tools/pull/35))
 
 ## [0.0.18](https://github.com/BlueBrain/luigi-tools/compare/0.0.17..0.0.18)
@@ -49,9 +61,6 @@
 
 - Move black, codespell, isort, pycodestyle and pydocstyle from tox to pre-commit (Adrien Berchet - [#27](https://github.com/BlueBrain/luigi-tools/pull/27))
 - Setup pre-commit and commitlint (Adrien Berchet - [#26](https://github.com/BlueBrain/luigi-tools/pull/26))
-
-### Uncategorized Changes
-
 - Add isort and codespell in lint and rework tox jobs (Adrien Berchet - [#25](https://github.com/BlueBrain/luigi-tools/pull/25))
 
 ### New Features
@@ -62,12 +71,13 @@
 
 > 17 March 2022
 
-### Uncategorized Changes
+### New Features
 
 - Improve the behavior of prefixes in targets and add custom str representations to them (Adrien Berchet - [#23](https://github.com/BlueBrain/luigi-tools/pull/23))
-- Fix typo (Adrien Berchet - [#22](https://github.com/BlueBrain/luigi-tools/pull/22))
 
-<!-- auto-changelog-above -->
+### Chores And Housekeeping
+
+- Fix typo (Adrien Berchet - [#22](https://github.com/BlueBrain/luigi-tools/pull/22))
 
 ## [0.0.16](https://github.com/BlueBrain/luigi-tools/compare/0.0.15..0.0.16)
 
