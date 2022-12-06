@@ -126,6 +126,17 @@ class DataclassParameter(luigi.DictParameter):
 
 def _instantiate(cls, data):
 
+    # pylint: disable=too-many-return-statements
+
+    if data is None:
+        return None
+
+    if cls in {str, int, float, bool}:
+        return cls(data)
+
+    if _is_optional(cls):
+        return _instantiate(typing_extensions.get_args(cls)[0], data)
+
     if _is_dataclass(cls):
         return _instantiate_dataclass(cls, data, _instantiate)
 
@@ -135,11 +146,7 @@ def _instantiate(cls, data):
     if _is_mapping(data):
         return _instantiate_mapping(cls, data, _instantiate)
 
-    try:
-        return cls(data)
-    except TypeError:
-        # e.g typing.Any
-        return data
+    return data
 
 
 def _is_dataclass(cls):
@@ -156,19 +163,18 @@ def _is_sequence(data):
     return isinstance(data, collections.abc.Sequence) and not isinstance(data, str)
 
 
+def _is_optional(cls):
+    """Optional types have Union as origin and args of the form [Type, NoneType].
+
+    In that case the arguments of the Type are returned, if any.
+    """
+    return typing_extensions.get_origin(cls) is typing.Union and type(
+        None
+    ) in typing_extensions.get_args(cls)
+
+
 def _get_type_args(cls):
-    args = typing_extensions.get_args(cls)
-
-    if args:
-        origin = typing_extensions.get_origin(cls)
-
-        # Optional types have Union as origin and args of thr form [Type, NoneType].
-        # In that case the arguments of the Type are returned, if any.
-
-        if origin is typing.Union and type(None) in args:
-            return _get_type_args(args[0])
-        return args
-    return []
+    return typing_extensions.get_args(cls) or []
 
 
 def _instantiate_sequence(cls, data, func):
