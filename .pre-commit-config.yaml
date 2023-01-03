@@ -20,11 +20,11 @@ repos:
             - commit-msg
           additional_dependencies: ['conventional-changelog-conventionalcommits']
   - repo: https://github.com/pycqa/isort
-    rev: 5.10.1
+    rev: 5.11.4
     hooks:
       - id: isort
   - repo: https://github.com/psf/black
-    rev: 22.10.0
+    rev: 22.12.0
     hooks:
       - id: black
   - repo: https://github.com/codespell-project/codespell
@@ -33,10 +33,10 @@ repos:
       - id: codespell
         args: ["-x", ".codespellignorelines"]
   - repo: https://github.com/PyCQA/pydocstyle
-    rev: 6.1.1
+    rev: 6.2.1
     hooks:
       - id: pydocstyle
-        additional_dependencies: ["toml"]
+        additional_dependencies: ["tomli"]
   - repo: https://github.com/PyCQA/flake8
     rev: 6.0.0
     hooks:
