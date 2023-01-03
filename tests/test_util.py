@@ -317,6 +317,25 @@ class TestRegisterTemplates:
             luigi_tools.util.register_templates(template_dir)
             assert luigi.build([Task(expected_a="a_from_cfg")], local_scheduler=True)
 
+    def test_template_and_cfg_and_env_var(self, Task, template_dir, config_reseter, monkeypatch):
+        """Test with both a config file and a template."""
+        extra_cfg_file = str(Path(template_dir) / "extra.cfg")
+        config = ConfigParser()
+        config.read_dict({"Task": {"a": "a_from_extra_cfg_file"}})
+        with open(extra_cfg_file, "w", encoding="utf-8") as f:
+            config.write(f)
+
+        monkeypatch.setenv("LUIGI_CONFIG_PATH", extra_cfg_file, prepend=False)
+
+        with set_luigi_config(
+            {
+                "Template": {"name": "template_1"},
+                "Task": {"a": "a_from_cfg"},
+            }
+        ):
+            luigi_tools.util.register_templates(template_dir)
+            assert luigi.build([Task(expected_a="a_from_extra_cfg_file")], local_scheduler=True)
+
     def test_missing_template(self, Task, template_dir, config_reseter):
         """Test with a missing template."""
         with set_luigi_config(
