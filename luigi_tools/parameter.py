@@ -17,6 +17,7 @@ import collections.abc
 import dataclasses
 import typing
 
+import jsonschema
 import luigi
 import typing_extensions
 from luigi.freezing import FrozenOrderedDict
@@ -31,6 +32,29 @@ class ExtParameter(luigi.Parameter):
         if x.startswith("."):
             x = x[1:]
         return x
+
+
+class DictParameter(luigi.DictParameter):
+    """Class to parse file extension parameters."""
+
+    def __init__(
+        self,
+        *args,
+        schema=None,
+        **kwargs,
+    ):
+        self.schema = schema
+        super().__init__(
+            *args,
+            **kwargs,
+        )
+
+    def normalize(self, value):
+        """Convert the value to a FrozenOrderedDict so it can be hashed."""
+        normalized_value = super().normalize(value)
+        if self.schema is not None:
+            jsonschema.validate(instance=normalized_value.get_wrapped(), schema=self.schema)
+        return normalized_value
 
 
 class RatioParameter(luigi.NumericalParameter):
