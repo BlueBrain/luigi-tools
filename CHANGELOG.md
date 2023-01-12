@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.0](https://github.com/BlueBrain/luigi-tools/compare/0.1.1..0.2.0)
+
+> 12 January 2023
+
+### New Features
+
+- Can pass a JSON schema to DictParameter (Adrien Berchet - [#66](https://github.com/BlueBrain/luigi-tools/pull/66))
+
+### Fixes
+
+- Reload config from LUIGI_CONFIG_PATH after the template and luigi.cfg (Adrien Berchet - [#65](https://github.com/BlueBrain/luigi-tools/pull/65))
+
 ## [0.1.1](https://github.com/BlueBrain/luigi-tools/compare/0.1.0..0.1.1)
 
 > 6 December 2022
