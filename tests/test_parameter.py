@@ -29,6 +29,7 @@ import warnings
 import luigi
 import mock
 import pytest
+from jsonschema.exceptions import ValidationError
 from luigi.freezing import FrozenOrderedDict
 
 import luigi_tools.parameter
@@ -68,6 +69,82 @@ def test_ext_parameter(luigi_tools_working_directory):
 
     with set_luigi_config({"TaskExtParameter": {"a": ".ext_from_cfg"}}):
         assert luigi.build([TaskExtParameter(test_type="cfg_with_dot")], local_scheduler=True)
+
+
+def test_dict_parameter(luigi_tools_working_directory):
+    """Test the `luigi_tools.parameter.DictParameter` class."""
+
+    class TaskDictParameter(luigi.Task):
+        """A simple test task."""
+
+        a = luigi_tools.parameter.DictParameter()
+        b = luigi_tools.parameter.DictParameter(
+            default={"an_int": 0},
+            schema={
+                "type": "object",
+                "properties": {
+                    "an_int": {"type": "integer"},
+                    "an_optional_str": {"type": "string"},
+                },
+                "additionalProperties": False,
+                "required": ["an_int"],
+            },
+        )
+
+        def run(self):
+            create_empty_file(self.output().path)
+
+        def output(self):
+            return luigi.LocalTarget(
+                luigi_tools_working_directory
+                / f"test_dict_parameter_{hash(self.a)}_{hash(self.b)}.test"
+            )
+
+    empty_dict = {}
+    with pytest.raises(ValidationError, match="'an_int' is a required property"):
+        luigi.build([TaskDictParameter(a=empty_dict, b=empty_dict)], local_scheduler=True)
+
+    valid_dict = {"an_int": 1}
+    valid_and_complete_dict = {"an_int": 1, "an_optional_str": "hello"}
+    assert luigi.build([TaskDictParameter(a=valid_dict, b=valid_dict)], local_scheduler=True)
+    assert luigi.build(
+        [TaskDictParameter(a=valid_and_complete_dict, b=valid_and_complete_dict)],
+        local_scheduler=True,
+    )
+
+    with set_luigi_config(
+        {"TaskDictParameter": {"a": json.dumps(valid_dict), "b": json.dumps(valid_dict)}}
+    ):
+        assert luigi.build([TaskDictParameter()], local_scheduler=True)
+
+    with set_luigi_config(
+        {
+            "TaskDictParameter": {
+                "a": json.dumps(valid_and_complete_dict),
+                "b": json.dumps(valid_and_complete_dict),
+            }
+        }
+    ):
+        assert luigi.build([TaskDictParameter()], local_scheduler=True)
+
+    invalid_dict = {"an_int": "999"}
+    invalid_and_complete_dict = {"an_int": 1, "an_optional_str": 999}
+    with set_luigi_config(
+        {"TaskDictParameter": {"a": json.dumps(invalid_dict), "b": json.dumps(invalid_dict)}}
+    ):
+        with pytest.raises(ValidationError, match="'999' is not of type 'integer'"):
+            luigi.build([TaskDictParameter()], local_scheduler=True)
+
+    with set_luigi_config(
+        {
+            "TaskDictParameter": {
+                "a": json.dumps(invalid_and_complete_dict),
+                "b": json.dumps(invalid_and_complete_dict),
+            }
+        }
+    ):
+        with pytest.raises(ValidationError, match="999 is not of type 'string'"):
+            luigi.build([TaskDictParameter()], local_scheduler=True)
 
 
 def test_ratio_parameter(tmpdir):
