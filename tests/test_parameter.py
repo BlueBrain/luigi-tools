@@ -77,9 +77,9 @@ def test_dict_parameter(luigi_tools_working_directory):
     class TaskDictParameter(luigi.Task):
         """A simple test task."""
 
-        a = luigi_tools.parameter.DictParameter()
+        a = luigi_tools.parameter.DictParameter(default={"a": 0})
         b = luigi_tools.parameter.DictParameter(
-            default={"an_int": 0},
+            default={"INVALID_ATTRIBUTE": 0},
             schema={
                 "type": "object",
                 "properties": {
@@ -100,10 +100,19 @@ def test_dict_parameter(luigi_tools_working_directory):
                 / f"test_dict_parameter_{hash(self.a)}_{hash(self.b)}.test"
             )
 
+    # Check that the default value is validated
+    with pytest.raises(
+        ValidationError,
+        match=r"Additional properties are not allowed \('INVALID_ATTRIBUTE' was unexpected\)",
+    ):
+        luigi.build([TaskDictParameter()], local_scheduler=True)
+
+    # Check that empty dict is not valid
     empty_dict = {}
     with pytest.raises(ValidationError, match="'an_int' is a required property"):
         luigi.build([TaskDictParameter(a=empty_dict, b=empty_dict)], local_scheduler=True)
 
+    # Check that valid dicts work
     valid_dict = {"an_int": 1}
     valid_and_complete_dict = {"an_int": 1, "an_optional_str": "hello"}
     assert luigi.build([TaskDictParameter(a=valid_dict, b=valid_dict)], local_scheduler=True)
@@ -127,6 +136,7 @@ def test_dict_parameter(luigi_tools_working_directory):
     ):
         assert luigi.build([TaskDictParameter()], local_scheduler=True)
 
+    # Check that invalid dicts raise correct errors
     invalid_dict = {"an_int": "999"}
     invalid_and_complete_dict = {"an_int": 1, "an_optional_str": 999}
     with set_luigi_config(
