@@ -34,8 +34,17 @@ class ExtParameter(luigi.Parameter):
         return x
 
 
+def recursively_unfreeze(value):
+    """Recursively unfreeze a value."""
+    if isinstance(value, collections.abc.Mapping):
+        return dict(((k, recursively_unfreeze(v)) for k, v in value.items()))
+    elif isinstance(value, (list, tuple)):
+        return list(recursively_unfreeze(v) for v in value)
+    return value
+
+
 class DictParameter(luigi.DictParameter):
-    """Class to parse file extension parameters."""
+    """Class to parse dict parameters with optional schema."""
 
     def __init__(
         self,
@@ -53,7 +62,30 @@ class DictParameter(luigi.DictParameter):
         """Convert the value to a FrozenOrderedDict so it can be hashed."""
         normalized_value = super().normalize(value)
         if self.schema is not None:
-            jsonschema.validate(instance=normalized_value.get_wrapped(), schema=self.schema)
+            jsonschema.validate(instance=recursively_unfreeze(normalized_value), schema=self.schema)
+        return normalized_value
+
+
+class ListParameter(luigi.ListParameter):
+    """Class to parse list parameters with optional schema."""
+
+    def __init__(
+        self,
+        *args,
+        schema=None,
+        **kwargs,
+    ):
+        self.schema = schema
+        super().__init__(
+            *args,
+            **kwargs,
+        )
+
+    def normalize(self, x):
+        """Convert the value to a FrozenOrderedDict so it can be hashed."""
+        normalized_value = super().normalize(x)
+        if self.schema is not None:
+            jsonschema.validate(instance=recursively_unfreeze(normalized_value), schema=self.schema)
         return normalized_value
 
 

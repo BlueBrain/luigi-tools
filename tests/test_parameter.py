@@ -157,6 +157,74 @@ def test_dict_parameter(luigi_tools_working_directory):
             luigi.build([TaskDictParameter()], local_scheduler=True)
 
 
+def test_list_parameter(luigi_tools_working_directory):
+    """Test the `luigi_tools.parameter.ListParameter` class."""
+
+    class TaskListParameter(luigi.Task):
+        """A simple test task."""
+
+        a = luigi_tools.parameter.ListParameter(default=[1, 2])
+        b = luigi_tools.parameter.ListParameter(
+            default=["INVALID_ATTRIBUTE"],
+            schema={"type": "array", "items": {"type": "integer", "minimum": 10}, "minItems": 1},
+        )
+
+        def run(self):
+            create_empty_file(self.output().path)
+
+        def output(self):
+            return luigi.LocalTarget(
+                luigi_tools_working_directory
+                / f"test_list_parameter_{hash(self.a)}_{hash(self.b)}.test"
+            )
+
+    # Check that the default value is validated
+    with pytest.raises(
+        ValidationError,
+        match=r"'INVALID_ATTRIBUTE' is not of type 'integer'",
+    ):
+        luigi.build([TaskListParameter()], local_scheduler=True)
+
+    # Check that empty list is not valid
+    empty_list = []
+    with pytest.raises(ValidationError, match=r"\[\] is too short"):
+        luigi.build([TaskListParameter(a=empty_list, b=empty_list)], local_scheduler=True)
+
+    # Check that valid lists work
+    valid_list = [11, 12, 13]
+    assert luigi.build([TaskListParameter(a=valid_list, b=valid_list)], local_scheduler=True)
+
+    with set_luigi_config(
+        {"TaskListParameter": {"a": json.dumps(valid_list), "b": json.dumps(valid_list)}}
+    ):
+        assert luigi.build([TaskListParameter()], local_scheduler=True)
+
+    # Check that invalid lists raise correct errors
+    invalid_list_type = ["NOT AN INT"]
+    invalid_list_value = [1, 2, 3]
+    with set_luigi_config(
+        {
+            "TaskListParameter": {
+                "a": json.dumps(invalid_list_type),
+                "b": json.dumps(invalid_list_type),
+            }
+        }
+    ):
+        with pytest.raises(ValidationError, match="'NOT AN INT' is not of type 'integer'"):
+            luigi.build([TaskListParameter()], local_scheduler=True)
+
+    with set_luigi_config(
+        {
+            "TaskListParameter": {
+                "a": json.dumps(invalid_list_value),
+                "b": json.dumps(invalid_list_value),
+            }
+        }
+    ):
+        with pytest.raises(ValidationError, match="1 is less than the minimum of 10"):
+            luigi.build([TaskListParameter()], local_scheduler=True)
+
+
 def test_ratio_parameter(tmpdir):
     """Test the `luigi_tools.parameter.RatioParameter` class."""
 
