@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.1](https://github.com/BlueBrain/luigi-tools/compare/0.2.0..0.2.1)
+
+> 13 January 2023
+
+### New Features
+
+- Can pass a JSON schema to ListParameter (Adrien Berchet - [#69](https://github.com/BlueBrain/luigi-tools/pull/69))
+
 ## [0.2.0](https://github.com/BlueBrain/luigi-tools/compare/0.1.1..0.2.0)
 
 > 12 January 2023
@@ -11,6 +19,8 @@
 ### Fixes
 
 - Reload config from LUIGI_CONFIG_PATH after the template and luigi.cfg (Adrien Berchet - [#65](https://github.com/BlueBrain/luigi-tools/pull/65))
+
+<!-- auto-changelog-above -->
 
 ## [0.1.1](https://github.com/BlueBrain/luigi-tools/compare/0.1.0..0.1.1)
 
@@ -25,8 +35,6 @@
 ### Fixes
 
 - Dataclass issue with optional dataclass attributes (Eleftherios Zisis - [#60](https://github.com/BlueBrain/luigi-tools/pull/60))
-
-<!-- auto-changelog-above -->
 
 ## [0.1.0](https://github.com/BlueBrain/luigi-tools/compare/0.0.19..0.1.0)
 
