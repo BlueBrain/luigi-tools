@@ -17,7 +17,6 @@ import collections.abc
 import dataclasses
 import typing
 
-import jsonschema
 import luigi
 import typing_extensions
 from luigi.freezing import FrozenOrderedDict
@@ -32,61 +31,6 @@ class ExtParameter(luigi.Parameter):
         if x.startswith("."):
             x = x[1:]
         return x
-
-
-def recursively_unfreeze(value):
-    """Recursively unfreeze a value."""
-    if isinstance(value, collections.abc.Mapping):
-        return dict(((k, recursively_unfreeze(v)) for k, v in value.items()))
-    elif isinstance(value, (list, tuple)):
-        return list(recursively_unfreeze(v) for v in value)
-    return value
-
-
-class DictParameter(luigi.DictParameter):
-    """Class to parse dict parameters with optional schema."""
-
-    def __init__(
-        self,
-        *args,
-        schema=None,
-        **kwargs,
-    ):
-        self.schema = schema
-        super().__init__(
-            *args,
-            **kwargs,
-        )
-
-    def normalize(self, value):
-        """Convert the value to a FrozenOrderedDict so it can be hashed."""
-        normalized_value = super().normalize(value)
-        if self.schema is not None:
-            jsonschema.validate(instance=recursively_unfreeze(normalized_value), schema=self.schema)
-        return normalized_value
-
-
-class ListParameter(luigi.ListParameter):
-    """Class to parse list parameters with optional schema."""
-
-    def __init__(
-        self,
-        *args,
-        schema=None,
-        **kwargs,
-    ):
-        self.schema = schema
-        super().__init__(
-            *args,
-            **kwargs,
-        )
-
-    def normalize(self, x):
-        """Convert the value to a FrozenOrderedDict so it can be hashed."""
-        normalized_value = super().normalize(x)
-        if self.schema is not None:
-            jsonschema.validate(instance=recursively_unfreeze(normalized_value), schema=self.schema)
-        return normalized_value
 
 
 class RatioParameter(luigi.NumericalParameter):
