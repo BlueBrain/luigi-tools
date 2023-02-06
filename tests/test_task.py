@@ -464,7 +464,6 @@ class TestCopyParamsWithGlobals:
                 },
             }
         ):
-
             failed_task = []
             exceptions = []
 
