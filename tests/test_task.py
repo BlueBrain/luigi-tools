@@ -782,6 +782,31 @@ class TestForceableTask:
             if task_name in ["TaskA", "TaskC"]
         )
 
+    def test_wrapper_task(self, task_collection, tmpdir):
+        """Test that it is possible to rerun a wrapper task and all its dependencies."""
+
+        class TaskF(luigi_tools.task.WorkflowWrapperTask):
+            """A simple test wrapper task."""
+
+            def requires(self):
+                return task_collection.TaskE()
+
+        for i in luigi.task.flatten(task_collection.targets):
+            create_empty_file(i.path)
+
+        with set_luigi_config(
+            {
+                "TaskF": {"rerun": "true"},
+            }
+        ):
+            assert luigi.build([TaskF()], local_scheduler=True)
+
+        assert all(
+            check_not_empty_file(j.path)
+            for task_name, targets in task_collection.targets.items()
+            for j in luigi.task.flatten(targets)
+        )
+
 
 class TestLogTargetMixin:
     """Test the `luigi_tools.task.LogTargetMixin` class."""

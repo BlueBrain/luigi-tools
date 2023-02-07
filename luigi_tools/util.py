@@ -88,6 +88,18 @@ def apply_over_outputs(task, func):
     return apply_over_luigi_iterable(outputs, func)
 
 
+def apply_over_required(task, func):
+    """Apply the given function to all required tasks of a :class:`luigi.WrapperTask`.
+
+    The given function should accept the following arguments:
+        * target: the output target(s) of the given task
+        * key=None: the key when the iterable is a dictionary
+    """
+    required = task.requires()
+
+    return apply_over_luigi_iterable(required, func)
+
+
 def get_dependency_graph(
     task,
     allow_orphans=False,
