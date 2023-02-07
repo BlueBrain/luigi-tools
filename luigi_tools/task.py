@@ -19,7 +19,6 @@ from copy import deepcopy
 
 import luigi
 
-from luigi_tools.util import apply_over_luigi_iterable
 from luigi_tools.util import apply_over_outputs
 from luigi_tools.util import apply_over_required
 from luigi_tools.util import recursive_check
@@ -57,7 +56,7 @@ class RerunMixin:
         if isinstance(self, luigi.WrapperTask) and self.rerun:
 
             def recursive_target_remove(task, *args, **kwargs):
-                apply_over_luigi_iterable(task.output(), target_remove)
+                apply_over_outputs(task, target_remove)
                 apply_over_required(task, recursive_target_remove)
 
             recursive_target_remove(self)
