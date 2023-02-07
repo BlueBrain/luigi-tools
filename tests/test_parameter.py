@@ -109,6 +109,7 @@ class TestOptionalParameter:
 
     def test_optional_parameter(self, luigi_tools_working_directory):
         """Simple test for optional parameters."""
+
         # pylint: disable=too-many-statements
         class TaskFactory:
             """A class factory."""
@@ -759,7 +760,6 @@ def _check_parameter(*, obj, parameter, expected_dict, override_comparison_field
         # manually compare the attributes for expected differences with origin obj
         if override_comparison_fields:
             for attribute_name, attribute_value in override_comparison_fields.items():
-
                 actual_value = getattr(new_obj, attribute_name)
                 assert actual_value == attribute_value
         else:

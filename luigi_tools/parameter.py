@@ -105,7 +105,6 @@ class DataclassParameter(luigi.DictParameter):
     """
 
     def __init__(self, cls_type, *args, **kwargs):
-
         if not _is_dataclass(cls_type):
             raise TypeError(f"Class type {cls_type.__name__!r} is not a dataclass.")
 
@@ -125,7 +124,6 @@ class DataclassParameter(luigi.DictParameter):
 
 
 def _instantiate(cls, data):
-
     # pylint: disable=too-many-return-statements
 
     if data is None:
@@ -178,7 +176,6 @@ def _get_type_args(cls):
 
 
 def _instantiate_sequence(cls, data, func):
-
     args = _get_type_args(cls)
 
     # Use type annotation to cast the sequence values
@@ -198,7 +195,6 @@ def _instantiate_mapping(cls, data, func):
 
     # Use key, value type annotations for casting
     if args:
-
         assert len(args) == 2, args
         arguments_generator = (
             (

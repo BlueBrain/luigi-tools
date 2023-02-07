@@ -276,6 +276,7 @@ class TestOutputTarget:
 
     def test_super_prefix(self, tmpdir, reset_prefix):
         """Test the super prefix to build a target hierarchy."""
+
         # pylint: disable=useless-super-delegation
         class SubOutputLocalTarget(luigi_tools.target.OutputLocalTarget):
             """A simple target with a `str` prefix."""
