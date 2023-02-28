@@ -19,9 +19,9 @@ from setuptools import find_namespace_packages
 from setuptools import setup
 
 reqs = [
-    "luigi",
-    "jsonschema",
-    "typing-extensions",
+    "luigi>=3.1",
+    "jsonschema>=4.2",
+    "typing-extensions>=4",
 ]
 
 doc_reqs = [
@@ -31,10 +31,10 @@ doc_reqs = [
 ]
 
 test_reqs = [
-    "mock",
-    "pytest",
-    "pytest-cov",
-    "pytest-html",
+    "mock>=3",
+    "pytest>=6",
+    "pytest-cov>=3",
+    "pytest-html>=2",
 ]
 
 setup(
