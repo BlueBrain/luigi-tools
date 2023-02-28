@@ -235,6 +235,26 @@ def test_dependency_graph(tmpdir, task_collection):
     assert not output_file.exists()
     assert output_file.with_suffix(".png").exists()
 
+    # Test export_dependency_graph()
+    output_file = Path(tmpdir / "test_export_dependency_graph.pdf")
+    luigi_tools.util.export_dependency_graph(
+        start,
+        str(output_file),
+        allow_orphans=True,
+        graph_attrs={"bgcolor": "red"},
+        node_attrs={"fontsize": "10", "height": "0.5"},
+        edge_attrs={"arrowsize": "0.75"},
+        root_attrs={"color": "blue"},
+        task_names={task_collection.TaskD(): "custom_name"},
+        node_kwargs={task_collection.TaskA(): {"custom_attr": "custom value"}},
+        edge_kwargs={(task_collection.TaskB(), task_collection.TaskA()): {"label": "custom label"}},
+        graphviz_class=Digraph,
+        format="png",
+    )
+
+    assert not output_file.exists()
+    assert output_file.with_suffix(".png").exists()
+
 
 def test_param_repr():
     """Test the `luigi_tools.util._param_repr` function."""
