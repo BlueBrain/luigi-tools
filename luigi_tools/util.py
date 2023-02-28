@@ -264,6 +264,60 @@ def render_dependency_graph(graph, filepath, **kwargs):
     graph.render(filename=filename, format=fileformat, cleanup=cleanup, **kwargs)
 
 
+def export_dependency_graph(
+    task,
+    filepath="dependency_graph.png",
+    allow_orphans=False,
+    graph_attrs=None,
+    node_attrs=None,
+    edge_attrs=None,
+    root_attrs=None,
+    task_names=None,
+    node_kwargs=None,
+    edge_kwargs=None,
+    graphviz_class=None,
+    **render_kwargs,
+):
+    """Build and export a dependency graph.
+
+    Args:
+        task (luigi.Task): the task from which the dependency graph is computed.
+        filepath (str): The path to the rendered file. If the ``format`` kwarg is not given, this
+            path should contain an extension. Otherwise, the extension is guessed from the format.
+        allow_orphans (bool): If set to True, orphan nodes are returned with a None child.
+        graph_attrs (dict): The graph attributes that will override the defaults.
+        node_attrs (dict): The node attributes that will override the defaults.
+        edge_attrs (dict): The edge attributes that will override the defaults.
+        root_attrs (dict): The specific node attributes only used for the root that will override
+            the defaults.
+        task_names (dict): A dictionary with :class:`luigi.Task` objects as keys and custom names as
+            values.
+        node_kwargs (dict): A dictionary with :class:`luigi.Task` objects as keys and the kwargs
+            given to :meth:`graphviz.Digraph.node()` as values.
+        edge_kwargs (dict): A dictionary with :class:`luigi.Task` objects as keys and the kwargs
+            given to :meth:`graphviz.Digraph.edge()` as values.
+        graphviz_class (graphviz.Graph or graphviz.Digraph): The class used to store the graph.
+
+    Keyword Args:
+        render_kwargs: The keyword arguments are passed to the :meth:`graphviz.Digraph.render()`
+            function.
+    """
+    # pylint: disable=too-many-arguments
+    deps = get_dependency_graph(task, allow_orphans=allow_orphans)
+    graph = graphviz_dependency_graph(
+        deps,
+        graph_attrs=graph_attrs,
+        node_attrs=node_attrs,
+        edge_attrs=edge_attrs,
+        root_attrs=root_attrs,
+        task_names=task_names,
+        node_kwargs=node_kwargs,
+        edge_kwargs=edge_kwargs,
+        graphviz_class=graphviz_class,
+    )
+    render_dependency_graph(graph, filepath, **render_kwargs)
+
+
 def register_templates(directory=None, name=None, hierarchy_end=True):
     """Add INI templates to the config file list processed by luigi.
 
