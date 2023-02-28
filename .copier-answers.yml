@@ -1,6 +1,6 @@
 # Changes here will be overwritten by Copier
 
-_commit: 0.1.32
+_commit: 0.1.38
 _src_path: git@bbpgitlab.epfl.ch:neuromath/python-template.git
 author_email: ''
 author_name: Blue Brain Project, EPFL
@@ -21,6 +21,7 @@ ssh_url: git@github.com:BlueBrain/luigi-tools.git
 support_py37: true
 team_name: neuromath
 tracker_url: https://github.com/BlueBrain/luigi-tools/issues
+use_pyproject_toml: false
 version: 0.0.20.dev0
 
 # End of Copier answers

@@ -1,16 +1,13 @@
-# SETUPTOOLS
 [build-system]
 requires = [
-    "setuptools>=42",
-    "wheel",
-    "setuptools_scm[toml]>=3.4",
+    "setuptools>=45",
+    "setuptools_scm[toml]>=6.2",
 ]
+build-backend = "setuptools.build_meta"
 
-# SETUPTOOLS_SCM
 [tool.setuptools_scm]
 local_scheme = "no-local-version"
 
-# BLACK
 [tool.black]
 line-length = 100
 target-version = [
@@ -21,7 +18,6 @@ target-version = [
     "py311",
 ]
 
-# PYDOCSTYLE
 [tool.pydocstyle]
 # ignore the following:
 #   - D107: Missing docstring in __init__
@@ -30,13 +26,11 @@ add-ignore = [
 ]
 convention = "google"
 
-# ISORT
 [tool.isort]
 profile = "black"
 line_length = 100
 force_single_line = true
 
-# PYTEST
 [tool.pytest.ini_options]
 testpaths = [
     "tests",
