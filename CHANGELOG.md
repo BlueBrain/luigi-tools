@@ -15,7 +15,7 @@
 
 ### CI Improvements
 
-- Add job for min versions (#75) (Adrien Berchet - [cd9768e](https://github.com/BlueBrain/luigi-tools/commit/cd9768ed757a217d01ebd86d8dc0791df71c6f96))
+- Add job for min versions (Adrien Berchet - [#75](https://github.com/BlueBrain/luigi-tools/pull/75))
 
 ## [0.2.1](https://github.com/BlueBrain/luigi-tools/compare/0.2.0..0.2.1)
 
