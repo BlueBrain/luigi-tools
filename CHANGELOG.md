@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.3.0](https://github.com/BlueBrain/luigi-tools/compare/0.2.1..0.3.0)
+
+> 28 February 2023
+
+### Deprecated Features
+
+- JSON schema validation was moved to `luigi==3.2.0` (Adrien Berchet - [#71](https://github.com/BlueBrain/luigi-tools/pull/71))
+
+### New Features
+
+- Add simple function to export dependency graphs (Adrien Berchet - [#74](https://github.com/BlueBrain/luigi-tools/pull/74))
+- RerunMixin can be used with luigi.WrapperTask (Adrien Berchet - [#73](https://github.com/BlueBrain/luigi-tools/pull/73))
+
+### CI Improvements
+
+- Add job for min versions (#75) (Adrien Berchet - [cd9768e](https://github.com/BlueBrain/luigi-tools/commit/cd9768ed757a217d01ebd86d8dc0791df71c6f96))
+
 ## [0.2.1](https://github.com/BlueBrain/luigi-tools/compare/0.2.0..0.2.1)
 
 > 13 January 2023
