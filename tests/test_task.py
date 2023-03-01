@@ -26,6 +26,8 @@ import warnings
 import luigi
 import pytest
 from luigi.util import inherits
+from packaging.version import Version
+from pkg_resources import get_distribution
 
 import luigi_tools.parameter
 import luigi_tools.target
@@ -660,6 +662,47 @@ class TestCopyParamsWithGlobals:
 
         with set_luigi_config({"TaskListParameter": {"b": []}, "TaskCopyListParameter": {"b": []}}):
             assert luigi.build([TaskListParameter(), TaskCopyListParameter()], local_scheduler=True)
+
+    @pytest.mark.skipif(
+        Version(get_distribution("luigi").version) < Version("3.2"),
+        reason="Schemas are only available for luigi>=3.2",
+    )
+    def test_dict_param_with_schema(self):
+        """Test interaction of @copy_params and schemas."""
+
+        class TaskWithListDictParams(luigi.Config):
+            """A simple config task."""
+
+            a = luigi.OptionalListParameter(
+                description="a in TaskWithListDictParams", schema={"type": "array"}
+            )
+            b = luigi.OptionalDictParameter(
+                description="a in TaskWithListDictParams", schema={"type": "object"}
+            )
+
+        @luigi_tools.task.copy_params(
+            a=luigi_tools.task.ParamRef(TaskWithListDictParams),
+            b=luigi_tools.task.ParamRef(TaskWithListDictParams),
+        )
+        class TaskCopyListDictParams(luigi_tools.task.GlobalParamMixin, luigi.Task):
+            """A simple test task."""
+
+            def run(self):
+                assert self.a == (1, 2)
+                assert self.b == {"attr1": 1, "attr2": 2}
+
+            def output(self):
+                return luigi.LocalTarget("not_existing_file")
+
+        with set_luigi_config(
+            {
+                "TaskWithListDictParams": {
+                    "a": "[1, 2]",
+                    "b": json.dumps({"attr1": 1, "attr2": 2}),
+                }
+            }
+        ):
+            assert luigi.build([TaskCopyListDictParams()], local_scheduler=True)
 
 
 class TestForceableTask:
