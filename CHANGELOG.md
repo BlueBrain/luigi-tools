@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.3.1](https://github.com/BlueBrain/luigi-tools/compare/0.3.0..0.3.1)
+
+> 2 March 2023
+
+### Fixes
+
+- The @copy_params decorator fails with parameter schemas (Adrien Berchet - [#78](https://github.com/BlueBrain/luigi-tools/pull/78))
+
+<!-- auto-changelog-above -->
+
 ## [0.3.0](https://github.com/BlueBrain/luigi-tools/compare/0.2.1..0.3.0)
 
 > 28 February 2023
@@ -36,8 +46,6 @@
 ### Fixes
 
 - Reload config from LUIGI_CONFIG_PATH after the template and luigi.cfg (Adrien Berchet - [#65](https://github.com/BlueBrain/luigi-tools/pull/65))
-
-<!-- auto-changelog-above -->
 
 ## [0.1.1](https://github.com/BlueBrain/luigi-tools/compare/0.1.0..0.1.1)
 

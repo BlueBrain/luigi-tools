@@ -8,5 +8,5 @@
     "issueUrl": "https://github.com/BlueBrain/luigi-tools/issues/{id}",
     "mergeUrl": "https://github.com/BlueBrain/luigi-tools/pull/{id}",
     "compareUrl": "https://github.com/BlueBrain/luigi-tools/compare/{from}..{to}",
-    "startingVersion": "0.2.0"
+    "startingVersion": "0.3.1"
 }
