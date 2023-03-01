@@ -292,6 +292,7 @@ class copy_params:
 
                 # Fix normalize() to not normalize when the parameter does not have default value
                 def normalize(_self, value):
+                    # pylint: disable=protected-access
                     if value == _no_default_value:
                         return value
                     else:
