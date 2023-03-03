@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.2](https://github.com/BlueBrain/luigi-tools/compare/0.3.1..0.3.2)
+
+> 3 March 2023
+
+### New Features
+
+- Set default resolution of dependency graphs to 300DPI (Adrien Berchet - [#80](https://github.com/BlueBrain/luigi-tools/pull/80))
+
 ## [0.3.1](https://github.com/BlueBrain/luigi-tools/compare/0.3.0..0.3.1)
 
 > 2 March 2023
