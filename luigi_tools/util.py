@@ -184,6 +184,7 @@ def graphviz_dependency_graph(
         "fontsize": "9",
         "layout": "dot",
         "rankdir": "TB",
+        "dpi": "300",
     }
     if graph_attrs is not None:
         default_graph_attrs.update(graph_attrs)
