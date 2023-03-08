@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.3](https://github.com/BlueBrain/luigi-tools/compare/0.3.2..0.3.3)
+
+> 8 March 2023
+
+### New Features
+
+- Add function to convert luigi config file into a dict (Adrien Berchet - [#83](https://github.com/BlueBrain/luigi-tools/pull/83))
+
 ## [0.3.2](https://github.com/BlueBrain/luigi-tools/compare/0.3.1..0.3.2)
 
 > 3 March 2023
