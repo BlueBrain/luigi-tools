@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """This module provides some functions to work with luigi tasks."""
+import configparser
 import logging
 import os
 import re
@@ -441,3 +442,20 @@ class set_luigi_config:
 
         # Reset luigi config
         self.luigi_config.clear()
+
+
+def configparser_to_dict(luigi_config):
+    """Transform a ConfigParser object to a dict."""
+    dict_config = {}
+    for section in luigi_config.sections():
+        dict_config[section] = {}
+        for option in luigi_config.options(section):
+            dict_config[section][option] = luigi_config.get(section, option)
+    return dict_config
+
+
+def luigi_config_to_dict(filename="luigi.cfg"):
+    """Load a luigi config file to a dict."""
+    luigi_config = configparser.ConfigParser()
+    luigi_config.read(filename)
+    return configparser_to_dict(luigi_config)
