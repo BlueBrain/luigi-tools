@@ -578,3 +578,18 @@ def test_deprecation_warning():
         ),
     ):
         luigi_tools.moved_to_luigi_warning("1.2.3", "3.4.5")
+
+
+def test_luigi_config_to_dict():
+    """Test that the transformation of a luigi config file is properly loaded into a dict."""
+    input_cfg = {
+        "Task": {"a": "a_from_cfg"},
+    }
+    with set_luigi_config(input_cfg):
+        cfg = luigi_tools.util.luigi_config_to_dict()
+    assert cfg == input_cfg
+
+    filename = "another_luigi.cfg"
+    with set_luigi_config(input_cfg, filename):
+        cfg = luigi_tools.util.luigi_config_to_dict(filename)
+    assert cfg == input_cfg
