@@ -28,7 +28,7 @@ def create_empty_file(filename):
 
 
 def check_empty_file(filename):
-    """Checck that a file is empty."""
+    """Check that a file is empty."""
     with open(filename, encoding="utf-8") as f:
         return f.read() == ""
 
@@ -40,6 +40,6 @@ def create_not_empty_file(filename):
 
 
 def check_not_empty_file(filename):
-    """Checck that a file is not empty."""
+    """Check that a file is not empty."""
     with open(filename, encoding="utf-8") as f:
         return f.read() == "NOT EMPTY"
