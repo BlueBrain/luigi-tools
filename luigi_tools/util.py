@@ -17,6 +17,7 @@ import configparser
 import logging
 import os
 import re
+import warnings
 from configparser import ConfigParser
 from pathlib import Path
 
@@ -380,10 +381,12 @@ def register_templates(directory=None, name=None, hierarchy_end=True):
 
     luigi.configuration.add_config_path(template)
     if hierarchy_end:
-        luigi.configuration.add_config_path("luigi.cfg")
-        env_cfg = os.environ.get("LUIGI_CONFIG_PATH")
-        if env_cfg is not None:
-            luigi.configuration.add_config_path(env_cfg)
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", message="Config file does not exist.*")
+            luigi.configuration.add_config_path("luigi.cfg")
+            env_cfg = os.environ.get("LUIGI_CONFIG_PATH")
+            if env_cfg is not None:
+                luigi.configuration.add_config_path(env_cfg)
 
 
 class set_luigi_config:
