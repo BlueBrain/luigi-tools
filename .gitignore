@@ -1,6 +1,7 @@
 # data
 .eggs
 .idea
+*.pptx
 *.pyc
 *.swp
 *py~
