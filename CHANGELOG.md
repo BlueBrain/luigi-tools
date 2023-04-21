@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.4](https://github.com/BlueBrain/luigi-tools/compare/0.3.3..0.3.4)
+
+> 21 April 2023
+
+### Chores And Housekeeping
+
+- Bump copier template (Adrien Berchet - [#87](https://github.com/BlueBrain/luigi-tools/pull/87))
+
+### Refactoring and Updates
+
+- Filter warnings when registering missing files in register_templates() (Adrien Berchet - [#86](https://github.com/BlueBrain/luigi-tools/pull/86))
+
 ## [0.3.3](https://github.com/BlueBrain/luigi-tools/compare/0.3.2..0.3.3)
 
 > 8 March 2023
