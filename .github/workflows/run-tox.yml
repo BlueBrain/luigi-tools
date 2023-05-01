@@ -53,7 +53,7 @@ jobs:
       if: ${{ matrix.min_versions == 'latest_versions' }}
       run: |
         python -m pip install --upgrade pip setuptools
-        pip install tox-gh-actions
+        pip install tox-gh-actions>=3
         tox
     - name: Run tox with min versions
       if: ${{ matrix.min_versions == 'min_versions' }}
