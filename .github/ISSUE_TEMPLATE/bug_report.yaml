@@ -1,0 +1,132 @@
+# docs https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-issue-forms
+# https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-githubs-form-schema
+
+name: Create a bug report regarding luigi-tools runtime behavior
+description: Errors and regression reports with complete reproducing test cases and/or stack traces.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: "
+
+**If you are writing new luigi-tools code and are observing a behavior that you did not expect,
+or if you are new to luigi-tools overall, please open a
+[discussion](https://github.com/BlueBrain/luigi-tools/discussions/new?category=Usage-Questions)
+instead of an issue report.  The VAST MAJORITY of issues are converted to discussions
+as they are not bugs.**
+
+[START A NEW USAGE QUESTIONS DISCUSSION HERE](https://github.com/BlueBrain/luigi-tools/discussions/new?category=Usage-Questions)
+
+"
+  - type: markdown
+    attributes:
+      value: "
+
+**GUIDELINES FOR REPORTING BUGS**
+
+IF YOU DO NOT HAVE A COMPLETE, RUNNABLE TEST CASE WRITTEN DIRECTLY IN THE TEXTAREA BELOW,
+YOUR ISSUE WILL BE CLOSED.   PLEASE OPEN A
+[DISCUSSION](https://github.com/sqlalchemy/sqlalchemy/discussions/new?category=Usage-Questions)
+IF YOU DON'T HAVE A COMPLETE TEST CASE!
+
+
+If you are new to luigi-tools bug reports, please note that your reports must include the following features:
+
+1. a **succinct description of the problem** - typically a line or two at most
+
+2. **succinct, dependency-free code which reproduces the problem**, otherwise known as a [Minimal, Complete, and Verifiable](https://stackoverflow.com/help/mcve) example.
+
+3. **complete stack traces for all errors - please avoid screenshots, use formatted text inside issues**
+
+4. Other things as applicable:   **dependies**, **operating system**, **comparative performance timings** for performance issues.
+"
+  - type: textarea
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+
+  - type: input
+    id: relevant_documentation
+    attributes:
+      label: Optional link from https://luigi-tools.readthedocs.io which documents the behavior that is expected
+      description:  "
+Please make sure the behavior you are seeing is definitely in contradiction
+to what's documented as the correct behavior.  If unsure, open a
+[discussion](https://github.com/BlueBrain/luigi-tools/discussions/new?category=Usage-Questions)
+instead.
+"
+    validations:
+      required: false
+
+  - type: input
+    id: luigi_tools_version
+    attributes:
+      label: luigi-tools Version in Use
+      description: e.g. 1.4.42, 2.0.2, etc or commit hash
+    validations:
+      required: true
+
+  - type: input
+    id: luigi_version
+    attributes:
+      label: luigi Version in Use
+      description: e.g. 1.4.42, 2.0.2, etc or commit hash
+    validations:
+      required: true
+
+  - type: input
+    id: python_version
+    attributes:
+      label: Python Version
+      description: assumes cpython unless otherwise stated, e.g. 3.10, 3.11, pypy
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      description: Linux, Windows, OSX
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: To Reproduce
+      description: "
+Provide your [Minimal, Complete, and Verifiable](https://stackoverflow.com/help/mcve) example here."
+      placeholder: "# Insert code here (text area already python formatted)"
+      render: python
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Error
+      description: "
+Provide the complete text of any errors received **including the complete stack trace**.
+If the message is a warning, run your program with the ``-Werror`` flag:   ``python -Werror myprogram.py``
+"
+      placeholder: "# Copy the complete stack trace and error message here."
+      value: "\
+```
+
+# Copy the complete stack trace and error message here.
+
+```
+"
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Additional context
+      description: Add any other context about the problem here.
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: "**Have a nice day!**"

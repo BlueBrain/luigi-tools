@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Usage Questions (GitHub Discussions)
+    url: https://github.com/BlueBrain/luigi-tools/discussions/new?category=Usage-Questions
+    about: Questions and Answers for luigi-tools Users
+  - name: Ideas / Feature Proposal (GitHub Discussions)
+    url: https://github.com/BlueBrain/luigi-tools/discussions/new?category=Ideas
+    about: Use this for initial discussion for new features and suggestions
