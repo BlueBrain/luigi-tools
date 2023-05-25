@@ -20,7 +20,13 @@ import re
 import warnings
 from configparser import ConfigParser
 from pathlib import Path
+from typing import Any
+from typing import Callable
+from typing import Optional
+from typing import Type
+from typing import Union
 
+import graphviz
 import luigi
 from luigi.parameter import _no_value as PARAM_NO_VALUE
 
@@ -31,7 +37,7 @@ class WorkflowError(Exception):
     """Exception raised when the workflow is not consistent."""
 
 
-def recursive_check(task, attr="rerun"):
+def recursive_check(task: luigi.Task, attr: str = "rerun") -> bool:
     """Check if a task or any of its recursive dependencies has a given attribute set to True."""
     val = getattr(task, attr, False)
 
@@ -41,7 +47,7 @@ def recursive_check(task, attr="rerun"):
     return val
 
 
-def target_remove(target, *args, **kwargs):
+def target_remove(target: luigi.Target, *args, **kwargs) -> None:
     """Remove a given target by calling its 'exists()' and 'remove()' methods."""
     try:
         if target.exists():
@@ -54,7 +60,9 @@ def target_remove(target, *args, **kwargs):
         raise AttributeError("The target must have 'exists()' and 'remove()' methods") from e
 
 
-def apply_over_luigi_iterable(luigi_iterable, func):
+def apply_over_luigi_iterable(
+    luigi_iterable: Union[dict[str, Any], list[Any]], func: Callable
+) -> Union[dict[str, Any], list[Any]]:
     """Apply the given function to a luigi iterable (task.input() or task.output())."""
     try:
         results = {}
@@ -67,7 +75,7 @@ def apply_over_luigi_iterable(luigi_iterable, func):
     return results
 
 
-def apply_over_inputs(task, func):
+def apply_over_inputs(task: luigi.Task, func: Callable) -> Union[dict[str, Any], list[Any]]:
     """Apply the given function to all inputs of a :class:`luigi.Task`.
 
     The given function should accept the following arguments:
@@ -78,7 +86,7 @@ def apply_over_inputs(task, func):
     return apply_over_luigi_iterable(inputs, func)
 
 
-def apply_over_outputs(task, func):
+def apply_over_outputs(task: luigi.Task, func: Callable) -> Union[dict[str, Any], list[Any]]:
     """Apply the given function to all outputs of a :class:`luigi.Task`.
 
     The given function should accept the following arguments:
@@ -90,8 +98,8 @@ def apply_over_outputs(task, func):
     return apply_over_luigi_iterable(outputs, func)
 
 
-def apply_over_required(task, func):
-    """Apply the given function to all required tasks of a :class:`luigi.WrapperTask`.
+def apply_over_required(task: luigi.Task, func: Callable) -> Union[dict[str, Any], list[Any]]:
+    """Apply the given function to all required tasks of a :class:`luigi.Task`.
 
     The given function should accept the following arguments:
         * target: the output target(s) of the given task
@@ -103,17 +111,17 @@ def apply_over_required(task, func):
 
 
 def get_dependency_graph(
-    task,
-    allow_orphans=False,
-):
+    task: luigi.Task,
+    allow_orphans: bool = False,
+) -> list[tuple[luigi.Task, Optional[luigi.Task]]]:
     """Compute dependency graph of a given task.
 
     Args:
-        task (luigi.Task): the task from which the dependency graph is computed.
-        allow_orphans (bool): If set to True, orphan nodes are returned with a None child.
+        task: the task from which the dependency graph is computed.
+        allow_orphans: If set to True, orphan nodes are returned with a None child.
 
     Returns:
-        list(luigi.Task): A list of (parent, child) tuples.
+        A list of (parent, child) tuples.
     """
     children = []
     for t in task.deps():
@@ -124,7 +132,7 @@ def get_dependency_graph(
     return children
 
 
-def _param_repr(description, default):
+def _param_repr(description: str, default: Any) -> str:
     """Produce parameter help string representation for sphinx-doc."""
     if description:
         help_str = description
@@ -136,21 +144,21 @@ def _param_repr(description, default):
 
 
 def graphviz_dependency_graph(
-    g,
-    graph_attrs=None,
-    node_attrs=None,
-    edge_attrs=None,
-    root_attrs=None,
-    task_names=None,
-    node_kwargs=None,
-    edge_kwargs=None,
-    graphviz_class=None,
+    g: list[tuple[luigi.Task, Optional[luigi.Task]]],
+    graph_attrs: Optional[dict[str, str]] = None,
+    node_attrs: Optional[dict[str, str]] = None,
+    edge_attrs: Optional[dict[str, str]] = None,
+    root_attrs: Optional[dict[str, str]] = None,
+    task_names: Optional[dict[luigi.Task, str]] = None,
+    node_kwargs: Optional[dict[luigi.Task, dict[str, Any]]] = None,
+    edge_kwargs: Optional[dict[luigi.Task, dict[str, Any]]] = None,
+    graphviz_class: Type[graphviz.BaseGraph] = None,
 ):
     """Create a GraphViz dependency graph.
 
     Args:
-        g (list(tuple(luigi.Task))): A list of tuples of :class:`luigi.Task` objects, usually
-            created with :mod:`luigi_tools.util.get_dependency_graph()`.
+        g: A list of tuples of :class:`luigi.Task` objects, usually
+            created with :func:`luigi_tools.util.get_dependency_graph()`.
         graph_attrs (dict): The graph attributes that will override the defaults.
         node_attrs (dict): The node attributes that will override the defaults.
         edge_attrs (dict): The edge attributes that will override the defaults.
@@ -246,7 +254,9 @@ def graphviz_dependency_graph(
     return dot
 
 
-def render_dependency_graph(graph, filepath, **kwargs):
+def render_dependency_graph(
+    graph: graphviz.BaseGraph, filepath: Union[str, Path], **kwargs: dict[str:object]
+) -> None:
     """Render a dependency graph using GraphViz.
 
     Args:
