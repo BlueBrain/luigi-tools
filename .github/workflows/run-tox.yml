@@ -70,7 +70,7 @@ jobs:
       uses: codecov/codecov-action@v3
       with:
         fail_ci_if_error: false
-        files: ./reports/coverage-py37.xml,./reports/coverage-py38.xml,./reports/coverage-py39.xml,./reports/coverage-py310.xml,./reports/coverage-py311.xml,
+        directory: ./reports
         flags: pytest
         name: "luigi-tools-py${{ matrix.python-version }}"
     - name: Upload test artifacts
