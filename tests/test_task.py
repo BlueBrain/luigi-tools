@@ -247,19 +247,19 @@ class TestCopyParams:
             )
         print("test end with", cls_param)
 
-    def test_int_param(self, tmp_working_dir):
+    def test_int_param(self, tmp_path):
         """Test with int parameters."""
         self.type_test(luigi.parameter.IntParameter, 1, "1", 2, "2")
 
-    def test_float_param(self, tmp_working_dir):
+    def test_float_param(self, tmp_path):
         """Test with float parameters."""
         self.type_test(luigi.parameter.FloatParameter, 1.5, "1.5", 2.5, "2.5")
 
-    def test_bool_param(self, tmp_working_dir):
+    def test_bool_param(self, tmp_path):
         """Test with bool parameters."""
         self.type_test(luigi_tools.parameter.BoolParameter, True, "true", False, "false")
 
-    def test_optional_list_param(self, tmp_working_dir):
+    def test_optional_list_param(self, tmp_path):
         """Test with optional list parameters."""
         self.type_test(
             luigi.parameter.OptionalListParameter,

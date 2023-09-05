@@ -17,8 +17,6 @@
 # pylint: disable=empty-docstring
 # pylint: disable=missing-function-docstring
 # pylint: disable=redefined-outer-name
-import os
-
 import luigi
 import pytest
 
@@ -28,15 +26,6 @@ from luigi_tools.util import set_luigi_config
 from .tools import create_not_empty_file
 
 
-@pytest.fixture(scope="function")
-def tmp_working_dir(tmp_path):
-    """Change working directory before a test and change it back when the test is finished."""
-    cwd = os.getcwd()
-    os.chdir(tmp_path)
-    yield tmp_path
-    os.chdir(cwd)
-
-
 @pytest.fixture
 def luigi_tools_params():
     """Simple luigi parameters for the TaskA task."""
@@ -44,10 +33,10 @@ def luigi_tools_params():
 
 
 @pytest.fixture
-def luigi_tools_working_directory(tmp_working_dir, luigi_tools_params):
+def luigi_tools_working_directory(tmp_path, luigi_tools_params):
     """Set luigi config."""
     with set_luigi_config(luigi_tools_params):
-        yield tmp_working_dir
+        yield tmp_path
 
 
 @pytest.fixture
