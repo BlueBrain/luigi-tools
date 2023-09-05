@@ -477,7 +477,7 @@ class TestOptionalParameter:
         # Test with value from config
         assert luigi.build([TestConfig()], local_scheduler=True)
 
-    def test_optional_str_parameter(self, tmp_working_dir):
+    def test_optional_str_parameter(self, tmp_path):
         """Test the `luigi.parameter.OptionalStrParameter` class."""
         with set_luigi_config({"TestConfig": {"param": "expected value", "empty_param": ""}}):
             self.actual_test(
@@ -495,13 +495,13 @@ class TestOptionalParameter:
                 0,
             )
 
-    def test_optional_int_parameter(self, tmp_working_dir):
+    def test_optional_int_parameter(self, tmp_path):
         """Test the `luigi.parameter.OptionalIntParameter` class."""
         with set_luigi_config({"TestConfig": {"param": "10", "empty_param": ""}}):
             self.actual_test(luigi.parameter.OptionalIntParameter, None, 10, "int", "bad data")
             self.actual_test(luigi.parameter.OptionalIntParameter, 1, 10, "int", "bad data")
 
-    def test_optional_bool_parameter(self, tmp_working_dir):
+    def test_optional_bool_parameter(self, tmp_path):
         """Test the `luigi.parameter.OptionalBoolParameter` class."""
         with set_luigi_config({"TestConfig": {"param": "true", "empty_param": ""}}):
             self.actual_test(
@@ -519,7 +519,7 @@ class TestOptionalParameter:
                 "bad data",
             )
 
-    def test_optional_float_parameter(self, tmp_working_dir):
+    def test_optional_float_parameter(self, tmp_path):
         """Test the `luigi.parameter.OptionalFloatParameter` class."""
         with set_luigi_config({"TestConfig": {"param": "10.5", "empty_param": ""}}):
             self.actual_test(
@@ -537,7 +537,7 @@ class TestOptionalParameter:
                 "bad data",
             )
 
-    def test_optional_dict_parameter(self, tmp_working_dir):
+    def test_optional_dict_parameter(self, tmp_path):
         """Test the `luigi.parameter.OptionalDictParameter` class."""
         with set_luigi_config({"TestConfig": {"param": '{"a": 10}', "empty_param": ""}}):
             self.actual_test(
@@ -555,7 +555,7 @@ class TestOptionalParameter:
                 "bad data",
             )
 
-    def test_optional_list_parameter(self, tmp_working_dir):
+    def test_optional_list_parameter(self, tmp_path):
         """Test the `luigi.parameter.OptionalListParameter` class."""
         with set_luigi_config({"TestConfig": {"param": "[10.5]", "empty_param": ""}}):
             self.actual_test(
@@ -573,7 +573,7 @@ class TestOptionalParameter:
                 "bad data",
             )
 
-    def test_optional_tuple_parameter(self, tmp_working_dir):
+    def test_optional_tuple_parameter(self, tmp_path):
         """Test the `luigi.parameter.OptionalTupleParameter` class."""
         with set_luigi_config({"TestConfig": {"param": "[10.5]", "empty_param": ""}}):
             self.actual_test(
@@ -591,7 +591,7 @@ class TestOptionalParameter:
                 "bad data",
             )
 
-    def test_optional_numerical_parameter(self, tmp_working_dir):
+    def test_optional_numerical_parameter(self, tmp_path):
         """Test the `luigi.parameter.OptionalNumericalParameter` class."""
         with set_luigi_config({"TestConfig": {"param": "10.5", "empty_param": ""}}):
             self.actual_test(
@@ -615,7 +615,7 @@ class TestOptionalParameter:
                 max_value=100,
             )
 
-    def test_optional_choice_parameter(self, tmp_working_dir):
+    def test_optional_choice_parameter(self, tmp_path):
         """Test the `luigi.parameter.OptionalChoiceParameter` class."""
         with set_luigi_config({"TestConfig": {"param": "expected value", "empty_param": ""}}):
             choices = ["default value", "expected value", "null"]
