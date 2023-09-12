@@ -16,11 +16,10 @@
 
 Extend and add new features to the luigi package.
 """
+import importlib.metadata
 import warnings
 
-from pkg_resources import get_distribution
-
-__version__ = get_distribution("luigi-tools").version
+__version__ = importlib.metadata.version("luigi-tools")
 
 
 class MovedToLuigiWarning(DeprecationWarning):

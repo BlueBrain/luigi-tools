@@ -1,6 +1,6 @@
 # Changes here will be overwritten by Copier
 
-_commit: 0.1.42
+_commit: 0.1.51
 _src_path: git@bbpgitlab.epfl.ch:neuromath/python-template.git
 author_email: ''
 author_name: Blue Brain Project, EPFL
@@ -17,8 +17,8 @@ project_url: https://luigi-tools.readthedocs.io
 repository_name: luigi-tools
 repository_namespace: BlueBrain
 repository_provider: github
+setup_codeql: false
 ssh_url: git@github.com:BlueBrain/luigi-tools.git
-support_py37: true
 team_name: neuromath
 tracker_url: https://github.com/BlueBrain/luigi-tools/issues
 use_pyproject_toml: false

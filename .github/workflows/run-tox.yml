@@ -13,12 +13,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
         min_versions: ["min_versions", "latest_versions"]
         exclude:
           - min_versions: "min_versions"
         include:
-          - python-version: "3.7"
+          - python-version: "3.8"
             min_versions: "min_versions"
 
     steps:
@@ -72,12 +72,12 @@ jobs:
         fail_ci_if_error: false
         directory: ./reports
         flags: pytest
-        name: "luigi-tools-py${{ matrix.python-version }}"
+        name: "luigi-tools-py${{ matrix.python-version }}-${{ matrix.min_versions }}"
     - name: Upload test artifacts
       uses: actions/upload-artifact@v3
       if: always()
       with:
-        name: tests-${{ matrix.python-version }}
+        name: tests-${{ matrix.python-version }}-${{ matrix.min_versions }}
         retention-days: 4
         path: |
           .tox/py*/tmp
