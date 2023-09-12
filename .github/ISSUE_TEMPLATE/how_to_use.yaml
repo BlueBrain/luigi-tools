@@ -2,7 +2,7 @@
 # https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-githubs-form-schema
 
 name: Ask for help about luigi-tools
-description: Questions about luigi-tools features.
+description: Questions about luigi_tools features.
 labels: [how to use]
 title: "[How to use] "
 body:

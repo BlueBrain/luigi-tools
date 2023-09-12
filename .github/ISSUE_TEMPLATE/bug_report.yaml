@@ -99,7 +99,7 @@ If the message is a warning, run your program with the ``-Werror`` flag: ``pytho
     id: python_version
     attributes:
       label: Python Version
-      description: assumes cpython unless otherwise stated, e.g. 3.10, 3.11, pypy
+      description: Assumes cpython unless otherwise stated, e.g. 3.10, 3.11, pypy
     validations:
       required: true
 

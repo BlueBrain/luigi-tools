@@ -9,12 +9,11 @@
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#
 import os
 import sys
+from importlib import metadata
 
 from luigi import Parameter
-from pkg_resources import get_distribution
 
 from luigi_tools.util import _param_repr
 
@@ -25,7 +24,7 @@ sys.path.insert(0, os.path.abspath("_ext"))
 project = "luigi-tools"
 
 # The short X.Y version
-version = get_distribution("luigi-tools").version
+version = metadata.version("luigi-tools")
 
 # The full version, including alpha/beta/rc tags
 release = version
