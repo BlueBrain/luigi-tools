@@ -728,12 +728,12 @@ def test_path_parameter(tmpdir, default, absolute, exists):
     with set_luigi_config(
         {
             "TaskPathParameter": {
-                "a": str(tmpdir / (default + "_from_config"))
-                if default is not None
-                else str(tmpdir),
-                "b": str(tmpdir / (default + "_from_config"))
-                if default is not None
-                else str(tmpdir),
+                "a": (
+                    str(tmpdir / (default + "_from_config")) if default is not None else str(tmpdir)
+                ),
+                "b": (
+                    str(tmpdir / (default + "_from_config")) if default is not None else str(tmpdir)
+                ),
                 "d": "",
             }
         }

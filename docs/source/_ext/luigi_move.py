@@ -1,4 +1,5 @@
 """Extension to define a new Sphinx directive for objects moved to the `luigi` package."""
+
 from docutils import nodes
 from docutils.parsers.rst import directives
 from docutils.statemachine import StringList
