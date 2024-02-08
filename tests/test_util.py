@@ -498,7 +498,7 @@ class TestSetLuigiConfig:
 
         assert failed_task == [str(Task(a="a_from_cfg", expected_a="different_value"))]
         assert exceptions == [
-            "assert 'a_from_cfg' == 'different_value'\n  - different_value\n  + a_from_cfg"
+            "assert 'a_from_cfg' == 'different_value'\n  \n  - different_value\n  + a_from_cfg"
         ]
 
     def test_config_file(self, Task):

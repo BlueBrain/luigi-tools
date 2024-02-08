@@ -32,9 +32,9 @@ doc_reqs = [
 
 test_reqs = [
     "mock>=3",
-    "pytest>=7",
+    "pytest>=8",
     "pytest-cov>=3",
-    "pytest-html>=3",
+    "pytest-html>=4",
 ]
 
 setup(

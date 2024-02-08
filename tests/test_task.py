@@ -478,7 +478,8 @@ class TestCopyParamsWithGlobals:
             assert not luigi.build([TaskH()], local_scheduler=True)
             assert failed_task == [str(TaskG(g="another_new_value"))]
             assert exceptions == [
-                "assert 'another_new_value' == 'new_value'\n  - new_value\n  + another_new_value"
+                "assert 'another_new_value' == 'new_value'\n  \n  - new_value\n  + "
+                "another_new_value"
             ]
 
     def test_compare_inherits(self, luigi_tools_working_directory):
