@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Setup for the luigi-tools package."""
+
 from pathlib import Path
 
 from setuptools import find_namespace_packages
@@ -34,7 +35,7 @@ doc_reqs = [
 test_reqs = [
     "mock>=3",
     "pytest>=8",
-    "pytest-cov>=3",
+    "pytest-cov>=4.1",
     "pytest-html>=4",
 ]
 

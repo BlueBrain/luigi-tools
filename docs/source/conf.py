@@ -21,10 +21,11 @@ sys.path.insert(0, os.path.abspath("_ext"))
 
 # -- Project information -----------------------------------------------------
 
-project = "luigi-tools"
+project_name = "Luigi tools"
+package_name = "luigi-tools"
 
 # The short X.Y version
-version = metadata.version("luigi-tools")
+version = metadata.version(package_name)
 
 # The full version, including alpha/beta/rc tags
 release = version
@@ -67,10 +68,10 @@ html_theme = "sphinx-bluebrain-theme"
 # html_static_path = ['_static']
 
 html_theme_options = {
-    "metadata_distribution": "luigi-tools",
+    "metadata_distribution": package_name,
 }
 
-html_title = "Luigi tools"
+html_title = project_name
 
 # If true, links to the reST sources are added to the pages.
 html_show_sourcelink = False
