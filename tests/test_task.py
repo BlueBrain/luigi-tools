@@ -19,6 +19,7 @@
 # pylint: disable=too-many-lines
 # pylint: disable=unused-argument
 # pylint: disable=unused-variable
+import importlib
 import json
 import logging
 import warnings
@@ -27,7 +28,6 @@ import luigi
 import pytest
 from luigi.util import inherits
 from packaging.version import Version
-from pkg_resources import get_distribution
 
 import luigi_tools.parameter
 import luigi_tools.target
@@ -665,7 +665,7 @@ class TestCopyParamsWithGlobals:
             assert luigi.build([TaskListParameter(), TaskCopyListParameter()], local_scheduler=True)
 
     @pytest.mark.skipif(
-        Version(get_distribution("luigi").version) < Version("3.2"),
+        Version(importlib.metadata.version("luigi")) < Version("3.2"),
         reason="Schemas are only available for luigi>=3.2",
     )
     def test_dict_param_with_schema(self):
