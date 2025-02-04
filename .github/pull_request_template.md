@@ -1,5 +1,5 @@
 <!-- Provide a general summary of your proposed changes in the Title field above -->
-<!-- The title should have the following form: 'Type: Subject' with 'type' in [Build,Chore,CI,Reprecate,Docs,Feat,Fix,Perf,Refactor,Revert,Style,Test] -->
+<!-- The title should have the following form: 'Type: Subject' with 'type' in [Build,Chore,CI,Deprecate,Docs,Feat,Fix,Perf,Refactor,Revert,Style,Test] -->
 
 ### Description
 <!-- Describe your changes in detail and the reasons of these changes -->
