@@ -9,7 +9,7 @@
 - Drop support for Python 3.8 (pre-commit-ci[bot] - [#119](https://github.com/BlueBrain/luigi-tools/pull/119))
 - Freeze docutils to be compatible with m2r2 (Adrien Berchet - [#113](https://github.com/BlueBrain/luigi-tools/pull/113))
 
-### Changes to Test Assests
+### Changes to Test Assets
 
 - Fix for Py312 (Adrien Berchet - [#123](https://github.com/BlueBrain/luigi-tools/pull/123))
 - Fix compatibility with pytest&gt;=8 (Adrien Berchet - [#110](https://github.com/BlueBrain/luigi-tools/pull/110))
