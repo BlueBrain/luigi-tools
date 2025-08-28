@@ -120,7 +120,7 @@ Example Definitions
         - {{message}} ({{author}}{{#if href}} - [#{{id}}]({{href}}){{/if}})
       {{/commit-list}}
 
-      {{#commit-list merges heading='### Changes to Test Assests' message='^[tT]est:|^[tT]est\(' exclude='[bB]reaking [cC]hange:|[bB]reaking:|\[skip-changelog\]'}}
+      {{#commit-list merges heading='### Changes to Test Assets' message='^[tT]est:|^[tT]est\(' exclude='[bB]reaking [cC]hange:|[bB]reaking:|\[skip-changelog\]'}}
         - {{message}} ({{author}}{{#if href}} - [#{{id}}]({{href}}){{/if}})
       {{/commit-list}}
 
@@ -174,7 +174,7 @@ Example Definitions
         - {{subject}} ({{author}}{{#if href}} - [{{shorthash}}]({{href}}){{/if}})
       {{/commit-list}}
 
-      {{#commit-list commits heading='### Changes to Test Assests' message='^[tT]est:|^[tT]est\(' exclude='[bB]reaking [cC]hange:|[bB]reaking:|\[skip-changelog\]'}}
+      {{#commit-list commits heading='### Changes to Test Assets' message='^[tT]est:|^[tT]est\(' exclude='[bB]reaking [cC]hange:|[bB]reaking:|\[skip-changelog\]'}}
         - {{subject}} ({{author}}{{#if href}} - [{{shorthash}}]({{href}}){{/if}})
       {{/commit-list}}
 

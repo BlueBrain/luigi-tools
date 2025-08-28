@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.3.5](https://github.com/BlueBrain/luigi-tools/compare/0.3.4..0.3.5)
+
+> 27 August 2025
+
+### Build
+
+- Drop support for Python 3.8 (pre-commit-ci[bot] - [#119](https://github.com/BlueBrain/luigi-tools/pull/119))
+- Freeze docutils to be compatible with m2r2 (Adrien Berchet - [#113](https://github.com/BlueBrain/luigi-tools/pull/113))
+
+### Changes to Test Assets
+
+- Fix for Py312 (Adrien Berchet - [#123](https://github.com/BlueBrain/luigi-tools/pull/123))
+- Fix compatibility with pytest>=8 (Adrien Berchet - [#110](https://github.com/BlueBrain/luigi-tools/pull/110))
+- Changing the working directory is no more needed and breaks pytest-html>=4 (Adrien Berchet - [#97](https://github.com/BlueBrain/luigi-tools/pull/97))
+
+### CI Improvements
+
+- Fix CodeCov upload (Adrien Berchet - [#95](https://github.com/BlueBrain/luigi-tools/pull/95))
+
 ## [0.3.4](https://github.com/BlueBrain/luigi-tools/compare/0.3.3..0.3.4)
 
 > 21 April 2023
