@@ -11,7 +11,6 @@ local_scheme = "no-local-version"
 [tool.black]
 line-length = 100
 target-version = [
-    "py39",
     "py310",
     "py311",
     "py312",
