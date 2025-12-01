@@ -82,6 +82,7 @@ autosummary_generate = True
 # autodoc settings
 autodoc_typehints = "signature"
 autodoc_default_options = {"members": True, "show-inheritance": True}
+autodoc_use_legacy_class_based = True
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),

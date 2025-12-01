@@ -273,7 +273,6 @@ class TestCopyParams:
 class TestCopyParamsWithGlobals:
     """Test the `luigi_tools.task.copy_params` decorator with global parameters."""
 
-    @pytest.mark.filterwarnings("ignore::UserWarning:luigi.parameter")
     @pytest.fixture
     def TaskA(self):
         """A simple test task."""
