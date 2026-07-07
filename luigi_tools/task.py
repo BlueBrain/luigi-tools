@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """This module provides some specific luigi tasks and associated tools."""
+
 import logging
 import types
 from copy import deepcopy
