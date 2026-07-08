@@ -14,9 +14,10 @@ repos:
     rev: v9.26.0
     hooks:
         - id: commitlint
+          language_version: 20.17.0
           stages:
             - commit-msg
-          additional_dependencies: ['conventional-changelog-conventionalcommits']
+          additional_dependencies: ['conventional-changelog-conventionalcommits@4.6.3']
   - repo: https://github.com/pycqa/isort
     rev: 9.0.0a3
     hooks:

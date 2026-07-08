@@ -16,8 +16,8 @@
 
 from pathlib import Path
 
-from setuptools import find_namespace_packages
-from setuptools import setup
+from setuptools import find_namespace_packages  # pylint: disable=import-error
+from setuptools import setup  # pylint: disable=import-error
 
 reqs = [
     "luigi>=3.1",
