@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """This module provides some specific luigi targets."""
+
 from pathlib import Path
 
 import luigi

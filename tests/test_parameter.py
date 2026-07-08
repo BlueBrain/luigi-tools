@@ -1135,33 +1135,21 @@ def test_DataclassParameter__build():
             return luigi.LocalTarget("not_existing_file")
 
     # Test with values from config
-    with set_luigi_config(
-        {
-            "TaskDataClassParameter": {
-                "a": """{
+    with set_luigi_config({"TaskDataClassParameter": {"a": """{
                     "a": {"a": 1, "b": "2"},
                     "b": {"c": 3.0, "d": 4},
                     "c": {"e": 5, "f": 6},
                     "d": {"7": 8.0, "9": 10.0}
-                }"""
-            }
-        }
-    ):
+                }"""}}):
         assert luigi.build([TaskDataClassParameter()], local_scheduler=True)
 
     # Parsing fails with integer keys
-    with set_luigi_config(
-        {
-            "TaskDataClassParameter": {
-                "a": """{
+    with set_luigi_config({"TaskDataClassParameter": {"a": """{
                     "a": {"a": 1, "b": "2"},
                     "b": {"c": 3.0, "d": 4},
                     "c": {"e": 5, "f": 6},
                     "d": {7: 8.0, 9: 10.0}
-                }"""
-            }
-        }
-    ):
+                }"""}}):
         with pytest.raises(ValueError):
             luigi.build([TaskDataClassParameter()], local_scheduler=True)
 

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """This module provides some functions to work with luigi tasks."""
+
 import configparser
 import logging
 import os

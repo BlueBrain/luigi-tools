@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """This module provides some specific luigi parameters."""
+
 import collections.abc
 import dataclasses
 import typing
@@ -111,7 +112,7 @@ class DataclassParameter(luigi.DictParameter):
         self._cls_type = cls_type
         super().__init__(*args, **kwargs)
 
-    def normalize(self, value):
+    def normalize(self, value):  # pylint: disable=arguments-renamed
         """Normalize the given value to a dataclass initialized object."""
         if isinstance(value, self._cls_type):
             value = dataclasses.asdict(value)

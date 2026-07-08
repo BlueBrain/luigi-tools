@@ -16,8 +16,8 @@
 
 from pathlib import Path
 
-from setuptools import find_namespace_packages
-from setuptools import setup
+from setuptools import find_namespace_packages  # pylint: disable=import-error
+from setuptools import setup  # pylint: disable=import-error
 
 reqs = [
     "luigi>=3.1",
@@ -28,7 +28,7 @@ reqs = [
 doc_reqs = [
     "docutils<0.21",  # Temporary fix for m2r2
     "m2r2",
-    "sphinx",
+    "sphinx>=6.2",
     "sphinx-bluebrain-theme",
 ]
 
@@ -60,7 +60,7 @@ setup(
     install_requires=reqs,
     extras_require={
         "docs": doc_reqs,
-        "graphviz": ["graphviz"],
+        "graphviz": ["graphviz>=0.20"],
         "test": test_reqs,
     },
     include_package_data=True,
