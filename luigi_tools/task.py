@@ -277,6 +277,10 @@ class copy_params:
 
                 # Add it to the inheriting task with new default values
                 setattr(task_that_inherits, param_name, new_param)
+                # Luigi 3.8+ parameters are descriptors. Class decorators run after class
+                # creation, so Python does not call __set_name__ for these copied parameters.
+                set_name = getattr(new_param, "__set_name__", lambda *_args: None)
+                set_name(task_that_inherits, param_name)
 
                 # Do not emit warning because of wrong type
                 def _warn_on_wrong_global_param_type(_self, global_param_name, global_param_value):

@@ -30,6 +30,9 @@ line_length = 100
 force_single_line = true
 
 [tool.pytest.ini_options]
+addopts = [
+    "--code-highlight=no",
+]
 testpaths = [
     "tests",
 ]
