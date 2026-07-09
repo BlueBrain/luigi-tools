@@ -75,7 +75,7 @@ jobs:
         name: "luigi-tools-py${{ matrix.python-version }}-${{ matrix.min_versions }}"
         token: ${{ secrets.CODECOV_TOKEN }}
     - name: Upload test artifacts
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       if: always()
       with:
         name: tests-${{ matrix.python-version }}-${{ matrix.min_versions }}
