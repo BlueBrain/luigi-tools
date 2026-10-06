@@ -1,0 +1,4 @@
+/* Keep section titles visible below the fixed header when following an anchor link */
+section {
+  scroll-margin-top: 4rem;
+}

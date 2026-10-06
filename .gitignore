@@ -41,3 +41,9 @@ examples/.ipynb_checkpoints
 # Node
 node_modules
 package-lock.json
+
+# uv
+uv.lock
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/

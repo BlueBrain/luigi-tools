@@ -2,32 +2,32 @@
 
 We would love for you to contribute to this package and help make it even better than it is today!
 As a contributor, here are the guidelines we would like you to follow:
-* [Issues and Bugs](#issue)
-* [Feature Requests](#feature)
-* [Submission Guidelines](#submit)
+* [Issues and Bugs](#got-a-question-or-found-a-bug)
+* [Feature Requests](#missing-a-feature)
+* [Submission Guidelines](#submission-guidelines)
 
-## <a name="issue"></a> Got a question or found a bug?
+## Got a question or found a bug?
 
 If you have a question or find a bug in the source code, you can help us by
-[submitting an issue](#submit-issue) to our [GitHub Repository][github]. Even better, you can
-[submit a Pull Request](#submit-pr) with a fix.
+[submitting an issue](#submitting-an-issue) to our [GitHub Repository][github]. Even better, you can
+[submit a Pull Request](#submitting-a-pull-request-pr) with a fix.
 
-## <a name="feature"></a> Missing a Feature?
+## Missing a Feature?
 
-You can *request* a new feature by [submitting an issue](#submit-issue) to our
+You can *request* a new feature by [submitting an issue](#submitting-an-issue) to our
 [GitHub Repository][github]. If you would like to *implement* a new feature, please submit an
 issue with a proposal for your work first, to be sure that we can use it. Then
-[submit a Pull Request](#submit-pr) that points to this issue.
+[submit a Pull Request](#submitting-a-pull-request-pr) that points to this issue.
 
 Please consider what kind of change it is:
 * For a **Major Feature**, first open an issue and outline your proposal so that it can be
 discussed. This will also allow us to better coordinate our efforts, prevent duplication of work,
 and help you to craft the change so that it is successfully accepted into the project.
-* **Small Features** can be crafted and directly [submitted as a Pull Request](#submit-pr).
+* **Small Features** can be crafted and directly [submitted as a Pull Request](#submitting-a-pull-request-pr).
 
-## <a name="submit"></a> Submission Guidelines
+## Submission Guidelines
 
-### <a name="submit-issue"></a> Submitting an Issue
+### Submitting an Issue
 
 Before you submit an issue, please search the issue tracker, maybe an issue for your problem
 already exists and the discussion might inform you of workarounds readily available.
@@ -37,7 +37,7 @@ and confirm it. In order to reproduce bugs we will need as much information as p
 [Minimal Working Example](https://stackoverflow.com/help/minimal-reproducible-example), and
 preferably be in touch with you to gather information.
 
-### <a name="submit-pr"></a> Submitting a Pull Request (PR)
+### Submitting a Pull Request (PR)
 
 When you wish to contribute to the code base, please consider the following guidelines:
 * Make a [fork](https://guides.github.com/activities/forking/) of this repository.
@@ -119,7 +119,7 @@ main (upstream) repository:
   git pull --ff upstream main
   ```
 
-### <a name="release"></a> Releasing a new version
+### Releasing a new version
 
 Releasing a new version can only be done by the maintainers.
 
